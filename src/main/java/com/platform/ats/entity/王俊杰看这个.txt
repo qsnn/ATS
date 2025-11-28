@@ -1,0 +1,22 @@
+entity/
+├── user/                      # 用户体系
+│   ├── SysUser.java
+│   ├── SysRole.java
+│   ├── SysUserRole.java
+│   └── SysRolePermission.java
+├── recruitment/               # 招聘业务
+│   ├── JobInfo.java
+│   ├── ResumeInfo.java
+│   ├── ResumeDelivery.java
+│   └── TalentPool.java
+├── interview/                 # 面试管理
+│   ├── InterviewArrange.java
+│   ├── InterviewAddress.java
+│   └── InterviewResult.java
+├── offer/                    # 录用管理
+│   └── OfferNotice.java
+├── resume/                   # 简历相关
+│   └── CompareInfo.java
+└── system/                   # 系统管理
+    ├── SysNotice.java
+    └── SysOperationLog.java

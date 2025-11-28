@@ -1,0 +1,20 @@
+repository/
+├── user/              # 用户体系
+│   ├── UserRepository.java
+│   ├── RoleRepository.java
+│   └── UserRoleRepository.java
+├── recruitment/       # 招聘业务
+│   ├── JobInfoRepository.java
+│   ├── ResumeInfoRepository.java
+│   ├── ResumeDeliveryRepository.java
+│   └── TalentPoolRepository.java
+├── interview/         # 面试管理
+│   ├── InterviewArrangeRepository.java
+│   ├── InterviewAddressRepository.java
+│   └── InterviewResultRepository.java
+├── offer/            # 录用管理
+│   └── OfferNoticeRepository.java
+└── system/           # 系统管理
+    ├── SysNoticeRepository.java
+    ├── SysOperationLogRepository.java
+    └── CompareInfoRepository.java
