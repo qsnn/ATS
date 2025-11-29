@@ -1,0 +1,91 @@
+package com.platform.ats.service;
+
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.platform.ats.entity.user.query.UserQuery;
+import com.platform.ats.entity.user.dto.UserCreateDTO;
+import com.platform.ats.entity.user.dto.UserUpdateDTO;
+import com.platform.ats.entity.user.User;
+import com.platform.ats.entity.user.vo.UserVO;
+
+import java.util.List;
+
+/**
+ * 用户服务接口
+ */
+public interface UserService {
+
+    /**
+     * 用户注册
+     */
+    Long register(UserCreateDTO userCreateDTO);
+
+    /**
+     * 用户登录
+     */
+    User login(String username, String password);
+
+    /**
+     * 根据ID获取用户
+     */
+    User getUserById(Long userId);
+
+    /**
+     * 根据用户名获取用户
+     */
+    User getUserByUsername(String username);
+
+    /**
+     * 分页查询用户列表
+     */
+    IPage<UserVO> getUserPage(UserQuery query, Integer pageNum, Integer pageSize);
+
+    /**
+     * 创建用户
+     */
+    Long createUser(UserCreateDTO userCreateDTO);
+
+    /**
+     * 更新用户
+     */
+    Boolean updateUser(UserUpdateDTO userUpdateDTO);
+
+    /**
+     * 更新用户状态
+     */
+    Boolean updateUserStatus(Long userId, Integer status);
+
+    /**
+     * 删除用户（逻辑删除）
+     */
+    Boolean deleteUser(Long userId);
+
+    /**
+     * 重置密码
+     */
+    Boolean resetPassword(Long userId, String newPassword);
+
+    /**
+     * 根据企业ID获取用户列表
+     */
+    List<User> getUsersByCompanyId(Long companyId);
+
+    /**
+     * 根据用户类型获取用户列表
+     */
+    List<User> getUsersByType(Integer userType);
+
+    /**
+     * 检查用户名是否存在
+     */
+    Boolean checkUsernameExists(String username);
+
+    /**
+     * 检查手机号是否存在
+     */
+    Boolean checkPhoneExists(String phone);
+
+    /**
+     * 检查邮箱是否存在
+     */
+    Boolean checkEmailExists(String email);
+}
