@@ -27,15 +27,6 @@ public class CompanyInfo implements Serializable {
     @TableField("company_address")
     private String companyAddress;
 
-    @TableField("industry")
-    private String industry;
-
-    @TableField("scale")
-    private String scale;
-
-    @TableField("company_type")
-    private String companyType;
-
     @TableField("contact_person")
     private String contactPerson;
 
@@ -45,22 +36,20 @@ public class CompanyInfo implements Serializable {
     @TableField("contact_email")
     private String contactEmail;
 
-    @TableField("audit_status")
-    private Integer auditStatus;
-
-    @TableField("audit_remark")
-    private String auditRemark;
-
     @TableField("creator_id")
     private Long creatorId;
 
+
+    // 只在插入时自动填充，之后不再修改
     @TableField(value = "create_time", fill = FieldFill.INSERT)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
 
+    // 插入和更新时都自动填充
     @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateTime;
+
 
     @TableField("delete_flag")
     @TableLogic
