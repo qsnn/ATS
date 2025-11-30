@@ -3,7 +3,8 @@ package com.platform.ats.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.platform.ats.entity.user.User;
+import com.platform.ats.entity.user.SysUser;
+import com.platform.ats.entity.user.UserStatus;
 import com.platform.ats.entity.user.dto.UserCreateDTO;
 import com.platform.ats.entity.user.dto.UserUpdateDTO;
 import com.platform.ats.entity.user.query.UserQuery;
@@ -26,7 +27,7 @@ import java.util.Objects;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl extends ServiceImpl<UserRepository, User> implements UserService {
+public class UserServiceImpl extends ServiceImpl<UserRepository, SysUser> implements UserService {
 
     private final PasswordEncoder passwordEncoder;
 
@@ -49,42 +50,42 @@ public class UserServiceImpl extends ServiceImpl<UserRepository, User> implement
         }
 
         // 创建用户
-        User user = new User();
-        BeanUtils.copyProperties(userCreateDTO, user);
-        user.setPassword(passwordEncoder.encode(userCreateDTO.getPassword()));
-        user.setStatus(User.UserStatus.NORMAL.getCode());
+        SysUser sysUser = new SysUser();
+        BeanUtils.copyProperties(userCreateDTO, sysUser);
+        sysUser.setPassword(passwordEncoder.encode(userCreateDTO.getPassword()));
+        sysUser.setStatus(UserStatus.NORMAL.getCode());
 
-        this.baseMapper.insert(user);
-        log.info("用户注册成功: username={}, userId={}", user.getUsername(), user.getUserId());
+        this.baseMapper.insert(sysUser);
+        log.info("用户注册成功: username={}, userId={}", sysUser.getUsername(), sysUser.getUserId());
 
-        return user.getUserId();
+        return sysUser.getUserId();
     }
 
     @Override
-    public User login(String username, String password) {
-        User user = this.baseMapper.selectByUsername(username);
-        if (user == null) {
+    public SysUser login(String username, String password) {
+        SysUser sysUser = this.baseMapper.selectByUsername(username);
+        if (sysUser == null) {
             throw new RuntimeException("用户不存在");
         }
 
-        if (user.isDisabled()) {
+        if (sysUser.isDisabled()) {
             throw new RuntimeException("账号已被禁用");
         }
 
-        if (!passwordEncoder.matches(password, user.getPassword())) {
+        if (!passwordEncoder.matches(password, sysUser.getPassword())) {
             throw new RuntimeException("密码错误");
         }
 
-        return user;
+        return sysUser;
     }
 
     @Override
-    public User getUserById(Long userId) {
+    public SysUser getUserById(Long userId) {
         return this.baseMapper.selectById(userId);
     }
 
     @Override
-    public User getUserByUsername(String username) {
+    public SysUser getUserByUsername(String username) {
         return this.baseMapper.selectByUsername(username);
     }
 
@@ -103,29 +104,29 @@ public class UserServiceImpl extends ServiceImpl<UserRepository, User> implement
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean updateUser(UserUpdateDTO userUpdateDTO) {
-        User existingUser = getUserById(userUpdateDTO.getUserId());
-        if (existingUser == null) {
+        SysUser existingSysUser = getUserById(userUpdateDTO.getUserId());
+        if (existingSysUser == null) {
             throw new RuntimeException("用户不存在");
         }
 
         // 检查手机号是否被其他用户使用
         if (StringUtils.hasText(userUpdateDTO.getPhone()) &&
-                !Objects.equals(existingUser.getPhone(), userUpdateDTO.getPhone()) &&
+                !Objects.equals(existingSysUser.getPhone(), userUpdateDTO.getPhone()) &&
                 checkPhoneExists(userUpdateDTO.getPhone())) {
             throw new RuntimeException("手机号已被其他用户使用");
         }
 
         // 检查邮箱是否被其他用户使用
         if (StringUtils.hasText(userUpdateDTO.getEmail()) &&
-                !Objects.equals(existingUser.getEmail(), userUpdateDTO.getEmail()) &&
+                !Objects.equals(existingSysUser.getEmail(), userUpdateDTO.getEmail()) &&
                 checkEmailExists(userUpdateDTO.getEmail())) {
             throw new RuntimeException("邮箱已被其他用户使用");
         }
 
-        User user = new User();
-        BeanUtils.copyProperties(userUpdateDTO, user);
+        SysUser sysUser = new SysUser();
+        BeanUtils.copyProperties(userUpdateDTO, sysUser);
 
-        return this.baseMapper.updateById(user) > 0;
+        return this.baseMapper.updateById(sysUser) > 0;
     }
 
     @Override
@@ -143,19 +144,19 @@ public class UserServiceImpl extends ServiceImpl<UserRepository, User> implement
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean resetPassword(Long userId, String newPassword) {
-        User user = new User();
-        user.setUserId(userId);
-        user.setPassword(passwordEncoder.encode(newPassword));
-        return this.baseMapper.updateById(user) > 0;
+        SysUser sysUser = new SysUser();
+        sysUser.setUserId(userId);
+        sysUser.setPassword(passwordEncoder.encode(newPassword));
+        return this.baseMapper.updateById(sysUser) > 0;
     }
 
     @Override
-    public List<User> getUsersByCompanyId(Long companyId) {
+    public List<SysUser> getUsersByCompanyId(Long companyId) {
         return this.baseMapper.selectByCompanyId(companyId);
     }
 
     @Override
-    public List<User> getUsersByType(Integer userType) {
+    public List<SysUser> getUsersByType(Integer userType) {
         return this.baseMapper.selectByUserType(userType);
     }
 

@@ -1,8 +1,10 @@
+// language: java
 package com.platform.ats.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.platform.ats.entity.user.User;
+import com.platform.ats.entity.user.SysUser;
 import com.platform.ats.entity.user.dto.UserCreateDTO;
+import com.platform.ats.entity.user.dto.UserLoginDTO;
 import com.platform.ats.entity.user.dto.UserUpdateDTO;
 import com.platform.ats.entity.user.query.UserQuery;
 import com.platform.ats.entity.user.vo.Result;
@@ -11,16 +13,12 @@ import com.platform.ats.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
-import java.util.List;
 
-/**
- * 用户管理控制器
- */
 @Validated
 @RestController
 @RequestMapping("/api/user")
@@ -38,17 +36,19 @@ public class UserController {
     }
 
     @PostMapping("/login")
+    @Transactional(readOnly = true)
     @Operation(summary = "用户登录")
-    public Result<User> login(@RequestParam String username, @RequestParam String password) {
-        User user = userService.login(username, password);
-        return Result.success(user, "登录成功");
+    public Result<SysUser> login(@Valid @RequestBody UserLoginDTO dto) {
+        String username = dto.getUsername() == null ? null : dto.getUsername().trim();
+        SysUser sysUser = userService.login(username, dto.getPassword());
+        return Result.success(sysUser, "登录成功");
     }
 
     @GetMapping("/{userId}")
     @Operation(summary = "根据ID获取用户")
-    public Result<User> getUserById(@PathVariable Long userId) {
-        User user = userService.getUserById(userId);
-        return Result.success(user);
+    public Result<SysUser> getUserById(@PathVariable Long userId) {
+        SysUser sysUser = userService.getUserById(userId);
+        return Result.success(sysUser);
     }
 
     @GetMapping("/page")
@@ -95,13 +95,6 @@ public class UserController {
         return Result.success(success, "密码重置成功");
     }
 
-    @GetMapping("/company/{companyId}")
-    @Operation(summary = "根据企业ID获取用户列表")
-    public Result<List<User>> getUsersByCompanyId(@PathVariable Long companyId) {
-        List<User> users = userService.getUsersByCompanyId(companyId);
-        return Result.success(users);
-    }
-
     @GetMapping("/check/username")
     @Operation(summary = "检查用户名是否存在")
     public Result<Boolean> checkUsernameExists(@RequestParam String username) {
@@ -122,5 +115,4 @@ public class UserController {
         Boolean exists = userService.checkEmailExists(email);
         return Result.success(exists);
     }
-
 }

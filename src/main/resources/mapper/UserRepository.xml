@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.platform.ats.repository.UserRepository">  <!-- 改为 ats -->
 
-    <resultMap id="UserVOResultMap" type="com.platform.ats.entity.user.vo.UserVO">  <!-- 改为 ats -->
+    <resultMap id="UserVOResultMap" type="com.platform.ats.entity.sysUser.vo.UserVO">  <!-- 改为 ats -->
         <id column="user_id" property="userId"/>
         <result column="username" property="username"/>
         <result column="real_name" property="realName"/>
@@ -18,17 +18,17 @@
         <result column="company_name" property="companyName"/>
     </resultMap>
 
-    <select id="selectByUsername" resultType="com.platform.ats.entity.user.User">  <!-- 改为 ats -->
+    <select id="selectByUsername" resultType="com.platform.ats.entity.sysUser.SysUser">  <!-- 改为 ats -->
         SELECT * FROM sys_user
         WHERE username = #{username} AND delete_flag = 0
     </select>
 
-    <select id="selectByPhone" resultType="com.platform.ats.entity.user.User">  <!-- 改为 ats -->
+    <select id="selectByPhone" resultType="com.platform.ats.entity.sysUser.SysUser">  <!-- 改为 ats -->
         SELECT * FROM sys_user
         WHERE phone = #{phone} AND delete_flag = 0
     </select>
 
-    <select id="selectByEmail" resultType="com.platform.ats.entity.user.User">  <!-- 改为 ats -->
+    <select id="selectByEmail" resultType="com.platform.ats.entity.sysUser.SysUser">  <!-- 改为 ats -->
         SELECT * FROM sys_user
         WHERE email = #{email} AND delete_flag = 0
     </select>
@@ -58,12 +58,12 @@
         ORDER BY u.create_time DESC
     </select>
 
-    <select id="selectByCompanyId" resultType="com.platform.ats.entity.user.User">  <!-- 改为 ats -->
+    <select id="selectByCompanyId" resultType="com.platform.ats.entity.sysUser.SysUser">  <!-- 改为 ats -->
         SELECT * FROM sys_user
         WHERE company_id = #{companyId} AND delete_flag = 0
     </select>
 
-    <select id="selectByUserType" resultType="com.platform.ats.entity.user.User">  <!-- 改为 ats -->
+    <select id="selectByUserType" resultType="com.platform.ats.entity.sysUser.SysUser">  <!-- 改为 ats -->
         SELECT * FROM sys_user
         WHERE user_type = #{userType} AND delete_flag = 0
     </select>

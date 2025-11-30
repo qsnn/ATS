@@ -1,10 +1,10 @@
 package com.platform.ats.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.platform.ats.entity.user.SysUser;
 import com.platform.ats.entity.user.query.UserQuery;
 import com.platform.ats.entity.user.dto.UserCreateDTO;
 import com.platform.ats.entity.user.dto.UserUpdateDTO;
-import com.platform.ats.entity.user.User;
 import com.platform.ats.entity.user.vo.UserVO;
 
 import java.util.List;
@@ -22,17 +22,17 @@ public interface UserService {
     /**
      * 用户登录
      */
-    User login(String username, String password);
+    SysUser login(String username, String password);
 
     /**
      * 根据ID获取用户
      */
-    User getUserById(Long userId);
+    SysUser getUserById(Long userId);
 
     /**
      * 根据用户名获取用户
      */
-    User getUserByUsername(String username);
+    SysUser getUserByUsername(String username);
 
     /**
      * 分页查询用户列表
@@ -67,12 +67,12 @@ public interface UserService {
     /**
      * 根据企业ID获取用户列表
      */
-    List<User> getUsersByCompanyId(Long companyId);
+    List<SysUser> getUsersByCompanyId(Long companyId);
 
     /**
      * 根据用户类型获取用户列表
      */
-    List<User> getUsersByType(Integer userType);
+    List<SysUser> getUsersByType(Integer userType);
 
     /**
      * 检查用户名是否存在
