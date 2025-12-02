@@ -2,6 +2,7 @@ package com.platform.ats.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.platform.ats.entity.user.SysUser;
+import com.platform.ats.entity.user.dto.UserRegisterDTO;
 import com.platform.ats.entity.user.query.UserQuery;
 import com.platform.ats.entity.user.dto.UserCreateDTO;
 import com.platform.ats.entity.user.dto.UserUpdateDTO;
@@ -17,7 +18,7 @@ public interface UserService {
     /**
      * 用户注册
      */
-    Long register(UserCreateDTO userCreateDTO);
+    Long register(UserRegisterDTO userRegisterDTO);
 
     /**
      * 用户登录

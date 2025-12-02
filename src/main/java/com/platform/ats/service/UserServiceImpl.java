@@ -5,7 +5,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.platform.ats.entity.user.SysUser;
 import com.platform.ats.entity.user.UserStatus;
+import com.platform.ats.entity.user.UserType;
 import com.platform.ats.entity.user.dto.UserCreateDTO;
+import com.platform.ats.entity.user.dto.UserRegisterDTO;
 import com.platform.ats.entity.user.dto.UserUpdateDTO;
 import com.platform.ats.entity.user.query.UserQuery;
 import com.platform.ats.entity.user.vo.UserVO;
@@ -33,26 +35,29 @@ public class UserServiceImpl extends ServiceImpl<UserRepository, SysUser> implem
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Long register(UserCreateDTO userCreateDTO) {
+    public Long register(UserRegisterDTO userRegisterDTO) {
         // 检查用户名是否已存在
-        if (checkUsernameExists(userCreateDTO.getUsername())) {
+        if (checkUsernameExists(userRegisterDTO.getUsername())) {
             throw new RuntimeException("用户名已存在");
         }
 
         // 检查手机号是否已存在
-        if (StringUtils.hasText(userCreateDTO.getPhone()) && checkPhoneExists(userCreateDTO.getPhone())) {
+        if (StringUtils.hasText(userRegisterDTO.getPhone()) && checkPhoneExists(userRegisterDTO.getPhone())) {
             throw new RuntimeException("手机号已存在");
         }
 
         // 检查邮箱是否已存在
-        if (StringUtils.hasText(userCreateDTO.getEmail()) && checkEmailExists(userCreateDTO.getEmail())) {
+        if (StringUtils.hasText(userRegisterDTO.getEmail()) && checkEmailExists(userRegisterDTO.getEmail())) {
             throw new RuntimeException("邮箱已存在");
         }
 
-        // 创建用户
+        // 创建用户实体
         SysUser sysUser = new SysUser();
-        BeanUtils.copyProperties(userCreateDTO, sysUser);
-        sysUser.setPassword(passwordEncoder.encode(userCreateDTO.getPassword()));
+        BeanUtils.copyProperties(userRegisterDTO, sysUser);
+        sysUser.setPassword(passwordEncoder.encode(userRegisterDTO.getPassword()));
+
+        // 后端设置固定值：用户类型为求职者(4)，状态为正常(1)
+        sysUser.setUserType(UserType.JOB_SEEKER.getCode()); // 假设 UserType.JOB_SEEKER.getCode() 返回 4
         sysUser.setStatus(UserStatus.NORMAL.getCode());
 
         this.baseMapper.insert(sysUser);
@@ -98,7 +103,37 @@ public class UserServiceImpl extends ServiceImpl<UserRepository, SysUser> implem
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long createUser(UserCreateDTO userCreateDTO) {
-        return register(userCreateDTO);
+        // 检查用户名是否已存在
+        if (checkUsernameExists(userCreateDTO.getUsername())) {
+            throw new RuntimeException("用户名已存在");
+        }
+
+        // 检查手机号是否已存在
+        if (StringUtils.hasText(userCreateDTO.getPhone()) && checkPhoneExists(userCreateDTO.getPhone())) {
+            throw new RuntimeException("手机号已存在");
+        }
+
+        // 检查邮箱是否已存在
+        if (StringUtils.hasText(userCreateDTO.getEmail()) && checkEmailExists(userCreateDTO.getEmail())) {
+            throw new RuntimeException("邮箱已存在");
+        }
+
+        // 创建用户实体
+        SysUser sysUser = new SysUser();
+        BeanUtils.copyProperties(userCreateDTO, sysUser);
+
+        // 对密码进行加密
+        sysUser.setPassword(passwordEncoder.encode(userCreateDTO.getPassword()));
+
+        // 如果DTO中未指定状态，则默认为正常
+        if (sysUser.getStatus() == null) {
+            sysUser.setStatus(UserStatus.NORMAL.getCode()); // 假设 UserStatus.NORMAL.getCode() 返回 1
+        }
+
+        this.baseMapper.insert(sysUser);
+        log.info("管理员创建用户成功: username={}, userId={}", sysUser.getUsername(), sysUser.getUserId());
+
+        return sysUser.getUserId();
     }
 
     @Override

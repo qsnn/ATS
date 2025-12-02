@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.platform.ats.entity.user.SysUser;
 import com.platform.ats.entity.user.dto.UserCreateDTO;
 import com.platform.ats.entity.user.dto.UserLoginDTO;
+import com.platform.ats.entity.user.dto.UserRegisterDTO;
 import com.platform.ats.entity.user.dto.UserUpdateDTO;
 import com.platform.ats.entity.user.query.UserQuery;
 import com.platform.ats.entity.user.vo.Result;
@@ -30,8 +31,8 @@ public class UserController {
 
     @PostMapping("/register")
     @Operation(summary = "用户注册")
-    public Result<Long> register(@Valid @RequestBody UserCreateDTO userCreateDTO) {
-        Long userId = userService.register(userCreateDTO);
+    public Result<Long> register(@RequestBody @Valid UserRegisterDTO userRegisterDTO) {
+        Long userId = userService.register(userRegisterDTO);
         return Result.success(userId, "注册成功");
     }
 
