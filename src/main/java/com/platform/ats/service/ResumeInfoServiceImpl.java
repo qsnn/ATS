@@ -1,12 +1,14 @@
 package com.platform.ats.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.platform.ats.entity.resume.ResumeInfo;
 import com.platform.ats.entity.resume.dto.ResumeInfoDTO;
 import com.platform.ats.entity.resume.vo.ResumeInfoVo;
 import com.platform.ats.repository.ResumeInfoRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -58,18 +60,24 @@ public class ResumeInfoServiceImpl implements ResumeInfoService {
     }
 
     @Override
+    @Transactional  // 添加事务注解
     public boolean delete(Long resumeId) {
         if (resumeId == null) {
             return false;
         }
 
-        ResumeInfo resumeInfo = resumeInfoRepository.selectById(resumeId);
-        if (resumeInfo == null) {
-            throw new RuntimeException("简历不存在");
-        }
+        // 方法1：使用 UpdateWrapper（推荐）
+        UpdateWrapper<ResumeInfo> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("resume_id", resumeId)
+                .set("delete_flag", 1);
 
-        resumeInfo.setDeleteFlag(1);
-        resumeInfoRepository.updateById(resumeInfo);
+        System.out.println("使用 UpdateWrapper 更新");
+        int result = resumeInfoRepository.update(null, updateWrapper);
+        System.out.println("UpdateWrapper 更新结果: " + result);
+
+        if (result == 0) {
+            throw new RuntimeException("简历不存在或更新失败");
+        }
 
         return true;
     }
