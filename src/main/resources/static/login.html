@@ -1,0 +1,92 @@
+<!-- html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>招聘系统 - 登录</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <h1>招聘系统</h1>
+            <p>请输入账号和密码登录，系统将自动识别您的身份</p>
+        </div>
+
+        <form id="login-form" class="login-form">
+            <div class="form-group">
+                <label for="username">账号</label>
+                <input type="text" id="username" name="username" required placeholder="请输入账号">
+            </div>
+
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" name="password" required placeholder="请输入密码">
+            </div>
+
+            <!-- 删除身份下拉框，不再手动选择角色 -->
+
+            <button type="submit" class="btn btn-primary btn-block">登录</button>
+        </form>
+
+        <div class="login-footer">
+            <p>还没有账号？ <a href="register.html">注册求职者账号</a></p>
+            <p class="note">企业、面试官、管理员账号由系统生成</p>
+        </div>
+    </div>
+</div>
+
+<script src="js/auth.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('login-form');
+
+        // ① 进入登录页时，如果已登录则直接跳转到对应工作台（仍然根据 user.role）
+        const currentUser = Auth.getCurrentUser && Auth.getCurrentUser();
+        if (currentUser && currentUser.role) {
+            const dashboardUrlMap = {
+                'job-seeker': 'job-seeker-dashboard.html',
+                'employer': 'employer-dashboard.html',
+                'recruiter': 'recruiter-dashboard.html',
+                'admin': 'admin-dashboard.html'
+            };
+            const url = dashboardUrlMap[currentUser.role] || 'index.html';
+            window.location.href = url;
+            return;
+        }
+
+        // ② 正常登录流程（不再读取/校验前端选择的角色）
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            const result = await Auth.login(username, password);
+            if (!result.success) {
+                alert(result.message || '登录失败');
+                return;
+            }
+
+            const user = result.user;
+            if (!user || !user.role) {
+                alert('登录成功，但未识别到用户角色');
+                return;
+            }
+
+            const dashboardUrlMap = {
+                'job-seeker': 'job-seeker-dashboard.html',
+                'employer': 'employer-dashboard.html',
+                'recruiter': 'recruiter-dashboard.html',
+                'admin': 'admin-dashboard.html'
+            };
+            const url = dashboardUrlMap[user.role] || 'index.html';
+            window.location.href = url;
+        });
+    });
+</script>
+</body>
+</html>

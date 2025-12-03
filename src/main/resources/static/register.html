@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>招聘系统 - 注册</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <h1>注册求职者账号</h1>
+            <p>企业、面试官、管理员账号由系统生成</p>
+        </div>
+
+        <form id="register-form" class="login-form">
+            <!-- 邮箱地址 -->
+            <div class="form-group">
+                <label for="email">邮箱地址</label>
+                <input type="email"
+                       id="email"
+                       name="email"
+                       required
+                       placeholder="请输入邮箱地址">
+            </div>
+
+            <!-- 手机号 -->
+            <div class="form-group">
+                <label for="phone">手机号</label>
+                <input type="tel"
+                       id="phone"
+                       name="phone"
+                       required
+                       placeholder="请输入手机号">
+            </div>
+
+            <!-- 用户名 -->
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text"
+                       id="username"
+                       name="username"
+                       required
+                       placeholder="请输入用户名">
+            </div>
+
+            <!-- 真实姓名 -->
+            <div class="form-group">
+                <label for="realname">真实姓名</label>
+                <input type="text"
+                       id="realname"
+                       name="realname"
+                       required
+                       placeholder="请输入真实姓名">
+            </div>
+
+            <!-- 密码 -->
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password"
+                       id="password"
+                       name="password"
+                       required
+                       minlength="8"
+                       placeholder="至少8位字符，包含字母和数字">
+            </div>
+
+            <!-- 确认密码 -->
+            <div class="form-group">
+                <label for="confirm-password">确认密码</label>
+                <input type="password"
+                       id="confirm-password"
+                       name="confirmPassword"
+                       required
+                       minlength="8"
+                       placeholder="请再次输入密码">
+                <div class="error-message" id="password-error"></div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">注册</button>
+        </form>
+
+        <div class="login-footer">
+            <p>已有账号？ <a href="login.html">立即登录</a></p>
+        </div>
+    </div>
+</div>
+
+<script src="js/auth.js"></script>
+<script>
+    // 可选：前端简单校验密码强度和两次输入是否一致
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('register-form');
+        const pwdInput = document.getElementById('password');
+        const confirmInput = document.getElementById('confirm-password');
+        const errorEl = document.getElementById('password-error');
+
+        form.addEventListener('submit', function (e) {
+            errorEl.textContent = '';
+
+            const pwd = pwdInput.value.trim();
+            const confirmPwd = confirmInput.value.trim();
+
+            // 至少8位，包含字母和数字的简单校验
+            const pwdRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+            if (!pwdRegex.test(pwd)) {
+                e.preventDefault();
+                errorEl.textContent = '密码需至少8位，并且同时包含字母和数字';
+                return;
+            }
+
+            if (pwd !== confirmPwd) {
+                e.preventDefault();
+                errorEl.textContent = '两次输入的密码不一致';
+            }
+        });
+    });
+</script>
+<script src="js/auth.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('register-form');
+        const pwdInput = document.getElementById('password');
+        const confirmInput = document.getElementById('confirm-password');
+        const errorEl = document.getElementById('password-error');
+
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            errorEl.textContent = '';
+
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const username = document.getElementById('username').value.trim();
+            const realname = document.getElementById('realname').value.trim();
+            const pwd = pwdInput.value.trim();
+            const confirmPwd = confirmInput.value.trim();
+
+            // 简单密码规则校验
+            const pwdRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+            if (!pwdRegex.test(pwd)) {
+                errorEl.textContent = '密码需至少8位，并且同时包含字母和数字';
+                return;
+            }
+
+            if (pwd !== confirmPwd) {
+                errorEl.textContent = '两次输入的密码不一致';
+                return;
+            }
+
+            // 调用后端注册接口
+            // 假设 userType=0 表示求职者，你可以根据后端定义调整
+            const payload = {
+                username: username,
+                password: pwd,
+                phone: phone || null,
+                email: email || null,
+                realName: realname,   // 新增：把“真实姓名”传给后端
+                userType: 4
+            };
+
+            const result = await Auth.register(payload);
+            if (!result.success) {
+                alert(result.message || '注册失败');
+                return;
+            }
+
+            alert('注册成功，请使用新账号登录');
+            window.location.href = 'login.html';
+        });
+    });
+</script>
+</body>
+</html>

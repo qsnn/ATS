@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>智能招聘平台</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --primary-dark: #4c51bf;
+            --danger-color: #e53e3e;
+            --danger-dark: #c53030;
+            --background-color: #f7fafc;
+            --background-light: #f9fbff;
+            --text-primary: #2d3748;
+            --text-secondary: #718096;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 15px rgba(0,0,0,0.10);
+            --shadow-lg: 0 20px 40px rgba(15, 23, 42, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+            background: var(--background-color);
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 20px;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: #fff;
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+
+        .btn-outline {
+            background: #fff;
+            color: var(--primary-color);
+            border-color: rgba(102,126,234,0.5);
+        }
+
+        .btn-outline:hover {
+            background: rgba(102,126,234,0.06);
+        }
+
+        .btn-hero {
+            padding: 14px 28px;
+            font-size: 1rem;
+        }
+
+        .btn-hero-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border: none;
+        }
+
+        .btn-hero-primary:hover {
+            filter: brightness(0.95);
+        }
+
+        .btn-hero-secondary {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.5);
+            color: #fff;
+        }
+
+        .btn-hero-secondary:hover {
+            background: rgba(255,255,255,0.08);
+        }
+
+        /* 导航栏样式 */
+        .main-nav {
+            position: sticky;
+            top: 0;
+            background: #fff;
+            box-shadow: var(--shadow-sm);
+            z-index: 1000;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 500;
+            padding: 8px 0;
+            position: relative;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary-color);
+            transition: width 0.3s;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: 1px solid #e2e8f0;
+            color: var(--text-secondary);
+        }
+
+        .logout-btn:hover {
+            background: #edf2f7;
+        }
+
+        /* 英雄区域 */
+        .hero-section {
+            background: radial-gradient(circle at top left, #ebf4ff 0, #f7fafc 55%, #ffffff 100%);
+            padding: 80px 20px 60px;
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #1a202c;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .hero-subtitle {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            max-width: 750px;
+            margin: 0 auto 36px;
+            text-align: center;
+            line-height: 1.8;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* 核心功能 */
+        .features-section {
+            padding: 80px 20px;
+            background: var(--background-color);
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.2rem;
+            margin-bottom: 18px;
+            color: var(--text-primary);
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto 48px;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 32px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 32px 26px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .feature-icon {
+            font-size: 40px;
+            margin-bottom: 14px;
+        }
+
+        .feature-title {
+            font-size: 1.35rem;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .feature-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        /* 角色区 */
+        .roles-section {
+            padding: 80px 20px;
+            background: #fff;
+        }
+
+        .roles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 26px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .role-card {
+            background: var(--background-light);
+            border-radius: 12px;
+            padding: 26px 22px;
+            text-align: center;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .role-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-5px);
+            background: #fff;
+        }
+
+        .role-icon {
+            font-size: 36px;
+            margin-bottom: 12px;
+        }
+
+        .role-title {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .role-description {
+            color: var(--text-secondary);
+            font-size: 0.92rem;
+            margin-bottom: 18px;
+            line-height: 1.5;
+        }
+
+        /* 统计区 */
+        .stats-section {
+            padding: 60px 20px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: #fff;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 26px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.4rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        /* CTA 区 */
+        .cta-section {
+            padding: 80px 20px;
+            text-align: center;
+            background: var(--background-color);
+        }
+
+        .cta-title {
+            font-size: 2.2rem;
+            margin-bottom: 18px;
+            color: var(--text-primary);
+        }
+
+        .cta-description {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto 36px;
+            line-height: 1.6;
+        }
+
+        /* 页脚 */
+        .footer {
+            background: #1a202c;
+            color: #fff;
+            padding: 50px 20px 18px;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto 32px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 30px;
+        }
+
+        .footer-section h4 {
+            margin-bottom: 14px;
+            font-size: 1.05rem;
+        }
+
+        .footer-links {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 8px;
+            font-size: 0.92rem;
+        }
+
+        .footer-links a {
+            color: rgba(255,255,255,0.82);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: #fff;
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 14px;
+            border-top: 1px solid rgba(255,255,255,0.16);
+            color: rgba(255,255,255,0.72);
+            font-size: 0.86rem;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.3rem;
+            }
+            .hero-subtitle {
+                font-size: 1.02rem;
+            }
+            .hero-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+            .btn-hero {
+                width: 100%;
+                max-width: 320px;
+            }
+            .section-title {
+                font-size: 1.8rem;
+            }
+            .nav-container {
+                flex-direction: column;
+                gap: 14px;
+            }
+            .nav-menu {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- 导航栏 -->
+<nav class="main-nav">
+    <div class="nav-container">
+        <a href="index.html" class="nav-logo">
+            <span style="font-size: 22px;">💼</span>
+            <span>智能招聘系统</span>
+        </a>
+
+        <ul class="nav-menu">
+            <li><a href="#features" class="nav-link">核心功能</a></li>
+            <li><a href="#roles" class="nav-link">角色介绍</a></li>
+            <li><a href="#stats" class="nav-link">平台数据</a></li>
+            <li><a href="#contact" class="nav-link">联系我们</a></li>
+        </ul>
+
+        <div class="nav-actions">
+            <a href="login.html" class="btn btn-outline">登录</a>
+            <a href="register.html" class="btn btn-primary">免费注册</a>
+        </div>
+    </div>
+</nav>
+
+<!-- 英雄区域 -->
+<section class="hero-section">
+    <div class="container">
+        <h1 class="hero-title">智能招聘平台</h1>
+        <p class="hero-subtitle">
+            专为求职者、企业管理员、招聘专员（HR+面试官）以及平台管理员设计的一体化招聘解决方案。
+            通过模拟数据与完整角色流转，帮助你系统学习前端招聘场景的页面与交互实现。
+        </p>
+
+        <div class="hero-actions">
+            <a href="register.html" class="btn btn-hero btn-hero-primary">注册求职者账号</a>
+            <a href="#roles" class="btn btn-hero" style="background:#fff;border:1px solid #e2e8f0;color:#2d3748;">
+                查看各角色入口
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- 核心功能区域 -->
+<section id="features" class="features-section">
+    <div class="container">
+        <h2 class="section-title">核心功能特点</h2>
+        <p class="section-subtitle">
+            提供从职位发布、投递、筛选、面试到人才库维护的完整闭环流程，所有数据均为本地模拟，适合作为前端学习项目。
+        </p>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🔍</div>
+                <h3 class="feature-title">智能职位匹配</h3>
+                <p class="feature-description">
+                    基于简单规则的模拟匹配逻辑，为求职者推荐适合职位，为企业展示潜在候选人，
+                    帮助你理解列表筛选、搜索及前端推荐展示的实现方式。
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3 class="feature-title">高效招聘流程</h3>
+                <p class="feature-description">
+                    从职位发布到录用的关键页面全部包含：求职者中心、企业管理后台、招聘专员工作台，
+                    可以练习多角色、多页面之间的路由与状态联动。
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🛡️</div>
+                <h3 class="feature-title">本地模拟认证</h3>
+                <p class="feature-description">
+                    使用浏览器 `localStorage` 实现本地登录状态与简单权限控制，配合 `auth.js`，
+                    便于理解前端单页/多页项目中的登录、登出流程。
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 角色介绍区域 -->
+<section id="roles" class="roles-section">
+    <div class="container">
+        <h2 class="section-title">四大核心角色</h2>
+        <p class="section-subtitle">
+            不同角色使用同一套账号体系，通过 `role` 字段区分，登录后跳转到对应的工作台页面。
+        </p>
+
+        <div class="roles-grid">
+            <div class="role-card">
+                <div class="role-icon">👨‍💼</div>
+                <h3 class="role-title">求职者</h3>
+                <p class="role-description">
+                    浏览职位、筛选条件、提交简历、查看职位详情等功能均在 `job-seeker-dashboard.html` 中实现，
+                    适合作为职位列表和搜索页面的练习模板。
+                </p>
+                <a href="login.html?role=job-seeker" class="btn btn-primary">求职者入口</a>
+            </div>
+
+            <div class="role-card">
+                <div class="role-icon">🏢</div>
+                <h3 class="role-title">企业管理员</h3>
+                <p class="role-description">
+                    在 `employer-dashboard.html` 中模拟职位管理、发布职位、申请人管理和人才库入口，
+                    帮助理解表格、表单及多标签页管理界面。
+                </p>
+                <a href="login.html?role=employer" class="btn btn-primary">企业管理员入口</a>
+            </div>
+
+            <div class="role-card">
+                <div class="role-icon">👔</div>
+                <h3 class="role-title">招聘专员（HR+面试官）</h3>
+                <p class="role-description">
+                    使用 `recruiter-dashboard.html`，将 HR 与面试官功能合并：
+                    面试日程、候选人管理、人才库管理与招聘报表，展示更复杂的前端页面结构。
+                </p>
+                <a href="login.html?role=recruiter" class="btn btn-primary">招聘专员入口</a>
+            </div>
+
+            <div class="role-card">
+                <div class="role-icon">⚙️</div>
+                <h3 class="role-title">平台管理员</h3>
+                <p class="role-description">
+                    预留 `admin-dashboard.html` 作为平台后台示例，可扩展用户管理、数据监控等页面，
+                    方便继续练习复杂后台界面与表格操作。
+                </p>
+                <a href="login.html?role=admin" class="btn btn-primary">平台管理员入口</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 统计数据区域 -->
+<section id="stats" class="stats-section">
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-number">10,000+</div>
+                <div class="stat-label">模拟注册用户</div>
+            </div>
+
+            <div class="stat-item">
+                <div class="stat-number">5,000+</div>
+                <div class="stat-label">模拟职位匹配</div>
+            </div>
+
+            <div class="stat-item">
+                <div class="stat-number">500+</div>
+                <div class="stat-label">模拟合作企业</div>
+            </div>
+
+            <div class="stat-item">
+                <div class="stat-number">99.5%</div>
+                <div class="stat-label">学习者满意度（示例数据）</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 行动号召区域 -->
+<section class="cta-section">
+    <div class="container">
+        <h2 class="cta-title">开始你的前端招聘系统实战</h2>
+        <p class="cta-description">
+            本项目仅用于前端学习演示，所有账号、职位、简历和人才库数据均为本地模拟。
+            你可以在不依赖后端接口的前提下，练习页面布局、组件拆分、交互逻辑与简易权限控制。
+        </p>
+
+        <div class="hero-actions">
+            <a href="register.html"
+               class="btn btn-hero btn-hero-primary">
+                立即注册求职者账号
+            </a>
+            <a href="login.html"
+               class="btn btn-hero"
+               style="background:#fff;border:1px solid #e2e8f0;color:#2d3748;">
+                使用已有账号登录
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- 页脚 -->
+<footer id="contact" class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>智能招聘系统</h4>
+                <p style="color:rgba(255,255,255,0.8);line-height:1.6;">
+                    一个用于前端学习的招聘平台示例项目，涵盖多角色登录、多后台页面、
+                    模拟人才库与面试流程，可作为课程或自学的综合练习案例。
+                </p>
+            </div>
+
+            <div class="footer-section">
+                <h4>快速链接</h4>
+                <ul class="footer-links">
+                    <li><a href="index.html">首页</a></li>
+                    <li><a href="login.html">登录</a></li>
+                    <li><a href="register.html">注册求职者</a></li>
+                    <li><a href="#features">功能介绍</a></li>
+                    <li><a href="#roles">角色介绍</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h4>角色入口</h4>
+                <ul class="footer-links">
+                    <li><a href="login.html?role=job-seeker">求职者登录</a></li>
+                    <li><a href="login.html?role=employer">企业管理员登录</a></li>
+                    <li><a href="login.html?role=recruiter">招聘专员登录</a></li>
+                    <li><a href="login.html?role=admin">平台管理员登录</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h4>联系我们</h4>
+                <ul class="footer-links">
+                    <li>邮箱：contact@recruitment-demo.com</li>
+                    <li>电话：400-123-4567（示例）</li>
+                    <li>地址：北京市海淀区中关村（示例）</li>
+                    <li>时间：周一至周五 9:00–18:00</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="copyright">
+            <p>© 2024 智能招聘系统 Demo. 仅用于前端学习演示，所有数据均为模拟。</p>
+        </div>
+    </div>
+</footer>
+
+<script src="js/auth.js"></script>
+<script>
+    // 平滑滚动到锚点
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            const targetId = this.getAttribute('href');
+            if (!targetId || targetId === '#') return;
+
+            const targetElement = document.querySelector(targetId);
+            if (targetElement) {
+                e.preventDefault();
+                window.scrollTo({
+                    top: targetElement.offsetTop - 80,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+
+    // 导航栏滚动阴影
+    window.addEventListener('scroll', () => {
+        const nav = document.querySelector('.main-nav');
+        if (!nav) return;
+        nav.style.boxShadow =
+            window.scrollY > 50 ? 'var(--shadow-md)' : 'var(--shadow-sm)';
+    });
+
+    // 页面加载时检查登录状态并更新导航
+    document.addEventListener('DOMContentLoaded', () => {
+        const currentUserRaw = localStorage.getItem('currentUser');
+        if (!currentUserRaw) return;
+
+        let currentUser;
+        try {
+            currentUser = JSON.parse(currentUserRaw);
+        } catch (e) {
+            return;
+        }
+        if (!currentUser || !currentUser.role) return;
+
+        const navActions = document.querySelector('.nav-actions');
+        if (!navActions) return;
+
+        const dashboardUrlMap = {
+            'job-seeker': 'job-seeker-dashboard.html',
+            'employer': 'employer-dashboard.html',
+            'recruiter': 'recruiter-dashboard.html',
+            'admin': 'admin-dashboard.html'
+        };
+        const dashboardUrl = dashboardUrlMap[currentUser.role] || 'login.html';
+
+        navActions.innerHTML = `
+            <span style="color:var(--text-secondary);font-size:0.9rem;margin-right:4px;">
+                欢迎，${currentUser.name || currentUser.username || '用户'}
+            </span>
+            <a href="${dashboardUrl}" class="btn btn-primary">进入工作台</a>
+            <button class="btn logout-btn" onclick="logout()">退出</button>
+        `;
+    });
+
+    // 退出登录
+    function logout() {
+        Auth.logout();
+        localStorage.removeItem('returnTo');
+        window.location.href = 'index.html';
+    }
+</script>
+</body>
+</html>

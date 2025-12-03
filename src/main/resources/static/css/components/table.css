@@ -1,0 +1,447 @@
+
+/* 表格组件样式 */
+
+/* 表格容器 */
+.table-container {
+    overflow-x: auto;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    background: white;
+    margin-bottom: var(--spacing-lg);
+}
+
+/* 基础表格 */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    min-width: 800px;
+}
+
+.data-table th {
+    background: var(--background-light);
+    font-weight: 600;
+    text-align: left;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-bottom: 2px solid var(--border-color);
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+
+.data-table td {
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-bottom: 1px solid var(--border-light);
+    color: var(--text-secondary);
+    vertical-align: middle;
+}
+
+.data-table tr:last-child td {
+    border-bottom: none;
+}
+
+.data-table tr:hover {
+    background: var(--primary-light);
+}
+
+.data-table tr.selected {
+    background: var(--primary-light);
+    border-left: 3px solid var(--primary-color);
+}
+
+/* 表格单元格对齐 */
+.data-table .text-center {
+    text-align: center;
+}
+
+.data-table .text-right {
+    text-align: right;
+}
+
+.data-table .text-left {
+    text-align: left;
+}
+
+/* 表格操作列 */
+.table-actions {
+    display: flex;
+    gap: var(--spacing-xs);
+    justify-content: flex-end;
+    min-width: 150px;
+}
+
+.table-action-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+    border: none;
+    background: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: all 0.3s;
+}
+
+.table-action-btn:hover {
+    background: var(--background-light);
+    color: var(--text-primary);
+}
+
+.table-action-btn.primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.table-action-btn.primary:hover {
+    background: var(--primary-hover);
+}
+
+/* 表格状态 */
+.status-cell {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+    min-width: 70px;
+}
+
+.status-pending {
+    background: #fff7e6;
+    color: #fa8c16;
+}
+
+.status-approved {
+    background: #f6ffed;
+    color: #52c41a;
+}
+
+.status-rejected {
+    background: #fff2f0;
+    color: #ff4d4f;
+}
+
+.status-processing {
+    background: #e6f7ff;
+    color: #1890ff;
+}
+
+.status-completed {
+    background: #f6ffed;
+    color: #52c41a;
+}
+
+.status-cancelled {
+    background: #fafafa;
+    color: #8c8c8c;
+}
+
+/* 表格筛选 */
+.table-filter {
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: var(--background-light);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+}
+
+.filter-controls {
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filter-controls select,
+.filter-controls input {
+    min-width: 150px;
+    padding: 6px 12px;
+}
+
+/* 表格分页 */
+.table-pagination {
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: white;
+    border-top: 1px solid var(--border-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+}
+
+.pagination-info {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.pagination-controls {
+    display: flex;
+    gap: var(--spacing-xs);
+    align-items: center;
+}
+
+.pagination-btn {
+    padding: 6px 12px;
+    border: 1px solid var(--border-color);
+    background: white;
+    color: var(--text-primary);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    transition: all 0.3s;
+    min-width: 36px;
+    text-align: center;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.pagination-btn.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-prev,
+.pagination-next {
+    padding: 6px 12px;
+}
+
+/* 表格加载状态 */
+.table-loading {
+    position: relative;
+    min-height: 200px;
+}
+
+.table-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border-light);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* 空表格状态 */
+.table-empty {
+    text-align: center;
+    padding: var(--spacing-xl);
+    color: var(--text-disabled);
+}
+
+.table-empty .empty-icon {
+    font-size: 48px;
+    margin-bottom: var(--spacing-md);
+    opacity: 0.3;
+}
+
+.table-empty .empty-text {
+    font-size: 14px;
+    margin-bottom: var(--spacing-md);
+}
+
+/* 响应式表格 */
+@media (max-width: 768px) {
+    .table-container {
+        margin: 0 -20px;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .data-table {
+        min-width: 100%;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: var(--spacing-sm) var(--spacing-md);
+    }
+
+    .table-filter {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-controls select,
+    .filter-controls input {
+        width: 100%;
+    }
+
+    .table-pagination {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .pagination-info {
+        order: 2;
+    }
+
+    .pagination-controls {
+        order: 1;
+    }
+}
+
+/* 表格行详情展开 */
+.details-row {
+    background: var(--background-light);
+}
+
+.details-content {
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-top: 1px solid var(--border-light);
+}
+
+.details-content .detail-item {
+    margin-bottom: var(--spacing-sm);
+}
+
+.details-content .detail-label {
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-right: var(--spacing-sm);
+    display: inline-block;
+    min-width: 100px;
+}
+
+.details-content .detail-value {
+    color: var(--text-secondary);
+}
+
+/* 表格选择列 */
+.select-cell {
+    width: 50px;
+    text-align: center;
+}
+
+.select-cell input[type="checkbox"] {
+    width: auto;
+}
+
+/* 表格排序 */
+.sortable-header {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    padding-right: 20px;
+}
+
+.sortable-header:hover {
+    background: var(--background-color);
+}
+
+.sortable-header::after {
+    content: '↕';
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: var(--text-disabled);
+}
+
+.sortable-header.asc::after {
+    content: '↑';
+    color: var(--primary-color);
+}
+
+.sortable-header.desc::after {
+    content: '↓';
+    color: var(--primary-color);
+}
+
+/* 紧凑表格 */
+.table-compact .data-table th,
+.table-compact .data-table td {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 13px;
+}
+
+.table-compact .status-cell {
+    padding: 2px 6px;
+    font-size: 11px;
+}
+
+/* 暗色主题支持 */
+@media (prefers-color-scheme: dark) {
+    .table-container {
+        background: #1a1a1a;
+    }
+
+    .data-table {
+        background: #1a1a1a;
+    }
+
+    .data-table th {
+        background: #2a2a2a;
+        color: #e0e0e0;
+        border-color: #333;
+    }
+
+    .data-table td {
+        color: #b0b0b0;
+        border-color: #333;
+    }
+
+    .data-table tr:hover {
+        background: #2a2a2a;
+    }
+
+    .data-table tr.selected {
+        background: rgba(24, 144, 255, 0.2);
+    }
+
+    .table-filter {
+        background: #2a2a2a;
+        border-color: #333;
+    }
+
+    .table-pagination {
+        background: #1a1a1a;
+        border-color: #333;
+    }
+
+    .pagination-btn {
+        background: #2a2a2a;
+        color: #e0e0e0;
+        border-color: #333;
+    }
+
+    .status-pending {
+        background: rgba(250, 140, 22, 0.2);
+        color: #fa8c16;
+    }
+
+    .status-approved {
+        background: rgba(82, 196, 26, 0.2);
+        color: #52c41a;
+    }
+
+    .status-rejected {
+        background: rgba(255, 77, 79, 0.2);
+        color: #ff4d4f;
+    }
+}

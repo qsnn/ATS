@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>平台管理员中心 - 招聘系统</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+<!-- 顶部导航 -->
+<nav class="navbar">
+    <div class="container nav-content">
+        <div class="nav-logo">
+            <a href="index.html" class="btn btn-sm" style="margin-right: 15px;">返回首页</a>
+            <h1>招聘系统 - 平台管理员</h1>
+        </div>
+        <div class="nav-user">
+            <span id="user-greeting">欢迎，平台管理员</span>
+            <button class="btn logout-btn" onclick="handleLogout()">退出</button>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <!-- 标签页 -->
+    <div class="dashboard-tabs">
+        <button class="tab-btn active" onclick="switchTab('users')">用户管理</button>
+        <button class="tab-btn" onclick="switchTab('roles')">角色与权限</button>
+        <button class="tab-btn" onclick="switchTab('monitor')">系统监控</button>
+        <button class="tab-btn" onclick="switchTab('content')">内容审核</button>
+        <button class="tab-btn" onclick="switchTab('reports')">运营报表</button>
+    </div>
+
+    <!-- 用户管理 -->
+    <div id="users-tab" class="tab-content active">
+        <h2>用户管理</h2>
+        <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+                <div class="search-box" style="max-width:300px;">
+                    <input type="text" id="user-search" placeholder="搜索用户名 / 邮箱..." oninput="searchUser()">
+                </div>
+                <select id="user-role-filter" onchange="filterUserByRole()">
+                    <option value="">全部角色</option>
+                    <option value="job-seeker">求职者</option>
+                    <option value="employer">企业管理员</option>
+                    <option value="recruiter">招聘专员</option>
+                    <option value="admin">平台管理员</option>
+                </select>
+            </div>
+
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th>用户ID</th>
+                    <th>用户名</th>
+                    <th>邮箱</th>
+                    <th>角色</th>
+                    <th>状态</th>
+                    <th>注册时间</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody id="user-table-body">
+                <!-- 模拟数据行 -->
+                <tr>
+                    <td>1</td>
+                    <td>demo_user</td>
+                    <td>demo@example.com</td>
+                    <td>求职者</td>
+                    <td><span class="tag tag-success">正常</span></td>
+                    <td>2024-01-01</td>
+                    <td>
+                        <button class="btn btn-sm" onclick="viewUser(1)">查看</button>
+                        <button class="btn btn-sm" onclick="lockUser(1)">锁定</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteUser(1)">删除</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 角色与权限 -->
+    <div id="roles-tab" class="tab-content">
+        <h2>角色与权限</h2>
+        <div class="card">
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th>角色标识</th>
+                    <th>角色名称</th>
+                    <th>说明</th>
+                    <th>权限概览</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>job-seeker</td>
+                    <td>求职者</td>
+                    <td>投递简历、管理个人信息</td>
+                    <td>浏览职位、投递、管理简历</td>
+                </tr>
+                <tr>
+                    <td>employer</td>
+                    <td>企业管理员</td>
+                    <td>管理企业职位与申请人</td>
+                    <td>发布职位、查看申请、管理人才库</td>
+                </tr>
+                <tr>
+                    <td>recruiter</td>
+                    <td>招聘专员</td>
+                    <td>兼具HR与面试官权限</td>
+                    <td>管理人才库、安排面试、面试评价</td>
+                </tr>
+                <tr>
+                    <td>admin</td>
+                    <td>平台管理员</td>
+                    <td>系统最高权限</td>
+                    <td>用户管理、系统配置、内容审核等</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 系统监控 -->
+    <div id="monitor-tab" class="tab-content">
+        <h2>系统监控</h2>
+        <div class="card">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;">
+                <div>
+                    <h4>在线用户数</h4>
+                    <p style="font-size:24px;font-weight:bold;">128</p>
+                </div>
+                <div>
+                    <h4>今日访问量</h4>
+                    <p style="font-size:24px;font-weight:bold;">3,562</p>
+                </div>
+                <div>
+                    <h4>接口错误率</h4>
+                    <p style="font-size:24px;font-weight:bold;color:#f56565;">0.7\%</p>
+                </div>
+                <div>
+                    <h4>平均响应时间</h4>
+                    <p style="font-size:24px;font-weight:bold;">220ms</p>
+                </div>
+            </div>
+            <p style="margin-top:15px;color:#666;font-size:13px;">以上为模拟数据，仅用于前端展示。</p>
+        </div>
+    </div>
+
+    <!-- 内容审核 -->
+    <div id="content-tab" class="tab-content">
+        <h2>内容审核</h2>
+        <div class="card">
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th>编号</th>
+                    <th>类型</th>
+                    <th>提交人</th>
+                    <th>提交时间</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>101</td>
+                    <td>职位发布</td>
+                    <td>某科技公司</td>
+                    <td>2024-01-20 10:23</td>
+                    <td><span class="tag">待审核</span></td>
+                    <td>
+                        <button class="btn btn-primary btn-sm" onclick="approveContent(101)">通过</button>
+                        <button class="btn btn-danger btn-sm" onclick="rejectContent(101)">拒绝</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>102</td>
+                    <td>企业介绍</td>
+                    <td>某互联网公司</td>
+                    <td>2024-01-20 11:05</td>
+                    <td><span class="tag tag-success">已通过</span></td>
+                    <td>
+                        <button class="btn btn-sm" onclick="viewContent(102)">查看</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 运营报表 -->
+    <div id="reports-tab" class="tab-content">
+        <h2>运营数据报表</h2>
+        <div class="card">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:30px;">
+                <div>
+                    <h4>平台关键指标</h4>
+                    <div style="margin-top:10px;">
+                        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+                            <span>注册用户总数：</span>
+                            <strong>10,000\+</strong>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+                            <span>企业数量：</span>
+                            <strong>500\+</strong>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+                            <span>累计职位发布：</span>
+                            <strong>3,200</strong>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;">
+                            <span>成功匹配：</span>
+                            <strong style="color:var(--success-color);">5,000\+</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4>本月运营情况</h4>
+                    <div style="margin-top:10px;">
+                        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+                            <span>新增求职者：</span>
+                            <strong>820</strong>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+                            <span>新增企业：</span>
+                            <strong>32</strong>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+                            <span>职位发布量：</span>
+                            <strong>480</strong>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;">
+                            <span>用户满意度：</span>
+                            <strong style="color:var(--success-color);">99.5\%</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-primary" style="margin-top:20px;" onclick="exportReport()">导出报表</button>
+        </div>
+    </div>
+</div>
+
+<script src="js/auth.js"></script>
+<script>
+    // 标签页切换
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.getElementById(tabName + '-tab').classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    // 模拟的操作函数
+    function viewUser(id) {
+        alert('查看用户 ' + id + ' 详情（模拟操作）');
+    }
+    function lockUser(id) {
+        alert('已锁定用户 ' + id + '（模拟操作）');
+    }
+    function deleteUser(id) {
+        if (confirm('确定删除用户 ' + id + ' ？（模拟操作）')) {
+            alert('用户已删除（模拟操作）');
+        }
+    }
+    function searchUser() {
+        const kw = document.getElementById('user-search').value;
+        if (kw) {
+            alert('搜索用户：' + kw + '（模拟操作）');
+        }
+    }
+    function filterUserByRole() {
+        const role = document.getElementById('user-role-filter').value;
+        alert('按角色筛选用户：' + (role || '全部') + '（模拟操作）');
+    }
+
+    function approveContent(id) {
+        alert('已通过内容 ' + id + '（模拟操作）');
+    }
+    function rejectContent(id) {
+        alert('已拒绝内容 ' + id + '（模拟操作）');
+    }
+    function viewContent(id) {
+        alert('查看内容 ' + id + ' 详情（模拟操作）');
+    }
+
+    function exportReport() {
+        alert('正在导出运营报表...（模拟操作）');
+        setTimeout(() => {
+            alert('运营报表已导出为 CSV 文件（模拟）');
+        }, 1000);
+    }
+
+
+    // 页面初始化：填充欢迎语
+    document.addEventListener('DOMContentLoaded', function () {
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (currentUser && document.getElementById('user-greeting')) {
+            document.getElementById('user-greeting').textContent =
+                '欢迎，' + (currentUser.name || currentUser.username || '平台管理员');
+        }
+    });
+</script>
+<script src="js/auth.js"></script>
+<script>
+    function handleLogout() {
+        // 清除登录信息
+        Auth.logout();
+
+        // 可选：清理 Router 的 returnTo 等
+        localStorage.removeItem('returnTo');
+
+        // 跳转到首页或登录页
+        window.location.href = 'index.html';
+    }
+</script>
+</body>
+</html>

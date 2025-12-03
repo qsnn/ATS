@@ -1,0 +1,287 @@
+/* 卡片组件样式 */
+
+/* 基础卡片 */
+.card {
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.card.clickable {
+    cursor: pointer;
+}
+
+.card.clickable:hover {
+    border-color: var(--primary-color);
+}
+
+/* 卡片标题 */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.card-title {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.card-subtitle {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: normal;
+}
+
+/* 卡片操作区域 */
+.card-actions {
+    display: flex;
+    gap: var(--spacing-xs);
+    align-items: center;
+}
+
+.card-action-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    border: none;
+    background: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: all 0.3s;
+}
+
+.card-action-btn:hover {
+    background: var(--background-light);
+    color: var(--text-primary);
+}
+
+.card-action-btn.primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.card-action-btn.primary:hover {
+    background: var(--primary-hover);
+}
+
+/* 卡片内容 */
+.card-body {
+    margin-bottom: var(--spacing-md);
+}
+
+.card-content {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    font-size: 14px;
+}
+
+.card-content p:last-child {
+    margin-bottom: 0;
+}
+
+/* 卡片底部 */
+.card-footer {
+    padding-top: var(--spacing-md);
+    margin-top: var(--spacing-md);
+    border-top: 1px solid var(--border-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+}
+
+.card-meta {
+    display: flex;
+    gap: var(--spacing-md);
+    color: var(--text-disabled);
+}
+
+.card-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* 特殊卡片类型 */
+.card-success {
+    border-left: 4px solid var(--success-color);
+}
+
+.card-warning {
+    border-left: 4px solid var(--warning-color);
+}
+
+.card-danger {
+    border-left: 4px solid var(--error-color);
+}
+
+.card-info {
+    border-left: 4px solid var(--info-color);
+}
+
+/* 空卡片状态 */
+.card-empty {
+    text-align: center;
+    padding: var(--spacing-xl);
+    color: var(--text-disabled);
+}
+
+.card-empty .empty-icon {
+    font-size: 48px;
+    margin-bottom: var(--spacing-md);
+    opacity: 0.3;
+}
+
+.card-empty .empty-text {
+    font-size: 14px;
+    margin-bottom: var(--spacing-md);
+}
+
+/* 加载卡片 */
+.card-loading {
+    position: relative;
+    overflow: hidden;
+}
+
+.card-loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* 图片卡片 */
+.card-with-image {
+    padding: 0;
+    overflow: hidden;
+}
+
+.card-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+
+.card-image-content {
+    padding: var(--spacing-lg);
+}
+
+/* 折叠卡片 */
+.card-collapsible .card-header {
+    cursor: pointer;
+    user-select: none;
+}
+
+.card-collapsible .collapse-icon {
+    transition: transform 0.3s;
+}
+
+.card-collapsible.collapsed .collapse-icon {
+    transform: rotate(180deg);
+}
+
+.card-collapsible .card-body {
+    transition: all 0.3s;
+    overflow: hidden;
+}
+
+.card-collapsible.collapsed .card-body {
+    height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    opacity: 0;
+}
+
+/* 紧凑卡片 */
+.card-compact {
+    padding: var(--spacing-md);
+}
+
+.card-compact .card-header {
+    margin-bottom: var(--spacing-sm);
+    padding-bottom: var(--spacing-xs);
+}
+
+/* 卡片网格布局 */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+/* 卡片列表布局 */
+.card-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .card {
+        padding: var(--spacing-md);
+    }
+
+    .card-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+
+    .card-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-sm);
+    }
+
+    .card-meta {
+        flex-wrap: wrap;
+        gap: var(--spacing-sm);
+    }
+}
+
+/* 暗色主题支持 */
+@media (prefers-color-scheme: dark) {
+    .card {
+        background: #1a1a1a;
+        color: #e0e0e0;
+        border-color: #333;
+    }
+
+    .card-title {
+        color: #e0e0e0;
+    }
+
+    .card-content {
+        color: #b0b0b0;
+    }
+
+    .card-loading::after {
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    }
+}
