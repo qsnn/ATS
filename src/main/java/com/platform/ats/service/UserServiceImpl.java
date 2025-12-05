@@ -10,6 +10,7 @@ import com.platform.ats.entity.user.dto.UserCreateDTO;
 import com.platform.ats.entity.user.dto.UserRegisterDTO;
 import com.platform.ats.entity.user.dto.UserUpdateDTO;
 import com.platform.ats.entity.user.query.UserQuery;
+import com.platform.ats.entity.user.vo.UserProfileVO;
 import com.platform.ats.entity.user.vo.UserVO;
 import com.platform.ats.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -83,6 +84,20 @@ public class UserServiceImpl extends ServiceImpl<UserRepository, SysUser> implem
 
         return sysUser;
     }
+
+    @Override
+    public UserProfileVO getUserProfile(Long userId) {
+        SysUser sysUser = this.getById(userId);
+        if (sysUser == null) {
+            return null;
+        }
+
+        UserProfileVO profileVO = new UserProfileVO();
+        BeanUtils.copyProperties(sysUser, profileVO);
+
+        return profileVO;
+    }
+
 
     @Override
     public SysUser getUserById(Long userId) {

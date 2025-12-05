@@ -6,6 +6,7 @@ import com.platform.ats.entity.user.dto.UserRegisterDTO;
 import com.platform.ats.entity.user.query.UserQuery;
 import com.platform.ats.entity.user.dto.UserCreateDTO;
 import com.platform.ats.entity.user.dto.UserUpdateDTO;
+import com.platform.ats.entity.user.vo.UserProfileVO;
 import com.platform.ats.entity.user.vo.UserVO;
 
 import java.util.List;
@@ -24,6 +25,11 @@ public interface UserService {
      * 用户登录
      */
     SysUser login(String username, String password);
+
+    /**
+     * 根据用户ID获取用户个人信息
+     */
+    UserProfileVO getUserProfile(Long userId);
 
     /**
      * 根据ID获取用户

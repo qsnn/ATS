@@ -9,6 +9,7 @@ import com.platform.ats.entity.user.dto.UserRegisterDTO;
 import com.platform.ats.entity.user.dto.UserUpdateDTO;
 import com.platform.ats.entity.user.query.UserQuery;
 import com.platform.ats.entity.user.vo.Result;
+import com.platform.ats.entity.user.vo.UserProfileVO;
 import com.platform.ats.entity.user.vo.UserVO;
 import com.platform.ats.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -39,10 +40,12 @@ public class UserController {
     @PostMapping("/login")
     @Transactional(readOnly = true)
     @Operation(summary = "用户登录")
-    public Result<SysUser> login(@Valid @RequestBody UserLoginDTO dto) {
+    public Result<UserProfileVO> login(@Valid @RequestBody UserLoginDTO dto) {
         String username = dto.getUsername() == null ? null : dto.getUsername().trim();
         SysUser sysUser = userService.login(username, dto.getPassword());
-        return Result.success(sysUser, "登录成功");
+        // 调用新方法获取UserProfileVO
+        UserProfileVO userProfile = userService.getUserProfile(sysUser.getUserId());
+        return Result.success(userProfile, "登录成功");
     }
 
     @GetMapping("/{userId}")

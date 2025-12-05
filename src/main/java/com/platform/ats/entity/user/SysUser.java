@@ -106,39 +106,8 @@ public class SysUser implements Serializable {
     private String position;
 
     // ========== 业务方法 ==========
-
-    public boolean isCompanyUser() {
-        return UserType.COMPANY_ADMIN.getCode().equals(userType)
-                || UserType.HR.getCode().equals(userType);
-    }
-
-    public boolean isPlatformAdmin() {
-        return UserType.PLATFORM_ADMIN.getCode().equals(userType);
-    }
-
-    public boolean isJobSeeker() {
-        return UserType.JOB_SEEKER.getCode().equals(userType);
-    }
-
-    public String getUserTypeDesc() {
-        UserType type = UserType.getByCode(userType);
-        return type != null ? type.getDesc() : "未知";
-    }
-
-    public String getStatusDesc() {
-        UserStatus userStatus = UserStatus.getByCode(status);
-        return userStatus != null ? userStatus.getDesc() : "未知";
-    }
-
-    public boolean isNormal() {
-        return UserStatus.NORMAL.getCode().equals(status);
-    }
-
     public boolean isDisabled() {
         return UserStatus.DISABLED.getCode().equals(status);
     }
 
-    public boolean needToComplete() {
-        return UserStatus.TO_BE_COMPLETED.getCode().equals(status);
-    }
 }

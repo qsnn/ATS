@@ -1,4 +1,7 @@
+好的，根据您将登录接口返回值修改为 `UserProfileVO` 的变更，我已更新 `doc/userApi` 文档。
 
+`doc/userApi`
+```text
 # 用户管理API文档
 
 **基础信息**
@@ -33,7 +36,7 @@
 
 ### 2. 用户登录
 - **端点**：`POST /api/user/login`
-- **描述**：用户登录认证
+- **描述**：用户登录认证，成功后返回用户个人信息。
 - **请求体**：
 ```json
 {
@@ -41,7 +44,7 @@
   "password": "string (必填)"
 }
 ```
-- **响应**：
+- **响应** (`UserProfileVO`)：
 ```json
 {
   "code": "integer",
@@ -53,7 +56,11 @@
     "email": "string",
     "status": "integer",
     "userType": "integer",
-    "companyId": "long"
+    "companyId": "long",
+    "userTypeDesc": "string (用户类型描述)",
+    "companyName": "string (公司名称)",
+    "jobApplyCount": "integer (职位申请数，求职者类型用户)",
+    "recruitmentCount": "integer (招聘发布数，HR类型用户)"
   }
 }
 ```
@@ -160,8 +167,4 @@
 4. **密码加密**：所有密码均使用BCrypt加密存储
 5. **事务管理**：写操作均使用事务管理，确保数据一致性
 
-## 访问地址
-
-- **API基础地址**：`http://localhost:8080/api/user`
-
-这个文档涵盖了所有用户管理相关的API接口，包括认证、CRUD操作和验证功能。所有接口都遵循RESTful设计原则，并使用统一的响应格式。
+```
