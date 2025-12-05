@@ -1,4 +1,3 @@
-<!-- language: html -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -7,6 +6,34 @@
     <title>求职者中心 - 招聘系统</title>
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/dashboard.css">
+    <style>
+        .sidebar-nav a {
+            display: block;
+            padding: 12px 15px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        .sidebar-nav a:hover, .sidebar-nav a.active {
+            background-color: #eef2ff;
+            color: #4f46e5;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
 </head>
 <body>
 <nav class="navbar">
@@ -23,137 +50,37 @@
 </nav>
 
 <div class="container">
-    <div class="dashboard-header">
-        <h2>职位搜索</h2>
-        <div class="search-box">
-            <input type="text" id="job-search-input" placeholder="搜索职位、公司或关键词...">
-            <button class="btn btn-primary" onclick="searchJobs()">搜索</button>
-        </div>
-    </div>
-
     <div class="content-layout">
         <aside class="sidebar">
-            <h3>筛选条件</h3>
-            <div class="filter-section">
-                <h4>薪资范围</h4>
-                <select id="salary-filter">
-                    <option value="">不限</option>
-                    <option value="lt10">10K以下</option>
-                    <option value="10-20">10-20K</option>
-                    <option value="20-30">20-30K</option>
-                    <option value="gt30">30K以上</option>
-                </select>
-            </div>
-            <div class="filter-section">
-                <h4>工作地点</h4>
-                <select id="location-filter">
-                    <option value="">不限</option>
-                    <option value="北京">北京</option>
-                    <option value="上海">上海</option>
-                    <option value="深圳">深圳</option>
-                    <option value="广州">广州</option>
-                </select>
-            </div>
+            <h3>管理中心</h3>
+            <nav class="sidebar-nav">
+                <a href="#" data-view="job-search" class="active">职位搜索</a>
+                <a href="#" data-view="profile">个人信息</a>
+                <a href="#" data-view="resumes">我的简历</a>
+                <a href="#" data-view="applications">我的申请</a>
+                <a href="#" data-view="favorites">我的收藏</a>
+                <a href="#" data-view="interviews">面试安排</a>
+            </nav>
         </aside>
 
-        <main class="main-content">
-            <div class="job-list" id="job-list">
-                <div class="card job-card">
-                    <div class="job-header">
-                        <h3>前端开发工程师</h3>
-                        <span class="salary">¥20K-35K</span>
-                    </div>
-                    <div class="job-info">
-                        <span class="company">某科技公司</span>
-                        <span class="location">北京</span>
-                        <span class="experience">3-5年经验</span>
-                    </div>
-                    <div class="job-description">
-                        负责公司产品前端开发，要求熟悉React\/Vue...
-                    </div>
-                    <div class="job-actions">
-                        <button class="btn btn-primary" onclick="applyJob(1)">提交简历</button>
-                        <button class="btn" onclick="viewJobDetail(1)">查看详情</button>
-                    </div>
-                </div>
-
-                <div class="card job-card">
-                    <div class="job-header">
-                        <h3>Java后端工程师</h3>
-                        <span class="salary">¥25K-40K</span>
-                    </div>
-                    <div class="job-info">
-                        <span class="company">某互联网公司</span>
-                        <span class="location">上海</span>
-                        <span class="experience">5年以上经验</span>
-                    </div>
-                    <div class="job-description">
-                        负责后端系统架构设计，要求精通Java\/Spring...
-                    </div>
-                    <div class="job-actions">
-                        <button class="btn btn-primary" onclick="applyJob(2)">提交简历</button>
-                        <button class="btn" onclick="viewJobDetail(2)">查看详情</button>
-                    </div>
-                </div>
-            </div>
+        <main class="main-content" id="main-content">
+            <!-- 视图通过 JS 动态渲染 -->
         </main>
     </div>
 </div>
 
 <script src="js/auth.js"></script>
-<script>
-    // 提交简历（模拟）
-    function applyJob(jobId) {
-        alert('已提交简历到职位ID: ' + jobId + '（模拟操作）');
-    }
+<script src="js/job-search.js"></script>
 
-    // 查看职位详情（模拟）
-    function viewJobDetail(jobId) {
-        alert('查看职位详情: ' + jobId + '（模拟操作）');
-    }
+<!-- 各视图模块 -->
+<script src="js/job-seeker-views/job-search-view.js"></script>
+<script src="js/job-seeker-views/profile-view.js"></script>
+<script src="js/job-seeker-views/resumes-view.js"></script>
+<script src="js/job-seeker-views/applications-view.js"></script>
+<script src="js/job-seeker-views/favorites-view.js"></script>
+<script src="js/job-seeker-views/interviews-view.js"></script>
 
-    // 搜索职位（模拟）
-    function searchJobs() {
-        const kw = document.getElementById('job-search-input').value.trim();
-        const salary = document.getElementById('salary-filter').value;
-        const location = document.getElementById('location-filter').value;
-        alert(
-            '搜索职位：' +
-            (kw || '全部') +
-            '\\n薪资：' + (salary || '不限') +
-            '\\n地点：' + (location || '不限') +
-            '（模拟操作）'
-        );
-    }
-
-    // 页面初始化：检查登录并填充欢迎语
-    document.addEventListener('DOMContentLoaded', function () {
-        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-        if (!currentUser) {
-            // 未登录则跳转登录页
-            window.location.href = 'login.html';
-            return;
-        }
-
-        const greeting = document.getElementById('user-greeting');
-        if (greeting) {
-            greeting.textContent =
-                '欢迎，' + (currentUser.name || currentUser.username || '求职者');
-        }
-    });
-</script>
-<script src="js/auth.js"></script>
-<script>
-    function handleLogout() {
-        // 清除登录信息
-        Auth.logout();
-
-        // 可选：清理 Router 的 returnTo 等
-        localStorage.removeItem('returnTo');
-
-        // 跳转到首页或登录页
-        window.location.href = 'index.html';
-    }
-</script>
+<!-- 公共控制逻辑 -->
+<script src="js/job-seeker-views/dashboard.js"></script>
 </body>
 </html>

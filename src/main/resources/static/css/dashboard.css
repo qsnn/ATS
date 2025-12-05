@@ -517,17 +517,72 @@
     .talent-list {
         grid-template-columns: 1fr;
     }
+}
 
-    .talent-modal-content {
-        width: 95%;
-        padding: var(--spacing-lg);
-    }
+/* 输入框优化样式 */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="tel"],
+textarea,
+select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    transition: all 0.2s ease;
+    background-color: white;
+    box-sizing: border-box;
+}
 
-    .btn-add-talent {
-        bottom: 20px;
-        right: 20px;
-        width: 50px;
-        height: 50px;
-        font-size: 20px;
-    }
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(64, 158, 255, 0.1);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--text-placeholder);
+    font-size: 13px;
+}
+
+input:disabled,
+textarea:disabled,
+select:disabled {
+    background-color: var(--background-disabled);
+    border-color: var(--border-disabled);
+    cursor: not-allowed;
+}
+
+textarea {
+    min-height: 80px;
+    resize: vertical;
+    line-height: 1.5;
+}
+
+/* 错误状态样式 */
+input.error,
+textarea.error,
+select.error {
+    border-color: #ff4d4f;
+}
+
+input.error:focus,
+textarea.error:focus,
+select.error:focus {
+    box-shadow: 0 0 0 3px rgba(255, 77, 79, 0.1);
+}
+
+.error-message {
+    color: #ff4d4f;
+    font-size: 12px;
+    margin-top: 4px;
+    display: block;
 }

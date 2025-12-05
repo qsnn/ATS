@@ -85,19 +85,34 @@ const Router = {
 
     // 检查权限
     checkPermission: function(path) {
-        if (['/', '/index', '/login', '/register'].includes(path)) {
+        // 1. 定义公共路径，任何人都可以访问
+        const publicPaths = ['/', '/index.html', '/login.html', '/register.html'];
+        // 移除路径末尾的'/'以便匹配
+        const cleanPath = path.endsWith('/') && path.length > 1 ? path.slice(0, -1) : path;
+
+        // 兼容 / 和 /index.html
+        if (publicPaths.includes(cleanPath) || publicPaths.includes(cleanPath.replace('/index', '/'))) {
             return true;
         }
 
-        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        // 2. 检查用户是否登录
+        const currentUser = Auth.getCurrentUser(); // 使用 auth.js 的方法更安全
         if (!currentUser) {
+            // 未登录且访问的不是公共页面，则无权限
             return false;
         }
 
+        // 3. 检查登录用户的角色是否有权访问该路径
         const userRole = currentUser.role;
         const allowedRoutes = this.rolePermissions[userRole] || [];
 
-        return allowedRoutes.some(route => path.startsWith(route));
+        // 使用 startsWith 允许路径后面带参数，例如 /job-seeker-dashboard.html?tab=profile
+        if (allowedRoutes.some(route => cleanPath.startsWith(route))) {
+            return true;
+        }
+
+        // 4. 如果以上都不满足，则无权限
+        return false;
     },
     
     // 重定向到登录页

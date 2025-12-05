@@ -58,7 +58,8 @@ async function login(username, password) {
         });
 
         if (!resp.ok) {
-            return { success: false, message: '网络错误' };
+            const errorText = await resp.text();
+            return { success: false, message: `网络错误: ${resp.status} ${errorText}` };
         }
 
         const json = await resp.json();
@@ -66,24 +67,18 @@ async function login(username, password) {
             return { success: false, message: json.message || '登录失败' };
         }
 
-        const backendUser = json.data;
+        const backendUser = json.data; // 这是完整的 SysUser 对象
         const role = mapUserTypeToRole(backendUser.userType);
 
         if (!role) {
             return { success: false, message: '未识别的用户类型' };
         }
 
-        // 前端统一保存为 currentUser，带上 userType 和 role
+        // 将后端返回的完整用户信息（除了密码）和前端角色一并存储
         const currentUser = {
-            userId: backendUser.userId,
-            username: backendUser.username,
-            realName: backendUser.realName,
-            phone: backendUser.phone,
-            email: backendUser.email,
-            userType: backendUser.userType, // 数字，后端原样
-            role: role,                     // 字符串，前端内部使用
-            companyId: backendUser.companyId,
-            status: backendUser.status
+            ...backendUser, // 展开SysUser所有字段
+            password: '[redacted]', // 不存储密码
+            role: role, // 添加前端角色标识
         };
 
         storage.set(CURRENT_USER_KEY, currentUser);
@@ -130,6 +125,18 @@ function getCurrentUser() {
     return storage.get(CURRENT_USER_KEY, null);
 }
 
+// 新增：用于在更新信息后，同步更新本地存储
+function updateCurrentUser(updatedFields) {
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+        // 合并旧信息和新字段
+        const newUser = { ...currentUser, ...updatedFields };
+        storage.set(CURRENT_USER_KEY, newUser);
+        return newUser;
+    }
+    return null;
+}
+
 function logout() {
     storage.remove(CURRENT_USER_KEY);
 }
@@ -146,11 +153,13 @@ function requireAuth() {
     return true;
 }
 
-// 暴露到全局
+
+// 暴露到全局 (确保导出了新方法)
 window.Auth = {
     login,
     register,
     getCurrentUser,
+    updateCurrentUser, // 暴露新方法
     logout,
     isAuthenticated,
     requireAuth
