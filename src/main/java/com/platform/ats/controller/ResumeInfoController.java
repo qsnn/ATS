@@ -50,4 +50,9 @@ public class ResumeInfoController {
     public Result<List<ResumeInfoDTO>> listAll() {
         return Result.success(resumeInfoService.listAll());
     }
+    @GetMapping("/user/{userId}")
+    @Operation(summary = "根据用户id获取简历列表")
+    public Result<List<ResumeInfoDTO>> listByUserId(@PathVariable Long userId) {
+        return Result.success(resumeInfoService.listByUserId(userId));
+    }
 }

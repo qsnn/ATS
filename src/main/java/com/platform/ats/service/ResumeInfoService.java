@@ -16,5 +16,8 @@ public interface ResumeInfoService {
     ResumeInfoDTO getById(Long resumeId);
 
     List<ResumeInfoDTO> listAll();
+
+    List<ResumeInfoDTO> listByUserId(Long userId);
+
 }
 

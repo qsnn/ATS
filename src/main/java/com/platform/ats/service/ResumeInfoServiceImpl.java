@@ -102,6 +102,21 @@ public class ResumeInfoServiceImpl implements ResumeInfoService {
         return list.stream().map(this::toDTO).collect(Collectors.toList());
     }
 
+    @Override
+    public List<ResumeInfoDTO> listByUserId(Long userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("userId不能为空");
+        }
+        List<ResumeInfo> list = resumeInfoRepository.selectList(
+                new LambdaQueryWrapper<ResumeInfo>()
+                        .eq(ResumeInfo::getUserId, userId)
+                        .eq(ResumeInfo::getDeleteFlag, 0)
+                        .orderByDesc(ResumeInfo::getCreateTime)
+        );
+        return list.stream().map(this::toDTO).collect(Collectors.toList());
+    }
+
+
     private ResumeInfoDTO toDTO(ResumeInfo entity) {
         ResumeInfoDTO dto = new ResumeInfoDTO();
         BeanUtils.copyProperties(entity, dto);

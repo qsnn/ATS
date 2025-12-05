@@ -13,10 +13,6 @@ public class UserUpdateDTO {
 
     @NotNull(message = "用户ID不能为空")
     private Long userId;
-
-    @NotBlank(message = "真实姓名不能为空")
-    private String realName;
-
     private String phone;
     private String email;
     private Integer status;
