@@ -3,9 +3,9 @@ server:
 
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/recruitment-platform-data?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8
-    username: recruitment-platform-data
-    password: mysoftwareproject
+    url: jdbc:mysql://124.71.101.139:3306/recruitment-platform-data?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8
+    username: wjm
+    password: wjm123456
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jackson:

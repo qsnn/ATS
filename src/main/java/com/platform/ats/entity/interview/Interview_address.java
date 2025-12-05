@@ -1,36 +1,36 @@
-package com.platform.ats.entity.recruitment.interview;
+package com.platform.ats.entity.interview;
 
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
-@EqualsAndHashCode(callSuper = false)
 @TableName("interview_address")
-public class InterviewAddress implements Serializable {
+public class Interview_address {
 
-    private static final long serialVersionUID = 1L;
-
-    @TableId(value = "address_id", type = IdType.AUTO)
+    @TableId(type = IdType.AUTO)
     private Long addressId;
 
     @TableField("company_id")
+    @NotNull(message = "企业ID不能为空")
     private Long companyId;
 
     @TableField("province")
+    @NotNull(message = "省份不能为空")
     private String province;
 
     @TableField("city")
+    @NotNull(message = "城市不能为空")
     private String city;
 
     @TableField("district")
     private String district;
 
     @TableField("detail_address")
+    @NotNull(message = "详细地址不能为空")
     private String detailAddress;
 
     @TableField("address_name")
@@ -45,6 +45,5 @@ public class InterviewAddress implements Serializable {
     private LocalDateTime updateTime;
 
     @TableField("delete_flag")
-    @TableLogic
     private Integer deleteFlag;
 }
