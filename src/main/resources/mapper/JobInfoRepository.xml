@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.platform.ats.repository.JobInfoRepository">
+
+    <select id="findJobPage" resultType="com.platform.ats.entity.job.dto.JobInfoDetailDto">
+        SELECT
+        ji.*,
+        ci.company_name,
+        su.username as publisher_name
+        FROM
+        job_info ji
+        LEFT JOIN company_info ci ON ji.company_id = ci.company_id
+        LEFT JOIN sys_user su ON ji.publisher_id = su.user_id
+        <where>
+            ji.delete_flag = 0
+            <if test="query.jobName != null and query.jobName != ''">
+                AND ji.job_name LIKE CONCAT('%', #{query.jobName}, '%')
+            </if>
+            <if test="query.city != null and query.city != ''">
+                AND ji.city = #{query.city}
+            </if>
+            <if test="query.education != null and query.education != ''">
+                AND ji.education = #{query.education}
+            </if>
+            <if test="query.workExperience != null and query.workExperience != ''">
+                AND ji.work_experience = #{query.workExperience}
+            </if>
+            <if test="query.publishStatus != null">
+                AND ji.publish_status = #{query.publishStatus}
+            </if>
+            <if test="query.companyId != null">
+                AND ji.company_id = #{query.companyId}
+            </if>
+        </where>
+        ORDER BY ji.update_time DESC
+    </select>
+
+</mapper>
