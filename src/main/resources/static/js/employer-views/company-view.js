@@ -32,27 +32,62 @@ function renderCompanyView(container, currentUser) {
         e.preventDefault();
         saveCompanyInfo(currentUser);
     });
+
+    loadCompanyInfo(currentUser);
+}
+
+async function loadCompanyInfo(user) {
+    // 若用户对象中带有 companyId，则优先根据 companyId 查询
+    const companyId = user.companyId;
+    if (!companyId) {
+        return;
+    }
+    try {
+        const resp = await fetch(`${COMPANY_API_BASE}/${companyId}`);
+        if (!resp.ok) return;
+        const json = await resp.json();
+        if (!json || json.code !== 200 || !json.data) return;
+        const c = json.data;
+        document.getElementById('company-name').value = c.companyName || '';
+        document.getElementById('company-description').value = c.companyDesc || '';
+        document.getElementById('company-address').value = c.address || '';
+        document.getElementById('company-contact').value = c.contactName || '';
+        document.getElementById('company-phone').value = c.contactPhone || '';
+    } catch (e) {
+        console.error('加载公司信息失败:', e);
+    }
 }
 
 async function saveCompanyInfo(user) {
     const companyData = {
-        name: document.getElementById('company-name').value,
-        description: document.getElementById('company-description').value,
-        address: document.getElementById('company-address').value,
-        contact: document.getElementById('company-contact').value,
-        phone: document.getElementById('company-phone').value,
-        employerId: user.userId
+        companyId: user.companyId || null,
+        companyName: document.getElementById('company-name').value.trim(),
+        companyDesc: document.getElementById('company-description').value.trim(),
+        address: document.getElementById('company-address').value.trim(),
+        contactName: document.getElementById('company-contact').value.trim(),
+        contactPhone: document.getElementById('company-phone').value.trim()
     };
 
-    try {
-        // 这里替换为实际的保存公司信息API
-        // const resp = await fetch('http://xxx/api/company', {
-        //     method: 'PUT',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify(companyData)
-        // });
+    const hasId = !!companyData.companyId;
+    const method = hasId ? 'PUT' : 'POST';
 
-        alert('公司信息保存成功（模拟）');
+    try {
+        const resp = await fetch(`${COMPANY_API_BASE}`, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(companyData)
+        });
+        if (!resp.ok) {
+            const text = await resp.text();
+            alert(`网络错误: ${resp.status} ${text}`);
+            return;
+        }
+        const json = await resp.json();
+        if (!json || json.code !== 200) {
+            alert(json && json.message ? json.message : '保存失败');
+            return;
+        }
+        alert('公司信息保存成功');
     } catch (e) {
         console.error('保存公司信息失败:', e);
         alert('保存失败，请稍后重试');

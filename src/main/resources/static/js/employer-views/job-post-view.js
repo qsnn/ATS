@@ -47,35 +47,60 @@ function renderJobPostView(container, currentUser) {
 }
 
 async function postJob(user) {
-    const jobData = {
-        title: document.getElementById('job-title').value.trim(),
-        salary: document.getElementById('job-salary').value.trim(),
-        location: document.getElementById('job-location').value.trim(),
-        experience: document.getElementById('job-experience').value.trim(),
-        description: document.getElementById('job-description').value.trim(),
-        requirements: document.getElementById('job-requirements').value.trim(),
-        employerId: user.userId
-    };
+    const title = document.getElementById('job-title').value.trim();
+    const salaryText = document.getElementById('job-salary').value.trim();
+    const location = document.getElementById('job-location').value.trim();
+    const experience = document.getElementById('job-experience').value.trim();
+    const description = document.getElementById('job-description').value.trim();
+    const requirements = document.getElementById('job-requirements').value.trim();
 
-    // 验证必填字段
-    if (!jobData.title || !jobData.salary || !jobData.location || !jobData.description) {
+    if (!title || !salaryText || !location || !description) {
         alert('请填写所有必填字段（带*的）');
         return;
     }
 
+    // 简单解析薪资，如 "20K-35K" -> 分转整数
+    let salaryMin = null;
+    let salaryMax = null;
+    const match = salaryText.match(/(\d+)\s*K\s*-\s*(\d+)\s*K/i);
+    if (match) {
+        salaryMin = parseInt(match[1], 10) * 1000;
+        salaryMax = parseInt(match[2], 10) * 1000;
+    }
+
+    const jobInfo = {
+        jobName: title,
+        salaryMin,
+        salaryMax,
+        city: location,
+        workExperience: experience,
+        jobDesc: description,
+        jobRequire: requirements,
+        companyId: user.companyId || null,
+        publisherId: user.userId
+    };
+
     try {
-        // 这里替换为实际的发布职位API
-        // const resp = await fetch('http://xxx/api/job', {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify(jobData)
-        // });
+        const resp = await fetch(`${JOB_API_BASE}/saveOrUpdate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(jobInfo)
+        });
 
-        // 模拟成功
-        alert('职位发布成功（模拟）');
+        if (!resp.ok) {
+            const text = await resp.text();
+            alert(`网络错误: ${resp.status} ${text}`);
+            return;
+        }
+        const ok = await resp.json();
+        if (!ok) {
+            alert('发布职位失败');
+            return;
+        }
+
+        alert('职位发布成功！');
         document.getElementById('post-job-form').reset();
-
-        // 可选：切换到管理标签页查看
+        // 可选：切到管理 tab
         // switchTab('manage');
     } catch (e) {
         console.error('发布职位失败:', e);

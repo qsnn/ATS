@@ -1,4 +1,8 @@
 const USER_API_BASE = 'http://124.71.101.139:10085/api/user';
+const JOB_API_BASE = 'http://124.71.101.139:10085/api/job/info';
+const TALENT_API_BASE = 'http://124.71.101.139:10085/api/talent';
+const COMPANY_API_BASE = 'http://124.71.101.139:10085/api/company';
+const USER_PASSWORD_API_BASE = userId => `http://124.71.101.139:10085/api/user/${encodeURIComponent(userId)}/password`;
 
 document.addEventListener('DOMContentLoaded', () => {
     const currentUser = Auth.getCurrentUser();
@@ -12,18 +16,18 @@ document.addEventListener('DOMContentLoaded', () => {
         greeting.textContent = '欢迎，' + (currentUser.realName || currentUser.username || '企业管理员');
     }
 
-    // 标签页事件绑定
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', e => {
+    // 侧边栏点击切换
+    document.querySelectorAll('.sidebar-nav a').forEach(a => {
+        a.addEventListener('click', e => {
             e.preventDefault();
-            const tabName = e.target.getAttribute('onclick').match(/'([^']+)'/)?.[1];
+            const tabName = a.dataset.tab;
             if (tabName) {
                 switchTab(tabName, currentUser);
             }
         });
     });
 
-    // 默认显示第一个标签页
+    // 默认进入职位管理
     switchTab('manage', currentUser);
 });
 
@@ -38,12 +42,12 @@ function handleLogout() {
  * @param {object} currentUser
  */
 function switchTab(tabName, currentUser = Auth.getCurrentUser()) {
-    // 激活标签按钮
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.getAttribute('onclick')?.includes(`'${tabName}'`));
+    // 激活侧边栏
+    document.querySelectorAll('.sidebar-nav a').forEach(a => {
+        a.classList.toggle('active', a.dataset.tab === tabName);
     });
 
-    // 隐藏所有标签内容
+    // 隐藏所有 tab 内容
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.remove('active');
     });
@@ -52,21 +56,20 @@ function switchTab(tabName, currentUser = Auth.getCurrentUser()) {
     if (!container) return;
 
     const map = {
-        'manage': renderJobManageView,
-        'post': renderJobPostView,
-        'applicants': renderApplicantsView,
-        'talent': renderTalentView,
-        'company': renderCompanyView
+        manage: renderJobManageView,
+        post: renderJobPostView,
+        applicants: renderApplicantsView,
+        talent: renderTalentView,
+        company: renderCompanyView
+        // profile: renderEmployerProfileView // 如后续启用账号与安全
     };
 
     const renderFn = map[tabName];
     if (typeof renderFn === 'function') {
-        // 清空容器并重新渲染
         container.innerHTML = '';
         renderFn(container, currentUser);
     }
 
-    // 显示当前标签
     container.classList.add('active');
 }
 
@@ -94,6 +97,41 @@ async function updateUserProfileApi(payload) {
         return { success: true, message: json.message || '更新成功' };
     } catch (e) {
         console.error('更新用户信息异常:', e);
+        return { success: false, message: '请求异常，请稍后重试' };
+    }
+}
+
+/**
+ * 修改密码 API 封装，供 employer profile 视图使用
+ */
+async function updateUserPasswordApi(payload) {
+    try {
+        const currentUser = Auth.getCurrentUser();
+        if (!currentUser || !currentUser.userId) {
+            return { success: false, message: '用户未登录' };
+        }
+        const resp = await fetch(USER_PASSWORD_API_BASE(currentUser.userId), {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                oldPassword: payload.oldPassword,
+                newPassword: payload.newPassword
+            })
+        });
+
+        if (!resp.ok) {
+            const errorText = await resp.text();
+            return { success: false, message: `网络错误: ${resp.status} ${errorText}` };
+        }
+
+        const json = await resp.json();
+        if (json.code !== 200) {
+            return { success: false, message: json.message || '修改密码失败' };
+        }
+
+        return { success: true, message: json.message || '修改密码成功' };
+    } catch (e) {
+        console.error('修改密码异常:', e);
         return { success: false, message: '请求异常，请稍后重试' };
     }
 }

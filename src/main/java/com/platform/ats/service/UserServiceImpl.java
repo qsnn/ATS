@@ -9,6 +9,7 @@ import com.platform.ats.entity.user.SysUser;
 import com.platform.ats.entity.user.UserStatus;
 import com.platform.ats.entity.user.UserType;
 import com.platform.ats.entity.user.dto.UserCreateDTO;
+import com.platform.ats.entity.user.dto.UserPasswordDTO;
 import com.platform.ats.entity.user.dto.UserRegisterDTO;
 import com.platform.ats.entity.user.dto.UserUpdateDTO;
 import com.platform.ats.entity.user.query.UserQuery;
@@ -192,6 +193,24 @@ public class UserServiceImpl extends ServiceImpl<UserRepository, SysUser> implem
     public Boolean deleteUser(Long userId) {
         // 使用自定义逻辑删除 SQL，避免物理删除
         return this.baseMapper.logicDelete(userId) > 0;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void changePassword(Long userId, UserPasswordDTO dto) {
+        SysUser sysUser = this.getById(userId);
+        if (sysUser == null) {
+            throw new BizException(ErrorCode.USER_NOT_FOUND);
+        }
+        // 校验原密码
+        if (!passwordEncoder.matches(dto.getOldPassword(), sysUser.getPassword())) {
+            throw new BizException(ErrorCode.PASSWORD_ERROR, "原密码不正确");
+        }
+        // 更新为新密码
+        SysUser toUpdate = new SysUser();
+        toUpdate.setUserId(userId);
+        toUpdate.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+        this.baseMapper.updateById(toUpdate);
     }
 
     @Override

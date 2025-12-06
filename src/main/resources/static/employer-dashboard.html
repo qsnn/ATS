@@ -6,6 +6,81 @@
     <title>企业管理员中心 - 招聘系统</title>
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/components/card.css">
+    <style>
+        .content-layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 24px;
+            margin-top: 20px;
+            margin-bottom: 32px;
+        }
+        @media (max-width: 992px) {
+            .content-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+        .sidebar {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 16px 18px;
+            box-shadow: 0 6px 20px rgba(15,23,42,0.06);
+            height: fit-content;
+        }
+        .sidebar h3 {
+            margin-bottom: 12px;
+            font-size: 16px;
+            color: #111827;
+        }
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            padding: 10px 14px;
+            color: #4b5563;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            font-size: 14px;
+            transition: background-color .2s ease, color .2s ease, transform .15s ease;
+        }
+        .sidebar-nav a::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            margin-right: 8px;
+            background-color: transparent;
+            transition: background-color .2s ease;
+        }
+        .sidebar-nav a:hover {
+            background-color: #eef2ff;
+            color: #4f46e5;
+            transform: translateX(2px);
+        }
+        .sidebar-nav a.active {
+            background: linear-gradient(90deg, #4f46e5, #6366f1);
+            color: #ffffff;
+            box-shadow: 0 4px 10px rgba(79,70,229,0.25);
+        }
+        .sidebar-nav a.active::before {
+            background-color: #ffffff;
+        }
+        .main-content-area {
+            min-height: 500px;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 20px 24px;
+            box-shadow: 0 6px 20px rgba(15,23,42,0.06);
+            margin-top: 4px;
+        }
+    </style>
 </head>
 <body>
 <nav class="navbar">
@@ -22,31 +97,36 @@
 </nav>
 
 <div class="container">
-    <div class="dashboard-tabs">
-        <button class="tab-btn active" onclick="switchTab('manage')">职位管理</button>
-        <button class="tab-btn" onclick="switchTab('post')">发布职位</button>
-        <button class="tab-btn" onclick="switchTab('applicants')">申请人管理</button>
-        <button class="tab-btn" onclick="switchTab('talent')">人才库</button>
-        <button class="tab-btn" onclick="switchTab('company')">公司信息</button>
+    <div class="content-layout">
+        <aside class="sidebar">
+            <h3>管理中心</h3>
+            <nav class="sidebar-nav">
+                <a href="#" class="active" data-tab="manage">职位管理</a>
+                <a href="#" data-tab="post">发布职位</a>
+                <a href="#" data-tab="applicants">申请人管理</a>
+                <a href="#" data-tab="talent">人才库</a>
+                <a href="#" data-tab="company">公司信息</a>
+                <!-- 预留账号与安全 tab，如果后续需要可启用 -->
+                <!-- <a href="#" data-tab="profile">账号与安全</a> -->
+            </nav>
+        </aside>
+        <main class="main-content-area">
+            <div id="manage-tab" class="tab-content active"></div>
+            <div id="post-tab" class="tab-content"></div>
+            <div id="applicants-tab" class="tab-content"></div>
+            <div id="talent-tab" class="tab-content"></div>
+            <div id="company-tab" class="tab-content"></div>
+            <div id="profile-tab" class="tab-content"></div>
+        </main>
     </div>
-
-    <!-- 各个标签页容器 -->
-    <div id="manage-tab" class="tab-content active"></div>
-    <div id="post-tab" class="tab-content"></div>
-    <div id="applicants-tab" class="tab-content"></div>
-    <div id="talent-tab" class="tab-content"></div>
-    <div id="company-tab" class="tab-content"></div>
 </div>
 
 <script src="js/auth.js"></script>
-
-<!-- 企业管理员视图模块 -->
 <script src="js/employer-views/dashboard.js"></script>
 <script src="js/employer-views/job-manage-view.js"></script>
 <script src="js/employer-views/job-post-view.js"></script>
 <script src="js/employer-views/applicants-view.js"></script>
 <script src="js/employer-views/talent-view.js"></script>
 <script src="js/employer-views/company-view.js"></script>
-
 </body>
 </html>

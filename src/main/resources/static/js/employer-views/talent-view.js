@@ -34,124 +34,122 @@ window.MockData = {
 
 function renderTalentView(container, currentUser) {
     container.innerHTML = `
-        <div class="flex items-center justify-between mb-4">
-            <h2>人才库管理</h2>
-            <div class="flex gap-2">
-                <select id="talent-filter" onchange="filterTalent()">
-                    <option value="">全部人才</option>
-                    <option value="web">Web开发</option>
-                    <option value="java">Java开发</option>
-                    <option value="ui">UI设计</option>
-                    <option value="product">产品经理</option>
-                </select>
-                <input type="text" placeholder="搜索人才..." oninput="searchTalent()">
-            </div>
-        </div>
-
-        <div class="talent-stats mb-4">
-            <div class="card" style="padding: 15px;">
-                <div class="flex justify-between">
-                    <div>
-                        <strong>人才库统计</strong>
-                        <p style="margin: 5px 0 0 0; font-size: 12px; color: #666;">
-                            共 <span id="total-talents">0</span> 人 |
-                            最近添加：<span id="recent-added">0</span> 人
-                        </p>
-                    </div>
-                    <button class="btn btn-sm" onclick="exportTalent()">导出人才库</button>
+        <div class="view talent-view active">
+            <div class="flex items-center justify-between mb-4">
+                <h2>人才库管理</h2>
+                <div class="flex gap-2">
+                    <select id="talent-filter" onchange="filterTalent()">
+                        <option value="">全部人才</option>
+                        <option value="web">Web开发</option>
+                        <option value="java">Java开发</option>
+                        <option value="ui">UI设计</option>
+                        <option value="product">产品经理</option>
+                    </select>
+                    <input type="text" placeholder="搜索人才..." oninput="searchTalent()">
                 </div>
             </div>
-        </div>
 
-        <div class="talent-list" id="talent-list-container">
-            <!-- 动态渲染 -->
+            <div class="talent-stats mb-4">
+                <div class="card" style="padding: 15px;">
+                    <div class="flex justify-between">
+                        <div>
+                            <strong>人才库统计</strong>
+                            <p style="margin: 5px 0 0 0; font-size: 12px; color: #666;">
+                                共 <span id="total-talents">0</span> 人 |
+                                最近添加：<span id="recent-added">0</span> 人
+                            </p>
+                        </div>
+                        <button class="btn btn-sm" onclick="exportTalent()">导出人才库</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="talent-list" id="talent-list-container">
+                <!-- 动态渲染 -->
+            </div>
         </div>
     `;
 
-    renderTalentPool();
+    loadTalentPool(currentUser);
 }
 
-function renderTalentPool() {
+async function loadTalentPool(user) {
     const container = document.getElementById('talent-list-container');
+    const totalEl = document.getElementById('total-talents');
+    const recentEl = document.getElementById('recent-added');
     if (!container) return;
 
-    if (!window.MockData || !MockData.talentPool || MockData.talentPool.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <div class="icon">📚</div>
-                <p>人才库为空</p>
-                <p style="font-size: 12px; margin-top: 8px;">这里会保存未录取的优秀候选人，方便后续联系</p>
-            </div>
-        `;
-        document.getElementById('total-talents').textContent = '0';
-        document.getElementById('recent-added').textContent = '0';
+    container.innerHTML = '<p>正在加载人才库...</p>';
+
+    if (!user.companyId) {
+        container.innerHTML = '<p>当前账号未关联公司，无法加载人才库。</p>';
         return;
     }
 
-    document.getElementById('total-talents').textContent = MockData.talentPool.length;
+    try {
+        const resp = await fetch(`${TALENT_API_BASE}/company/${user.companyId}`);
+        if (!resp.ok) {
+            const text = await resp.text();
+            container.innerHTML = `<p>网络错误: ${resp.status} ${text}</p>`;
+            return;
+        }
+        const json = await resp.json();
+        if (!json || json.code !== 200) {
+            container.innerHTML = `<p>${(json && json.message) || '加载失败'}</p>`;
+            return;
+        }
+        const list = json.data || [];
 
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    const recentCount = MockData.talentPool.filter(talent => {
-        const addedDate = new Date(talent.addedDate);
-        return addedDate >= thirtyDaysAgo;
-    }).length;
-    document.getElementById('recent-added').textContent = recentCount;
+        if (totalEl) totalEl.textContent = list.length;
+        if (recentEl) {
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            const recentCount = list.filter(t => t.addedDate && new Date(t.addedDate) >= thirtyDaysAgo).length;
+            recentEl.textContent = recentCount;
+        }
 
-    container.innerHTML = MockData.talentPool.map(talent => `
-        <div class="talent-card" data-talent-id="${talent.id}">
-            <div class="talent-header">
-                <div>
-                    <h3 class="talent-name">${talent.name}</h3>
-                    <div style="font-size: 14px; color: #666; margin-top: 4px;">
-                        ${talent.position} · ${talent.experience}经验 · ${talent.education}
+        if (!list.length) {
+            container.innerHTML = '<p>人才库为空。</p>';
+            return;
+        }
+
+        container.innerHTML = list.map(talent => `
+            <div class="talent-card" data-talent-id="${talent.talentId}">
+                <div class="talent-header">
+                    <div>
+                        <h3 class="talent-name">${talent.candidateName || ''}</h3>
+                        <div style="font-size: 14px; color: #666; margin-top: 4px;">
+                            ${talent.position || ''}
+                        </div>
                     </div>
                 </div>
-                <span class="talent-source">${talent.source}</span>
-            </div>
-
-            <div class="talent-info">
-                <div class="talent-info-item">
-                    <span>📱</span>
-                    <span>${talent.phone}</span>
+                <div class="talent-info">
+                    <div class="talent-info-item">
+                        <span>📱</span>
+                        <span>${talent.phone || ''}</span>
+                    </div>
+                    <div class="talent-info-item">
+                        <span>📧</span>
+                        <span>${talent.email || ''}</span>
+                    </div>
+                    <div class="talent-info-item">
+                        <span>📅</span>
+                        <span>${talent.addedDate || ''}</span>
+                    </div>
                 </div>
-                <div class="talent-info-item">
-                    <span>📧</span>
-                    <span>${talent.email}</span>
+                <div class="talent-actions">
+                    <button class="btn btn-sm" onclick="viewTalentDetail(${talent.talentId})">查看详情</button>
+                    <button class="btn btn-danger btn-sm" onclick="removeTalent(${talent.talentId})">移除</button>
                 </div>
-                <div class="talent-info-item">
-                    <span>📅</span>
-                    <span>添加时间：${talent.addedDate}</span>
-                </div>
-                ${talent.sourceJob ? `
-                <div class="talent-info-item">
-                    <span>💼</span>
-                    <span>来源职位：${talent.sourceJob}</span>
-                </div>
-                ` : ''}
             </div>
-
-            <div class="talent-tags">
-                ${talent.skills.map(skill => `<span class="talent-tag">${skill}</span>`).join('')}
-            </div>
-
-            ${talent.note ? `
-            <div class="talent-note">
-                <strong>备注：</strong>
-                ${talent.note}
-            </div>
-            ` : ''}
-
-            <div class="talent-actions">
-                <button class="btn btn-sm" onclick="viewTalentDetail(${talent.id})">查看详情</button>
-                <button class="btn btn-primary btn-sm" onclick="inviteTalent(${talent.id})">邀请面试</button>
-                <button class="btn btn-danger btn-sm" onclick="removeTalent(${talent.id})">移除</button>
-            </div>
-        </div>
-    `).join('');
+        `).join('');
+    } catch (e) {
+        console.error('加载人才库失败:', e);
+        container.innerHTML = '<p>加载失败，请稍后重试</p>';
+    }
 }
 
-// 其他函数保持原样（viewTalentDetail, inviteTalent, removeTalent等）
+// 其他函数保持原样（viewTalentDetail, inviteTalent等）
 function viewTalentDetail(talentId) {
     const talent = MockData.talentPool.find(t => t.id === talentId);
     if (!talent) {
@@ -228,15 +226,26 @@ function inviteTalent(talentId) {
     closeTalentModal();
 }
 
-function removeTalent(talentId) {
-    if (confirm('确定要从人才库中移除该人才吗？')) {
-        const result = MockData.removeFromTalentPool(talentId);
-        if (result.success) {
-            alert('人才已从人才库移除');
-            renderTalentPool();
-        } else {
-            alert(result.message);
+// 调整 removeTalent 调用后台删除 API
+async function removeTalent(talentId) {
+    if (!confirm('确定要从人才库中移除该人才吗？')) return;
+    try {
+        const resp = await fetch(`${TALENT_API_BASE}/${talentId}`, { method: 'DELETE' });
+        if (!resp.ok) {
+            const text = await resp.text();
+            alert(`网络错误: ${resp.status} ${text}`);
+            return;
         }
+        const json = await resp.json();
+        if (!json || json.code !== 200) {
+            alert((json && json.message) || '移除失败');
+            return;
+        }
+        alert('人才已从人才库移除');
+        loadTalentPool(Auth.getCurrentUser());
+    } catch (e) {
+        console.error('移除人才失败:', e);
+        alert('移除失败，请稍后重试');
     }
 }
 

@@ -1,6 +1,6 @@
 const RESUME_API_BASE = 'http://124.71.101.139:10085/api/resume';
 const USER_API_BASE = 'http://124.71.101.139:10085/api/user';
-const USER_PASSWORD_API_BASE = 'http://124.71.101.139:10085/api/user/password'; // 修改密码后端接口
+const USER_PASSWORD_API_BASE = userId => `http://124.71.101.139:10085/api/user/${encodeURIComponent(userId)}/password`;
 
 document.addEventListener('DOMContentLoaded', () => {
     const currentUser = Auth.getCurrentUser();

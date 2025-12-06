@@ -7,6 +7,7 @@ import com.platform.ats.entity.user.dto.UserCreateDTO;
 import com.platform.ats.entity.user.dto.UserLoginDTO;
 import com.platform.ats.entity.user.dto.UserRegisterDTO;
 import com.platform.ats.entity.user.dto.UserUpdateDTO;
+import com.platform.ats.entity.user.dto.UserPasswordDTO;
 import com.platform.ats.entity.user.query.UserQuery;
 import com.platform.ats.entity.user.vo.Result;
 import com.platform.ats.entity.user.vo.UserProfileVO;
@@ -88,6 +89,14 @@ public class UserController {
     public Result<Boolean> deleteUser(@PathVariable Long userId) {
         Boolean success = userService.deleteUser(userId);
         return Result.success(success, "删除成功");
+    }
+
+    @PutMapping("/{userId}/password")
+    @Operation(summary = "修改当前用户密码")
+    public Result<Boolean> changePassword(@PathVariable Long userId,
+                                          @Valid @RequestBody UserPasswordDTO dto) {
+        userService.changePassword(userId, dto);
+        return Result.success(true, "密码修改成功");
     }
 
     @PutMapping("/{userId}/reset-password")

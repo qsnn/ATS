@@ -6,6 +6,7 @@ import com.platform.ats.entity.user.dto.UserRegisterDTO;
 import com.platform.ats.entity.user.query.UserQuery;
 import com.platform.ats.entity.user.dto.UserCreateDTO;
 import com.platform.ats.entity.user.dto.UserUpdateDTO;
+import com.platform.ats.entity.user.dto.UserPasswordDTO;
 import com.platform.ats.entity.user.vo.UserProfileVO;
 import com.platform.ats.entity.user.vo.UserVO;
 
@@ -95,4 +96,9 @@ public interface UserService {
      * 检查邮箱是否存在
      */
     Boolean checkEmailExists(String email);
+
+    /**
+     * 当前登录用户自行修改密码
+     */
+    void changePassword(Long userId, UserPasswordDTO dto);
 }
