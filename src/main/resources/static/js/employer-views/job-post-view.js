@@ -59,7 +59,7 @@ async function postJob(user) {
         return;
     }
 
-    // 简单解析薪资，如 "20K-35K" -> 分转整数
+    // 解析薪资：形如 "20K-35K"
     let salaryMin = null;
     let salaryMax = null;
     const match = salaryText.match(/(\d+)\s*K\s*-\s*(\d+)\s*K/i);
@@ -71,17 +71,35 @@ async function postJob(user) {
         return;
     }
 
+    // 简单从“工作地点”解析省/市：支持 "省-市" 或 "省 市"，否则全部当作 city，并同步给 province
+    let province = '';
+    let city = '';
+    if (location.includes('-')) {
+        const parts = location.split('-').map(s => s.trim());
+        province = parts[0] || '';
+        city = parts[1] || parts[0] || '';
+    } else if (location.includes(' ')) {
+        const parts = location.split(' ').map(s => s.trim());
+        province = parts[0] || '';
+        city = parts[1] || parts[0] || '';
+    } else {
+        city = location;
+        province = location;
+    }
+
     const jobInfo = {
         jobName: title,
+        companyId: user.companyId || null,
+        publisherId: user.userId,
+        province,
+        city,
         salaryMin,
         salaryMax,
-        city: location,
         workExperience: experience,
         jobDesc: description,
-        // 将“职位要求”映射到后端 JobInfo.qualification 字段
-        qualification: requirements,
-        companyId: user.companyId || null,
-        publisherId: user.userId
+        // "职位要求" 映射到任职资格 qualification
+        qualification: requirements
+        // 如需后续扩展：education、skillRequire、district 可在此补充
     };
 
     try {

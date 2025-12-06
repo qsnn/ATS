@@ -17,10 +17,19 @@
     --background: #f0f2f5;
 }
 
+html, body {
+    color-scheme: light; /* 明确声明为浅色主题，避免深色模式自动配色 */
+}
+
 body {
+    /* 强制使用浅色背景和深色文字，不随系统/浏览器主题变化 */
+    background-color: #f0f2f5 !important;
+    color: #111827 !important;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background-color: var(--background);
-    color: var(--text-color);
+}
+
+img, video, canvas {
+    color-scheme: light;
 }
 
 .container {

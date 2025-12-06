@@ -244,11 +244,40 @@
 
 .tab-content {
     animation: fadeIn 0.3s ease;
+    /* 只负责动画，不再强制设置背景，避免出现双层卡片 */
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+/* employer/job-seeker 统一内容区：确保表单、表格在浅色主题下不会被浏览器深色模式反色成黑底 */
+.tab-content .card,
+.tab-content form,
+.tab-content table,
+.tab-content .table-container {
+    background-color: #ffffff;
+    color: #111827;
+}
+
+.tab-content input,
+.tab-content textarea,
+.tab-content select {
+    background-color: #ffffff;
+    color: #111827;
+}
+
+.tab-content input::placeholder,
+.tab-content textarea::placeholder {
+    color: #9ca3af;
+}
+
+/* employer 主内容区域容器设置为浅灰背景，突出内层白色卡片 */
+.main-content-area {
+    background-color: #f3f4f6;
+    border-radius: 12px;
+    padding: 4px;
+}
+
+/* view 容器保持透明，由 .dashboard-card / .card 决定具体背景 */
+.view {
+    background-color: transparent;
 }
 
 /* 表单行 */
@@ -373,6 +402,22 @@ table.dashboard-table td {
     padding: 10px 12px;
     text-align: left;
     font-size: 14px;
+}
+
+table.data-table td {
+    font-size: 14px;
+    color: #111827;
+}
+
+table.data-table td:nth-child(1) {
+    /* 职位名称强调 */
+    font-weight: 500;
+}
+
+table.data-table td:nth-child(3), /* 工作地点 */
+table.data-table td:nth-child(4)  /* 发布状态 */
+{
+    color: #374151;
 }
 
 table.data-table th,
