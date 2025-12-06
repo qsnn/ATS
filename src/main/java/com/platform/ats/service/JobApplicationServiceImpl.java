@@ -8,6 +8,7 @@ import com.platform.ats.common.ErrorCode;
 import com.platform.ats.entity.application.JobApplication;
 import com.platform.ats.entity.application.dto.JobApplicationCreateDTO;
 import com.platform.ats.entity.application.vo.JobApplicationVO;
+import com.platform.ats.entity.application.vo.JobApplicationEmployerVO;
 import com.platform.ats.entity.job.JobInfo;
 import com.platform.ats.entity.resume.ResumeInfo;
 import com.platform.ats.repository.JobApplicationRepository;
@@ -18,6 +19,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class JobApplicationServiceImpl implements JobApplicationService {
@@ -91,5 +97,68 @@ public class JobApplicationServiceImpl implements JobApplicationService {
             return vo;
         }).toList());
         return voPage;
+    }
+
+    @Override
+    public IPage<JobApplicationEmployerVO> pageCompanyApplications(Page<JobApplicationEmployerVO> page, Long companyId, String status) {
+        Page<JobApplication> entityPage = new Page<>(page.getCurrent(), page.getSize());
+        IPage<JobApplication> res = jobApplicationRepository.selectPage(entityPage,
+                new LambdaQueryWrapper<JobApplication>()
+                        .eq(status != null && !status.isEmpty(), JobApplication::getStatus, status));
+
+        // 先根据职位过滤出属于该公司的申请
+        if (companyId != null) {
+            Set<Long> jobIds = res.getRecords().stream()
+                    .map(JobApplication::getJobId)
+                    .filter(java.util.Objects::nonNull)
+                    .collect(Collectors.toSet());
+            if (!jobIds.isEmpty()) {
+                Map<Long, JobInfo> jobMap = jobInfoRepository.selectBatchIds(jobIds).stream()
+                        .filter(j -> companyId.equals(j.getCompanyId()))
+                        .collect(Collectors.toMap(JobInfo::getJobId, Function.identity()));
+                List<JobApplication> filtered = res.getRecords().stream()
+                        .filter(a -> jobMap.containsKey(a.getJobId()))
+                        .collect(Collectors.toList());
+                res = new Page<>(res.getCurrent(), res.getSize(), filtered.size());
+                ((Page<JobApplication>) res).setRecords(filtered);
+            }
+        }
+
+        Page<JobApplicationEmployerVO> voPage = new Page<>(res.getCurrent(), res.getSize(), res.getTotal());
+        voPage.setRecords(buildEmployerVOs(res.getRecords()));
+        return voPage;
+    }
+
+    @Override
+    public java.util.List<JobApplicationEmployerVO> listJobApplications(Long jobId) {
+        List<JobApplication> list = jobApplicationRepository.selectList(new LambdaQueryWrapper<JobApplication>()
+                .eq(JobApplication::getJobId, jobId));
+        return buildEmployerVOs(list);
+    }
+
+    private List<JobApplicationEmployerVO> buildEmployerVOs(List<JobApplication> applications) {
+        if (applications == null || applications.isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+        return applications.stream().map(entity -> {
+            JobApplicationEmployerVO vo = new JobApplicationEmployerVO();
+            vo.setApplicationId(entity.getApplicationId());
+            vo.setJobId(entity.getJobId());
+            vo.setResumeId(entity.getResumeId());
+            vo.setStatus(entity.getStatus());
+            vo.setApplyTime(entity.getApplyTime());
+
+            JobInfo jobInfo = jobInfoRepository.selectById(entity.getJobId());
+            if (jobInfo != null) {
+                vo.setJobTitle(jobInfo.getJobName());
+            }
+
+            ResumeInfo resumeInfo = resumeInfoRepository.selectById(entity.getResumeId());
+            if (resumeInfo != null) {
+                vo.setResumeTitle(resumeInfo.getResumeName());
+                vo.setUserId(resumeInfo.getUserId());
+            }
+            return vo;
+        }).collect(Collectors.toList());
     }
 }

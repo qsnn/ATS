@@ -1,4 +1,4 @@
-const JOB_SEEKER_API_BASE = 'http://124.71.101.139:10085/api';
+const JOB_SEEKER_API_BASE = (typeof window !== 'undefined' && window.API_BASE) ? window.API_BASE : '/api';
 
 async function apiRequest(url, options = {}) {
     try {

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.platform.ats.entity.application.dto.JobApplicationCreateDTO;
 import com.platform.ats.entity.application.vo.JobApplicationVO;
+import com.platform.ats.entity.application.vo.JobApplicationEmployerVO;
 import com.platform.ats.entity.user.vo.Result;
 import com.platform.ats.service.JobApplicationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,5 +36,25 @@ public class JobApplicationController {
         Page<JobApplicationVO> page = new Page<>(current, size);
         IPage<JobApplicationVO> res = jobApplicationService.pageMyApplications(page, userId, status);
         return Result.success(res);
+    }
+
+    // Employer 视角：按公司分页查询所有职位的申请人
+    @GetMapping("/company/{companyId}")
+    @Operation(summary = "分页查询公司所有职位的申请记录（企业端）")
+    public Result<IPage<JobApplicationEmployerVO>> pageCompanyApplications(@PathVariable Long companyId,
+                                                                           @RequestParam(defaultValue = "1") long current,
+                                                                           @RequestParam(defaultValue = "10") long size,
+                                                                           @RequestParam(required = false) String status) {
+        Page<JobApplicationEmployerVO> page = new Page<>(current, size);
+        IPage<JobApplicationEmployerVO> res = jobApplicationService.pageCompanyApplications(page, companyId, status);
+        return Result.success(res);
+    }
+
+    // Employer 视角：按职位查询该职位下的所有申请人
+    @GetMapping("/job/{jobId}")
+    @Operation(summary = "查询某职位下的申请记录（企业端）")
+    public Result<java.util.List<JobApplicationEmployerVO>> listJobApplications(@PathVariable Long jobId) {
+        java.util.List<JobApplicationEmployerVO> list = jobApplicationService.listJobApplications(jobId);
+        return Result.success(list);
     }
 }
