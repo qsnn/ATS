@@ -5,10 +5,9 @@ import lombok.Data;
 @Data
 public class InterviewInfoVO {
 
-    private ArrangeVO arrangeVO;
-
-    private ResultVO resultVO;
-
-    private AddressVO addressVO;
+    private Long arrangeId;
+    private Long deliveryId;
+    private Long interviewerId;
+    private String interviewIntro;
+    private String intervieweeName;
 }
-
