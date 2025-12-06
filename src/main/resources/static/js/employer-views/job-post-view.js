@@ -66,6 +66,9 @@ async function postJob(user) {
     if (match) {
         salaryMin = parseInt(match[1], 10) * 1000;
         salaryMax = parseInt(match[2], 10) * 1000;
+    } else {
+        alert('请按 20K-35K 格式填写薪资范围');
+        return;
     }
 
     const jobInfo = {
@@ -75,7 +78,8 @@ async function postJob(user) {
         city: location,
         workExperience: experience,
         jobDesc: description,
-        jobRequire: requirements,
+        // 将“职位要求”映射到后端 JobInfo.qualification 字段
+        qualification: requirements,
         companyId: user.companyId || null,
         publisherId: user.userId
     };
@@ -100,7 +104,7 @@ async function postJob(user) {
 
         alert('职位发布成功！');
         document.getElementById('post-job-form').reset();
-        // 可选：切到管理 tab
+        // 可选：切换到职位管理 Tab
         // switchTab('manage');
     } catch (e) {
         console.error('发布职位失败:', e);

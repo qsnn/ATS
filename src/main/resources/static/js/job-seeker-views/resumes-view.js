@@ -121,13 +121,15 @@ async function initUserResumes(user) {
         li.style.alignItems = 'center';
 
         const left = document.createElement('div');
+        // 使用后端字段 resumeName
         const title = document.createElement('div');
-        title.textContent = resume.title || '未命名简历';
+        title.textContent = resume.resumeName || '未命名简历';
 
+        // 创建时间使用 createTime
         const meta = document.createElement('div');
         meta.style.fontSize = '12px';
         meta.style.color = '#666';
-        const createTime = resume.createTime || resume.createdAt || '';
+        const createTime = resume.createTime || '';
         meta.textContent = createTime ? `创建时间：${createTime}` : '';
 
         left.appendChild(title);
@@ -190,30 +192,29 @@ function editResume(resume) {
     modal.dataset.mode = 'update';
     document.getElementById('resume-modal-title').textContent = '编辑简历';
     document.getElementById('resume-id').value = resume.resumeId || '';
-    document.getElementById('resume-title').value = resume.title || '';
-    document.getElementById('resume-name').value = resume.name || '';
-    document.getElementById('resume-phone').value = resume.phone || '';
-    document.getElementById('resume-email').value = resume.email || '';
+    document.getElementById('resume-title').value = resume.resumeName || '';
+    document.getElementById('resume-name').value = resume.realName || '';
+    // phone/email 暂时从后端 DTO 中没有对应字段，保留为空或以后扩展
+    document.getElementById('resume-phone').value = '';
+    document.getElementById('resume-email').value = '';
     document.getElementById('resume-education').value = resume.education || '';
     document.getElementById('resume-workExp').value = resume.workExperience || '';
-    document.getElementById('resume-projectExp').value = resume.projectExperience || '';
-    document.getElementById('resume-skills').value = resume.skills || '';
-    document.getElementById('resume-selfEval').value = resume.selfEvaluation || '';
+    document.getElementById('resume-projectExp').value = resume.workHistory || '';
+    document.getElementById('resume-skills').value = resume.skill || '';
+    document.getElementById('resume-selfEval').value = resume.jobIntention || '';
     modal.style.display = 'block';
 }
 
 /** 查看简历详情（简单弹窗，后续可跳转详情页） */
 function viewResumeDetail(resume) {
     const msg = `
-标题：${resume.title || ''}
-姓名：${resume.name || ''}
-电话：${resume.phone || ''}
-邮箱：${resume.email || ''}
+标题：${resume.resumeName || ''}
+姓名：${resume.realName || ''}
 学历：${resume.education || ''}
-工作经历：${resume.workExperience || ''}
-项目经历：${resume.projectExperience || ''}
-技能：${resume.skills || ''}
-自我评价：${resume.selfEvaluation || ''}
+工作经验：${resume.workExperience || ''}
+工作/项目经历：${resume.workHistory || ''}
+技能：${resume.skill || ''}
+求职意向：${resume.jobIntention || ''}
     `;
     alert(msg);
 }
@@ -237,17 +238,16 @@ async function saveResume(currentUser, mode, resumeId) {
 
     const payload = {
         userId: currentUser.userId,
-        title,
-        name,
-        phone,
-        email,
+        // 映射到后端 ResumeInfoDTO 字段
+        resumeName: title,
+        realName: name,
         education,
         workExperience,
-        projectExperience,
-        skills,
-        selfEvaluation
+        workHistory: projectExperience,
+        skill: skills,
+        jobIntention: selfEvaluation
     };
-    if (mode === 'update') {
+    if (mode === 'update' && resumeId) {
         payload.resumeId = Number(resumeId);
     }
 
@@ -264,15 +264,14 @@ async function saveResume(currentUser, mode, resumeId) {
         }
         const json = await resp.json();
         if (json.code !== 200) {
-            alert(json.message || '保存失败');
+            alert(json.message || '系统内部错误');
             return;
         }
-
-        alert(mode === 'create' ? '创建简历成功' : '更新简历成功');
+        alert('保存成功');
         document.getElementById('resume-modal').style.display = 'none';
-        await initUserResumes(currentUser);
+        initUserResumes(currentUser);
     } catch (e) {
-        console.error(e);
+        console.error('保存简历异常:', e);
         alert('请求异常，请稍后重试');
     }
 }
