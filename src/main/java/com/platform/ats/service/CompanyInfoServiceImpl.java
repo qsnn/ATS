@@ -1,6 +1,8 @@
 package com.platform.ats.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.platform.ats.common.BizException;
+import com.platform.ats.common.ErrorCode;
 import com.platform.ats.entity.company.CompanyInfo;
 import com.platform.ats.entity.company.vo.CompanyInfoVO;
 import com.platform.ats.repository.CompanyInfoRepository;
@@ -30,7 +32,7 @@ public class CompanyInfoServiceImpl implements CompanyInfoService {
     @Override
     public CompanyInfoVO update(CompanyInfo companyInfo) {
         if (companyInfo.getCompanyId() == null) {
-            throw new IllegalArgumentException("companyId不能为空");
+            throw new BizException(ErrorCode.BAD_REQUEST, "companyId不能为空");
         }
         companyInfo.setDeleteFlag(null);
         companyInfoRepository.updateById(companyInfo);

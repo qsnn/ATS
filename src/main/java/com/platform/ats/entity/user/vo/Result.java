@@ -33,4 +33,9 @@ public class Result<T> {
         result.setTimestamp(System.currentTimeMillis());
         return result;
     }
+
+    // 失败结果的简写，供全局异常处理等场景使用
+    public static <T> Result<T> failed(Integer code, String message) {
+        return error(code, message);
+    }
 }

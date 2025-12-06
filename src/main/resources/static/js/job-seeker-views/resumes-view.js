@@ -302,23 +302,7 @@ async function deleteResume(resumeId, currentUser) {
     }
 }
 
-/** 原有：根据用户ID获取简历列表，若已在其他文件中实现可删除这里的定义 */
-async function fetchUserResumesApi(userId) {
-    try {
-        const resp = await fetch(`${RESUME_API_BASE}/user/${encodeURIComponent(userId)}`, {
-            method: 'GET'
-        });
-        if (!resp.ok) {
-            const text = await resp.text();
-            return { success: false, message: `网络错误: ${resp.status} ${text}` };
-        }
-        const json = await resp.json();
-        if (json.code !== 200) {
-            return { success: false, message: json.message || '加载失败' };
-        }
-        return { success: true, data: json.data || [] };
-    } catch (e) {
-        console.error(e);
-        return { success: false, message: '请求异常，请稍后重试' };
-    }
-}
+/** 原有：根据用户ID获取简历列表，这里移除重复定义，统一使用 dashboard.js 中的实现 */
+// async function fetchUserResumesApi(userId) {
+//     // 重复定义，已在 dashboard.js 中实现
+// }

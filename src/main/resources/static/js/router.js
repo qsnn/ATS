@@ -122,7 +122,8 @@ const Router = {
         localStorage.setItem('returnTo', returnTo);
 
         // 重定向到登录页
-        window.location.href = 'login.html';
+        window.location.h
+        ref = 'login.html';
     },
 
     // 处理路由
@@ -135,8 +136,8 @@ const Router = {
             return;
         }
 
-        // 如果是仪表板页面，确保用户已登录
-        if (path.includes('dashboard') && !localStorage.getItem('currentUser')) {
+        // 如果是仪表盘页面，确保用户已登录（使用 Auth API）
+        if (path.includes('dashboard') && !Auth.getCurrentUser()) {
             this.redirectToLogin();
             return;
         }
@@ -150,7 +151,7 @@ const Router = {
         // 显示加载指示器
         this.showLoading();
 
-        // 模拟页面切换（在实际应用中这里会加载新页面）
+        // 模拟页面切换（在实际应用中会加载新页面）
         setTimeout(() => {
             this.hideLoading();
         }, 300);
@@ -329,12 +330,27 @@ const Router = {
 };
 
 // 初始化路由
-document.addEventListener('DOMContentLoaded', () => {
-    Router.init();
+if (typeof document !== 'undefined') {
+    document.addEventListener('DOMContentLoaded', () => {
+        Router.init();
 
-    // 导出到全局作用域
-    window.Router = Router;
-});
+        // 导出到全局作用域（使用 defineProperty 以避免对只读属性的直接赋值）
+        try {
+            if (typeof window.Router === 'undefined') {
+                Object.defineProperty(window, 'Router', {
+                    value: Router,
+                    writable: true,
+                    configurable: true,
+                    enumerable: false
+                });
+            }
+        } catch (e) {
+            // 如果 defineProperty 失败（极少数环境），尽量不抛出错误
+            // 这里不再进行赋值，保持程序继续运行
+            console.warn('无法在 window 上定义 Router:', e);
+        }
+    });
+}
 
 // 导出模块
 if (typeof module !== 'undefined' && module.exports) {

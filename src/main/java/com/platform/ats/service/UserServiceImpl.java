@@ -3,6 +3,8 @@ package com.platform.ats.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.platform.ats.common.BizException;
+import com.platform.ats.common.ErrorCode;
 import com.platform.ats.entity.user.SysUser;
 import com.platform.ats.entity.user.UserStatus;
 import com.platform.ats.entity.user.UserType;
@@ -39,17 +41,17 @@ public class UserServiceImpl extends ServiceImpl<UserRepository, SysUser> implem
     public Long register(UserRegisterDTO userRegisterDTO) {
         // 检查用户名是否已存在
         if (checkUsernameExists(userRegisterDTO.getUsername())) {
-            throw new RuntimeException("用户名已存在");
+            throw new BizException(ErrorCode.USERNAME_EXISTS);
         }
 
         // 检查手机号是否已存在
         if (StringUtils.hasText(userRegisterDTO.getPhone()) && checkPhoneExists(userRegisterDTO.getPhone())) {
-            throw new RuntimeException("手机号已存在");
+            throw new BizException(ErrorCode.PHONE_EXISTS);
         }
 
         // 检查邮箱是否已存在
         if (StringUtils.hasText(userRegisterDTO.getEmail()) && checkEmailExists(userRegisterDTO.getEmail())) {
-            throw new RuntimeException("邮箱已存在");
+            throw new BizException(ErrorCode.EMAIL_EXISTS);
         }
 
         // 创建用户实体
@@ -71,15 +73,15 @@ public class UserServiceImpl extends ServiceImpl<UserRepository, SysUser> implem
     public SysUser login(String username, String password) {
         SysUser sysUser = this.baseMapper.selectByUsername(username);
         if (sysUser == null) {
-            throw new RuntimeException("用户不存在");
+            throw new BizException(ErrorCode.USER_NOT_FOUND);
         }
 
         if (sysUser.isDisabled()) {
-            throw new RuntimeException("账号已被禁用");
+            throw new BizException(ErrorCode.ACCOUNT_DISABLED);
         }
 
         if (!passwordEncoder.matches(password, sysUser.getPassword())) {
-            throw new RuntimeException("密码错误");
+            throw new BizException(ErrorCode.PASSWORD_ERROR);
         }
 
         return sysUser;
@@ -120,17 +122,17 @@ public class UserServiceImpl extends ServiceImpl<UserRepository, SysUser> implem
     public Long createUser(UserCreateDTO userCreateDTO) {
         // 检查用户名是否已存在
         if (checkUsernameExists(userCreateDTO.getUsername())) {
-            throw new RuntimeException("用户名已存在");
+            throw new BizException(ErrorCode.USERNAME_EXISTS);
         }
 
         // 检查手机号是否已存在
         if (StringUtils.hasText(userCreateDTO.getPhone()) && checkPhoneExists(userCreateDTO.getPhone())) {
-            throw new RuntimeException("手机号已存在");
+            throw new BizException(ErrorCode.PHONE_EXISTS);
         }
 
         // 检查邮箱是否已存在
         if (StringUtils.hasText(userCreateDTO.getEmail()) && checkEmailExists(userCreateDTO.getEmail())) {
-            throw new RuntimeException("邮箱已存在");
+            throw new BizException(ErrorCode.EMAIL_EXISTS);
         }
 
         // 创建用户实体
@@ -156,21 +158,21 @@ public class UserServiceImpl extends ServiceImpl<UserRepository, SysUser> implem
     public Boolean updateUser(UserUpdateDTO userUpdateDTO) {
         SysUser existingSysUser = getUserById(userUpdateDTO.getUserId());
         if (existingSysUser == null) {
-            throw new RuntimeException("用户不存在");
+            throw new BizException(ErrorCode.USER_NOT_FOUND);
         }
 
         // 检查手机号是否被其他用户使用
         if (StringUtils.hasText(userUpdateDTO.getPhone()) &&
                 !Objects.equals(existingSysUser.getPhone(), userUpdateDTO.getPhone()) &&
                 checkPhoneExists(userUpdateDTO.getPhone())) {
-            throw new RuntimeException("手机号已被其他用户使用");
+            throw new BizException(ErrorCode.PHONE_EXISTS);
         }
 
         // 检查邮箱是否被其他用户使用
         if (StringUtils.hasText(userUpdateDTO.getEmail()) &&
                 !Objects.equals(existingSysUser.getEmail(), userUpdateDTO.getEmail()) &&
                 checkEmailExists(userUpdateDTO.getEmail())) {
-            throw new RuntimeException("邮箱已被其他用户使用");
+            throw new BizException(ErrorCode.EMAIL_EXISTS);
         }
 
         SysUser sysUser = new SysUser();
@@ -188,7 +190,8 @@ public class UserServiceImpl extends ServiceImpl<UserRepository, SysUser> implem
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteUser(Long userId) {
-        return this.baseMapper.deleteById(userId) > 0;
+        // 使用自定义逻辑删除 SQL，避免物理删除
+        return this.baseMapper.logicDelete(userId) > 0;
     }
 
     @Override

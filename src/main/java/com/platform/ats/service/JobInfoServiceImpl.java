@@ -3,6 +3,8 @@ package com.platform.ats.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.platform.ats.common.BizException;
+import com.platform.ats.common.ErrorCode;
 import com.platform.ats.entity.job.JobInfo;
 import com.platform.ats.entity.job.dto.JobInfoDetailDto;
 import com.platform.ats.entity.job.dto.JobInfoQueryDto;
@@ -68,7 +70,7 @@ public class JobInfoServiceImpl extends ServiceImpl<JobInfoRepository, JobInfo> 
         // 例如：校验薪资范围
         if (jobInfo.getSalaryMin() != null && jobInfo.getSalaryMax() != null) {
             if (jobInfo.getSalaryMin().compareTo(jobInfo.getSalaryMax()) > 0) {
-                throw new IllegalArgumentException("最低薪资不能高于最高薪资");
+                throw new BizException(ErrorCode.BAD_REQUEST, "最低薪资不能高于最高薪资");
             }
         }
         // 例如：如果职位ID为空，则为新增，设置默认状态为草稿

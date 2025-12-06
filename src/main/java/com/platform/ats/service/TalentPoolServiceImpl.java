@@ -1,6 +1,8 @@
 package com.platform.ats.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.platform.ats.common.BizException;
+import com.platform.ats.common.ErrorCode;
 import com.platform.ats.entity.company.TalentPool;
 import com.platform.ats.entity.company.vo.TalentPoolVO;
 import com.platform.ats.repository.TalentPoolRepository;
@@ -30,7 +32,7 @@ public class TalentPoolServiceImpl implements TalentPoolService {
     @Override
     public TalentPoolVO update(TalentPool talentPool) {
         if (talentPool.getTalentId() == null) {
-            throw new IllegalArgumentException("talentId不能为空");
+            throw new BizException(ErrorCode.BAD_REQUEST, "talentId不能为空");
         }
         talentPool.setDeleteFlag(null);
         talentPoolRepository.updateById(talentPool);

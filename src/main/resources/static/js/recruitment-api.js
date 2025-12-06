@@ -2,7 +2,7 @@ const ApiService = (function () {
     const API_BASE = 'http://124.71.101.139:10085/api';
 
     /**
-     * 统一的请求处理器
+     * 统一的请求处理器（更健壮的 JSON 解析与错误处理）
      * @param {string} endpoint - API 端点
      * @param {object} options - fetch 的配置选项
      * @returns {Promise<any>}
@@ -19,21 +19,43 @@ const ApiService = (function () {
 
         try {
             const response = await fetch(url, config);
-            const json = await response.json();
 
-            if (!response.ok || json.code !== 200) {
-                throw new Error(json.message || '网络请求失败');
+            // 先读取文本，再尝试解析为 JSON（有些错误响应不是 JSON）
+            const text = await response.text();
+            let json = null;
+            try {
+                json = text ? JSON.parse(text) : null;
+            } catch (parseErr) {
+                // 非 JSON 响应，保持 json 为 null，使用原始文本作为 message
+                json = null;
             }
 
-            return json.data;
+            // 当 response 不 OK 时，构造合理的错误信息
+            if (!response.ok) {
+                const msg = (json && json.message) ? json.message : text || `HTTP ${response.status}`;
+                throw new Error(msg);
+            }
+
+            // 如果后端约定了 { code, data } 结构，进行额外检查；否则直接返回解析后的 JSON 或文本
+            if (json && typeof json === 'object' && 'code' in json) {
+                if (json.code !== 200) {
+                    throw new Error(json.message || `API error code: ${json.code}`);
+                }
+                return json.data;
+            }
+
+            // 如果解析出了 JSON（非标准包装），直接返回；否则返回原始文本
+            if (json !== null) return json;
+            return text;
         } catch (error) {
             console.error(`API Error: ${error.message}`, { url, config });
-            alert(`操作失败: ${error.message}`);
-            throw error; // 抛出错误，让调用方可以捕获
+            // 仅在交互界面层次使用 alert 是可以的，但保留抛出以便调用者决定如何呈现错误
+            try { alert(`操作失败: ${error.message}`); } catch (e) { /* ignore in non-DOM env */ }
+            throw error; // 抛出错误，让调用方可以捕获并显示更友好的 UI 提示
         }
     }
 
-    // 获取当前登录用户的公司ID
+    // 获取当前登录用户的公司 ID
     function getCompanyId() {
         const currentUser = Auth.getCurrentUser();
         if (!currentUser || !currentUser.companyId) {

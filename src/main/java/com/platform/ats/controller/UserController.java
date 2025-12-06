@@ -15,7 +15,6 @@ import com.platform.ats.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,7 +37,6 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    @Transactional(readOnly = true)
     @Operation(summary = "用户登录")
     public Result<UserProfileVO> login(@Valid @RequestBody UserLoginDTO dto) {
         String username = dto.getUsername() == null ? null : dto.getUsername().trim();
@@ -50,9 +48,9 @@ public class UserController {
 
     @GetMapping("/{userId}")
     @Operation(summary = "根据ID获取用户")
-    public Result<SysUser> getUserById(@PathVariable Long userId) {
-        SysUser sysUser = userService.getUserById(userId);
-        return Result.success(sysUser);
+    public Result<UserProfileVO> getUserById(@PathVariable Long userId) {
+        UserProfileVO userProfile = userService.getUserProfile(userId);
+        return Result.success(userProfile);
     }
 
     @GetMapping("/page")

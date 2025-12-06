@@ -32,19 +32,20 @@ function renderJobSearchView(container, currentUser) {
         </div>
     `;
 
-    // 事件绑定交给 job-search.js 提供的 searchJobs / applyJob / viewJobDetail 等实现
+    // 事件绑定（防御式）
     const btn = document.getElementById('job-search-btn');
     const loc = document.getElementById('location-filter');
     const edu = document.getElementById('education-filter');
     const exp = document.getElementById('experience-filter');
 
-    if (btn) btn.addEventListener('click', () => searchJobs());
-    if (loc) loc.addEventListener('change', () => searchJobs());
-    if (edu) edu.addEventListener('change', () => searchJobs());
-    if (exp) exp.addEventListener('change', () => searchJobs());
+    // 如果页面没有引入 job-search.js，searchJobs 可能不存在；做存在性检查
+    const searchFn = (typeof debouncedSearchJobs === 'function') ? debouncedSearchJobs : (typeof searchJobs === 'function' ? searchJobs : null);
+
+    if (btn && searchFn) btn.addEventListener('click', () => searchFn());
+    if (loc && searchFn) loc.addEventListener('change', () => searchFn());
+    if (edu && searchFn) edu.addEventListener('change', () => searchFn());
+    if (exp && searchFn) exp.addEventListener('change', () => searchFn());
 
     // 初始搜索
-    if (typeof searchJobs === 'function') {
-        searchJobs();
-    }
+    if (searchFn) searchFn();
 }

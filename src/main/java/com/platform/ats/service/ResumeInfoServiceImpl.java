@@ -2,6 +2,8 @@ package com.platform.ats.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.platform.ats.common.BizException;
+import com.platform.ats.common.ErrorCode;
 import com.platform.ats.entity.resume.ResumeInfo;
 import com.platform.ats.entity.resume.dto.ResumeInfoDTO;
 import com.platform.ats.entity.resume.vo.ResumeInfoVo;
@@ -41,12 +43,12 @@ public class ResumeInfoServiceImpl implements ResumeInfoService {
     @Override
     public ResumeInfoVo update(ResumeInfoDTO resumeInfoDTO) {
         if (resumeInfoDTO.getResumeId() == null) {
-            throw new IllegalArgumentException("resumeId不能为空");
+            throw new BizException(ErrorCode.BAD_REQUEST, "resumeId不能为空");
         }
 
         ResumeInfo resumeInfo = resumeInfoRepository.selectById(resumeInfoDTO.getResumeId());
         if (resumeInfo == null) {
-            throw new RuntimeException("简历不存在");
+            throw new BizException(ErrorCode.NOT_FOUND, "简历不存在");
         }
 
         BeanUtils.copyProperties(resumeInfoDTO, resumeInfo);
@@ -63,7 +65,7 @@ public class ResumeInfoServiceImpl implements ResumeInfoService {
     @Transactional  // 添加事务注解
     public boolean delete(Long resumeId) {
         if (resumeId == null) {
-            return false;
+            throw new BizException(ErrorCode.BAD_REQUEST, "resumeId不能为空");
         }
 
         // 方法1：使用 UpdateWrapper（推荐）
@@ -76,7 +78,7 @@ public class ResumeInfoServiceImpl implements ResumeInfoService {
         System.out.println("UpdateWrapper 更新结果: " + result);
 
         if (result == 0) {
-            throw new RuntimeException("简历不存在或更新失败");
+            throw new BizException(ErrorCode.NOT_FOUND, "简历不存在或更新失败");
         }
 
         return true;
@@ -86,7 +88,7 @@ public class ResumeInfoServiceImpl implements ResumeInfoService {
     public ResumeInfoDTO getById(Long resumeId) {
         ResumeInfo resumeInfo = resumeInfoRepository.selectById(resumeId);
         if (resumeInfo == null) {
-            throw new RuntimeException("简历不存在");
+            throw new BizException(ErrorCode.NOT_FOUND, "简历不存在");
         }
 
         ResumeInfoDTO resumeInfoDTO = new ResumeInfoDTO();
@@ -105,7 +107,7 @@ public class ResumeInfoServiceImpl implements ResumeInfoService {
     @Override
     public List<ResumeInfoDTO> listByUserId(Long userId) {
         if (userId == null) {
-            throw new IllegalArgumentException("userId不能为空");
+            throw new BizException(ErrorCode.BAD_REQUEST, "userId不能为空");
         }
         List<ResumeInfo> list = resumeInfoRepository.selectList(
                 new LambdaQueryWrapper<ResumeInfo>()
@@ -123,4 +125,3 @@ public class ResumeInfoServiceImpl implements ResumeInfoService {
         return dto;
     }
 }
-
