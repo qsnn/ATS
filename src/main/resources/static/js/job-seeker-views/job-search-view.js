@@ -35,7 +35,6 @@ function renderJobSearchView(container, currentUser) {
                                 <option value="大专">大专</option>
                                 <option value="本科">本科</option>
                                 <option value="硕士">硕士</option>
-                                <option value="博士">博士</option>
                             </select>
                         </div>
                         
@@ -195,25 +194,21 @@ function initCityFilter() {
         locationSelect.appendChild(defaultOption);
     }
 
-    // TODO: 如后端提供城市列表接口，可在此通过 fetch 动态加载
-    // 目前使用静态示例城市列表，保证功能可用且不再报错
-    const cities = [
-        '北京',
-        '上海',
-        '广州',
-        '深圳',
-        '杭州',
-        '南京',
-        '苏州',
-        '成都',
-        '武汉',
-        '西安'
-    ];
-
-    cities.forEach(city => {
-        const option = document.createElement('option');
-        option.value = city;
-        option.textContent = city;
-        locationSelect.appendChild(option);
-    });
+    // 通过API获取城市列表
+    fetch('/api/job/info/cities')
+        .then(response => response.json())
+        .then(cities => {
+            if (Array.isArray(cities)) {
+                cities.forEach(city => {
+                    const option = document.createElement('option');
+                    option.value = city;
+                    option.textContent = city;
+                    locationSelect.appendChild(option);
+                });
+            }
+        })
+        .catch(error => {
+            console.error('获取城市列表失败:', error);
+            // 如果获取失败，可以添加一些默认选项或提示
+        });
 }

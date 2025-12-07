@@ -45,7 +45,19 @@
                 AND ji.city = #{query.city}
             </if>
             <if test="query.education != null and query.education != ''">
-                AND ji.education = #{query.education}
+                AND (ji.education = #{query.education}
+                <choose>
+                    <when test="query.education == '大专'">
+                        OR ji.education IN ('本科', '硕士', '博士')
+                    </when>
+                    <when test="query.education == '本科'">
+                        OR ji.education IN ('硕士', '博士')
+                    </when>
+                    <when test="query.education == '硕士'">
+                        OR ji.education = '博士'
+                    </when>
+                </choose>
+                )
             </if>
             <if test="query.workExperience != null and query.workExperience != ''">
                 AND ji.work_experience = #{query.workExperience}
