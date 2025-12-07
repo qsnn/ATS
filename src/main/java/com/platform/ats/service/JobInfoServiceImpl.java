@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class JobInfoServiceImpl extends ServiceImpl<JobInfoRepository, JobInfo> implements JobInfoService {
@@ -64,82 +65,9 @@ public class JobInfoServiceImpl extends ServiceImpl<JobInfoRepository, JobInfo> 
      */
     @Override
     public IPage<JobInfoDetailDto> findJobPage(Page<JobInfoDetailDto> page, JobInfoQueryDto queryDto) {
-        QueryWrapper<JobInfoDetailDto> queryWrapper = new QueryWrapper<>();
-        
-        // 添加筛选条件
-        if (queryDto.getJobName() != null && !queryDto.getJobName().isEmpty()) {
-            queryWrapper.like("ji.job_name", queryDto.getJobName());
-        }
-        
-        if (queryDto.getCity() != null && !queryDto.getCity().isEmpty()) {
-            queryWrapper.eq("ji.city", queryDto.getCity());
-        }
-        
-        // 学历要求筛选逻辑修改：大专包含本科和硕士，本科包含硕士
-        if (queryDto.getEducation() != null && !queryDto.getEducation().isEmpty()) {
-            List<String> educations = new ArrayList<>();
-            switch (queryDto.getEducation()) {
-                case "大专":
-                    educations.add("大专");
-                    educations.add("本科");
-                    educations.add("硕士");
-                    educations.add("博士");
-                    break;
-                case "本科":
-                    educations.add("本科");
-                    educations.add("硕士");
-                    educations.add("博士");
-                    break;
-                case "硕士":
-                    educations.add("硕士");
-                    educations.add("博士");
-                    break;
-                default:
-                    educations.add(queryDto.getEducation());
-                    break;
-            }
-            queryWrapper.in("ji.education", educations);
-        }
-        
-        if (queryDto.getWorkExperience() != null) {
-            queryWrapper.ge("ji.work_experience", queryDto.getWorkExperience());
-        }
-        
-        // 添加薪资筛选条件
-        if (queryDto.getSalaryMin() != null) {
-            queryWrapper.ge("ji.salary_max", queryDto.getSalaryMin());
-        }
-        
-        if (queryDto.getSalaryMax() != null) {
-            queryWrapper.le("ji.salary_min", queryDto.getSalaryMax());
-        }
-        
-        // 添加排序
-        if (queryDto.getOrderBy() != null && !queryDto.getOrderBy().isEmpty()) {
-            String direction = "ASC";
-            if (queryDto.getOrderDirection() != null && queryDto.getOrderDirection().equalsIgnoreCase("DESC")) {
-                direction = "DESC";
-            }
-            
-            switch (queryDto.getOrderBy()) {
-                case "salary_max":
-                    queryWrapper.orderBy(true, direction.equals("DESC"), "ji.salary_max");
-                    break;
-                case "salary_min":
-                    queryWrapper.orderBy(true, direction.equals("DESC"), "ji.salary_min");
-                    break;
-                case "update_time":
-                default:
-                    queryWrapper.orderBy(true, direction.equals("DESC"), "ji.update_time");
-                    break;
-            }
-        } else {
-            // 默认按更新时间倒序排列
-            queryWrapper.orderBy(true, false, "ji.update_time");
-        }
-        
-        // baseMapper 是 ServiceImpl 内置的与 Repository/Mapper 对应的对象
-        return jobInfoRepository.findJobPage(page, queryDto, queryWrapper);
+        // 注意：这里不再创建QueryWrapper，而是直接传递null，
+        // 让MyBatis XML中的${ew.customSqlSegment}部分为空，避免SQL语法错误
+        return jobInfoRepository.findJobPage(page, queryDto, null);
     }
 
     /**

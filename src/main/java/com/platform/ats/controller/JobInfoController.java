@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 职位信息 前端控制器
@@ -33,8 +34,13 @@ public class JobInfoController {
             queryDto.setPublishStatus(1);
         }
         
-        IPage<JobInfoDetailDto> resultPage = jobInfoService.findJobPage(page, queryDto);
-        return ResponseEntity.ok(resultPage);
+        try {
+            IPage<JobInfoDetailDto> resultPage = jobInfoService.findJobPage(page, queryDto);
+            return ResponseEntity.ok(resultPage);
+        } catch (Exception e) {
+            e.printStackTrace(); // 临时打印异常堆栈，方便定位问题
+            throw e; // 重新抛出异常，让全局异常处理器处理
+        }
     }
 
     /**
@@ -48,7 +54,7 @@ public class JobInfoController {
                     .filter(city -> city != null && !city.isEmpty())
                     .distinct()
                     .sorted()
-                    .toList();
+                    .collect(Collectors.toList());
             return ResponseEntity.ok(cities);
         } catch (Exception e) {
             // 发生异常时返回空列表而不是500错误

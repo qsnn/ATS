@@ -28,7 +28,25 @@
 
     <select id="findJobPage" resultMap="JobInfoDetailDtoMap">
         SELECT
-        ji.*,
+        ji.job_id,
+        ji.company_id,
+        ji.job_name,
+        ji.department,
+        ji.province,
+        ji.city,
+        ji.district,
+        ji.salary_min,
+        ji.salary_max,
+        ji.education,
+        ji.work_experience,
+        ji.skill_require,
+        ji.job_desc,
+        ji.qualification,
+        ji.publisher_id,
+        ji.publish_status,
+        ji.create_time,
+        ji.update_time,
+        ji.delete_flag,
         ci.company_name,
         su.username as publisher_name
         FROM
@@ -37,7 +55,9 @@
         LEFT JOIN sys_user su ON ji.publisher_id = su.user_id
         <where>
             ji.delete_flag = 0
-            AND ji.publish_status = 1
+            <if test="query.publishStatus != null">
+                AND ji.publish_status = #{query.publishStatus}
+            </if>
             <if test="query.jobName != null and query.jobName != ''">
                 AND ji.job_name LIKE CONCAT('%', #{query.jobName}, '%')
             </if>
@@ -48,13 +68,10 @@
                 AND (ji.education = #{query.education}
                 <choose>
                     <when test="query.education == '大专'">
-                        OR ji.education IN ('本科', '硕士', '博士')
+                        OR ji.education IN ('本科', '硕士')
                     </when>
                     <when test="query.education == '本科'">
-                        OR ji.education IN ('硕士', '博士')
-                    </when>
-                    <when test="query.education == '硕士'">
-                        OR ji.education = '博士'
+                        OR ji.education IN ('硕士')
                     </when>
                 </choose>
                 )
@@ -68,14 +85,11 @@
             <if test="query.salaryMax != null">
                 AND ji.salary_min &lt;= #{query.salaryMax}
             </if>
-            <if test="query.publishStatus != null">
-                AND ji.publish_status = #{query.publishStatus}
-            </if>
             <if test="query.companyId != null">
                 AND ji.company_id = #{query.companyId}
             </if>
+            ${ew.customSqlSegment}
         </where>
-        ${ew.customSqlSegment}
     </select>
 
 </mapper>

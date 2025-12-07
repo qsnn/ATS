@@ -48,7 +48,7 @@ function renderJobPostView(container, currentUser) {
                         <label>学历要求</label>
                         <select id="job-education">
                             <option value="大专">大专</option>
-                            <option value="本科">本科</option>
+                            <option value="本科" selected>本科</option>
                             <option value="硕士">硕士</option>
                         </select>
                     </div>
