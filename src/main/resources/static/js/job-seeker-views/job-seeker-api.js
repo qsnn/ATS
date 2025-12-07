@@ -31,10 +31,6 @@ async function fetchMyApplicationsApi(params) {
     return apiRequest(`${JOB_SEEKER_API_BASE}/applications/my?${query.toString()}`);
 }
 
-async function fetchMyInterviewsByNameApi(name) {
-    return apiRequest(`${JOB_SEEKER_API_BASE}/interview/name/${encodeURIComponent(name)}`);
-}
-
 async function addFavoriteJobApi(payload) {
     return apiRequest(`${JOB_SEEKER_API_BASE}/favorites`, {
         method: 'POST',
@@ -63,7 +59,6 @@ async function fetchMyFavoriteJobsApi(params) {
 window.JobSeekerApi = {
     applyJobApi,
     fetchMyApplicationsApi,
-    fetchMyInterviewsByNameApi,
     addFavoriteJobApi,
     removeFavoriteJobApi,
     checkFavoriteJobApi,

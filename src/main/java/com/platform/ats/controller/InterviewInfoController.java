@@ -3,6 +3,7 @@ package com.platform.ats.controller;
 
 import com.platform.ats.entity.interview.InterviewInfo;
 import com.platform.ats.entity.interview.vo.InterviewInfoVO;
+import com.platform.ats.entity.interview.vo.InterviewScheduleVO;
 import com.platform.ats.entity.user.vo.Result;
 import com.platform.ats.service.InterviewInfoService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,17 +39,15 @@ public class InterviewInfoController{
         return Result.success(interviewInfoService.delete(arrangeId));
     }
 
-    @GetMapping("/{interviewerId}")
+    @GetMapping("/interviewer/{interviewerId}")
     @Operation(summary = "根据面试官ID获取面试信息")
     public Result<List<InterviewInfoVO>> getInterviewInfoByInterviewerId(@PathVariable("interviewerId") Long interviewerId){
         return Result.success(interviewInfoService.getById(interviewerId));
     }
 
-    @GetMapping("/name/{intervieweeName}")
-    @Operation(summary = "根据面试者姓名获取面试信息")
-    public Result<List<InterviewInfoVO>> getInterviewInfoByIntervieweeName(@PathVariable("intervieweeName") String intervieweeName){
-        return Result.success(interviewInfoService.getByName(intervieweeName));
+    @GetMapping("/user/{userId}")
+    @Operation(summary = "根据求职者用户ID获取面试信息")
+    public Result<List<InterviewScheduleVO>> getInterviewInfoByUserId(@PathVariable("userId") Long userId){
+        return Result.success(interviewInfoService.getByUserId(userId));
     }
-
-
 }

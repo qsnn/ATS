@@ -24,6 +24,9 @@ public class InterviewInfo {
     @TableField("interviewer_id")
     private Long interviewerId;
 
+    @TableField("interviewee_id")
+    private Long intervieweeId;
+
     @TableField("create_time")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime create_time;
@@ -40,6 +43,5 @@ public class InterviewInfo {
     private String interviewIntro;
 
     @TableField("interviewee_name")
-    @NotNull(message = "面试者姓名不能为空")
     private String intervieweeName;
 }

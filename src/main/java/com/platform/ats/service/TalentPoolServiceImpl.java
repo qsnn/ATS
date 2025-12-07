@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.platform.ats.common.BizException;
 import com.platform.ats.common.ErrorCode;
 import com.platform.ats.entity.company.TalentPool;
+import com.platform.ats.entity.company.vo.TalentPoolDetailVO;
 import com.platform.ats.entity.company.vo.TalentPoolVO;
 import com.platform.ats.repository.TalentPoolRepository;
 import org.springframework.beans.BeanUtils;
@@ -62,6 +63,14 @@ public class TalentPoolServiceImpl implements TalentPoolService {
                         .orderByDesc(TalentPool::getPutInTime)
         );
         return list.stream().map(this::toVO).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<TalentPoolDetailVO> listDetailByCompanyId(Long companyId) {
+        if (companyId == null) {
+            throw new BizException(ErrorCode.BAD_REQUEST, "companyId不能为空");
+        }
+        return talentPoolRepository.selectDetailByCompanyId(companyId);
     }
 
     private TalentPoolVO toVO(TalentPool entity) {

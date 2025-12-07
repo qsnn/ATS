@@ -87,24 +87,15 @@ async function loadTalentPool(user) {
     }
 
     try {
-        const resp = await fetch(`${TALENT_API_BASE}/company/${user.companyId}`);
-        if (!resp.ok) {
-            const text = await resp.text();
-            container.innerHTML = `<p>网络错误: ${resp.status} ${text}</p>`;
-            return;
-        }
-        const json = await resp.json();
-        if (!json || json.code !== 200) {
-            container.innerHTML = `<p>${(json && json.message) || '加载失败'}</p>`;
-            return;
-        }
-        const list = json.data || [];
+        // 1. 先拉取当前公司的人才库记录（仅有 talentId/resumeId/companyId/tag/putInTime 等）
+        const talentList = await ApiService.getTalentPool();
+        const list = Array.isArray(talentList) ? talentList : [];
 
         if (totalEl) totalEl.textContent = list.length;
         if (recentEl) {
             const thirtyDaysAgo = new Date();
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-            const recentCount = list.filter(t => t.addedDate && new Date(t.addedDate) >= thirtyDaysAgo).length;
+            const recentCount = list.filter(t => t.putInTime && new Date(t.putInTime) >= thirtyDaysAgo).length;
             recentEl.textContent = recentCount;
         }
 
@@ -113,7 +104,19 @@ async function loadTalentPool(user) {
             return;
         }
 
-        container.innerHTML = list.map(talent => `
+        // 后端已返回富VO，直接使用列表渲染
+        const enriched = list.map(tp => ({
+            talentId: tp.talentId,
+            resumeId: tp.resumeId,
+            tag: tp.tag,
+            putInTime: tp.putInTime,
+            candidateName: tp.candidateName || '',
+            position: tp.position || '',
+            phone: tp.phone || '',
+            email: tp.email || ''
+        }));
+
+        container.innerHTML = enriched.map(talent => `
             <div class="talent-card" data-talent-id="${talent.talentId}">
                 <div class="talent-header">
                     <div>
@@ -134,11 +137,11 @@ async function loadTalentPool(user) {
                     </div>
                     <div class="talent-info-item">
                         <span>📅</span>
-                        <span>${talent.addedDate || ''}</span>
+                        <span>${talent.putInTime || ''}</span>
                     </div>
                 </div>
                 <div class="talent-actions">
-                    <button class="btn btn-sm" onclick="viewTalentDetail(${talent.talentId})">查看详情</button>
+                    <button class="btn btn-sm" onclick="viewTalentDetail(${talent.talentId}, ${talent.resumeId})">查看详情</button>
                     <button class="btn btn-danger btn-sm" onclick="removeTalent(${talent.talentId})">移除</button>
                 </div>
             </div>
@@ -150,7 +153,7 @@ async function loadTalentPool(user) {
 }
 
 // 其他函数保持原样（inviteTalent等）
-async function viewTalentDetail(talentId) {
+async function viewTalentDetail(talentId, resumeId) {
     if (!talentId) {
         alert('找不到该人才信息');
         return;
@@ -158,10 +161,22 @@ async function viewTalentDetail(talentId) {
 
     try {
         const talent = await ApiService.getTalentById(talentId);
-        if (!talent) {
+        let resume = null;
+        if (resumeId) {
+            try {
+                resume = await ApiService.request(`/resume/${encodeURIComponent(resumeId)}`);
+            } catch (e) {
+                console.error('加载简历详情失败:', e);
+            }
+        }
+
+        if (!talent && !resume) {
             alert('找不到该人才信息');
             return;
         }
+
+        const name = (resume && resume.realName) || (talent && talent.candidateName) || '';
+        const position = (resume && resume.jobIntention) || (talent && talent.position) || '';
 
         const modalHTML = `
         <div class="talent-modal" id="talent-detail-modal">
@@ -173,39 +188,12 @@ async function viewTalentDetail(talentId) {
 
                 <div class="talent-detail">
                     <div style="margin-bottom: 20px;">
-                        <h4 style="margin-bottom: 10px;">${talent.candidateName || ''} - ${talent.position || ''}</h4>
-                        <div style="color: #666; font-size: 14px;">
-                            ${talent.experience || ''}
-                        </div>
+                        <h4 style="margin-bottom: 10px;">${name} - ${position}</h4>
                     </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                        <div>
-                            <strong>联系方式</strong>
-                            <p>📱 ${talent.phone || ''}</p>
-                            <p>📧 ${talent.email || ''}</p>
-                        </div>
-                        <div>
-                            <strong>人才来源</strong>
-                            <p>来源：${talent.source || '未知'}</p>
-                            <p>添加时间：${talent.addedDate || ''}</p>
-                            ${talent.sourceJob ? `<p>来源职位：${talent.sourceJob}</p>` : ''}
-                        </div>
-                    </div>
-
-                    ${talent.note ? `
-                    <div style="margin-bottom: 20px;">
-                        <strong>备注</strong>
-                        <p style="margin-top: 10px; padding: 10px; background: #f5f5f5; border-radius: 4px;">
-                            ${talent.note}
-                        </p>
-                    </div>
-                    ` : ''}
                 </div>
 
                 <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
                     <button class="btn" onclick="closeTalentModal()">关闭</button>
-                    <button class="btn btn-primary" onclick="inviteTalent(${talent.talentId})">邀请面试</button>
                 </div>
             </div>
         </div>

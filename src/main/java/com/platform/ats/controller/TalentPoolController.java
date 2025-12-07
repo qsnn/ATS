@@ -1,6 +1,7 @@
 package com.platform.ats.controller;
 
 import com.platform.ats.entity.company.TalentPool;
+import com.platform.ats.entity.company.vo.TalentPoolDetailVO;
 import com.platform.ats.entity.company.vo.TalentPoolVO;
 import com.platform.ats.entity.user.vo.Result;
 import com.platform.ats.service.TalentPoolService;
@@ -45,7 +46,7 @@ public class TalentPoolController {
 
     @GetMapping("/company/{companyId}")
     @Operation(summary = "根据公司ID查询人才列表")
-    public Result<List<TalentPoolVO>> listByCompanyId(@PathVariable Long companyId) {
-        return Result.success(talentPoolService.listByCompanyId(companyId));
+    public Result<List<TalentPoolDetailVO>> listByCompanyId(@PathVariable Long companyId) {
+        return Result.success(talentPoolService.listDetailByCompanyId(companyId));
     }
 }

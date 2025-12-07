@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.platform.ats.repository.InterviewInfoRepository">
+
+    <!-- 求职者侧面试列表：根据 intervieweeId 关联职位和公司信息 -->
+    <select id="selectScheduleByUserId" resultType="com.platform.ats.entity.interview.vo.InterviewScheduleVO">
+        SELECT
+            ii.arrange_id           AS arrangeId,
+            ii.delivery_id          AS deliveryId,
+            ja.job_id               AS jobId,
+            ji.company_id           AS companyId,
+            ji.job_name             AS jobName,
+            ci.company_name         AS companyName,
+            ii.interviewer_id       AS interviewerId,
+            ii.interviewee_id       AS intervieweeId,
+            ii.interview_intro      AS interviewIntro,
+            ii.interviewee_name     AS intervieweeName,
+            ii.create_time          AS interviewTime,
+            ja.status               AS status
+        FROM interview_info ii
+            JOIN job_application ja ON ii.delivery_id = ja.application_id
+            JOIN job_info ji ON ja.job_id = ji.job_id
+            JOIN company_info ci ON ji.company_id = ci.company_id
+        WHERE
+            ii.interviewee_id = #{userId}
+            AND ii.delete_flag = 0
+    </select>
+
+</mapper>
+

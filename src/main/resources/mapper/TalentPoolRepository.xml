@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.platform.ats.repository.TalentPoolRepository">
+
+    <!-- 人才库富列表：关联简历表和用户表，补充姓名、职位、电话、邮箱 -->
+    <select id="selectDetailByCompanyId" resultType="com.platform.ats.entity.company.vo.TalentPoolDetailVO">
+        SELECT
+            tp.talent_id            AS talentId,
+            tp.resume_id            AS resumeId,
+            tp.company_id           AS companyId,
+            tp.tag                  AS tag,
+            tp.operator_id          AS operatorId,
+            tp.put_in_time          AS putInTime,
+            tp.update_time          AS updateTime,
+            r.real_name             AS candidateName,
+            r.job_intention         AS position,
+            u.phone                 AS phone,
+            u.email                 AS email
+        FROM talent_pool tp
+            JOIN resume_info r ON tp.resume_id = r.resume_id
+            JOIN sys_user u ON r.user_id = u.user_id
+        WHERE
+            tp.company_id = #{companyId}
+            AND tp.delete_flag = 0
+            AND r.delete_flag = 0
+            AND u.delete_flag = 0
+        ORDER BY tp.put_in_time DESC
+    </select>
+
+</mapper>
+

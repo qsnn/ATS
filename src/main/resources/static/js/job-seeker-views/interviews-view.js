@@ -31,8 +31,12 @@ async function loadInterviews(currentUser) {
 
     try {
         const base = window.API_BASE || '/api';
-        const name = currentUser.realName || currentUser.username || '';
-        const resp = await fetch(`${base}/interview/name/${encodeURIComponent(name)}`);
+        const userId = currentUser.userId;
+        if (!userId) {
+            if (statusEl) statusEl.textContent = '用户信息不完整，无法加载面试安排';
+            return;
+        }
+        const resp = await fetch(`${base}/interview/user/${encodeURIComponent(userId)}`);
         if (!resp.ok) {
             const text = await resp.text();
             if (statusEl) statusEl.textContent = `网络错误: ${resp.status} ${text}`;
@@ -62,7 +66,7 @@ async function loadInterviews(currentUser) {
 
             const timeTd = document.createElement('td');
             const t = item.interviewTime || '';
-            timeTd.textContent = t ? t.replace('T', ' ') : '';
+            timeTd.textContent = t ? String(t).replace('T', ' ') : '';
 
             const statusTd = document.createElement('td');
             statusTd.textContent = item.status || '';

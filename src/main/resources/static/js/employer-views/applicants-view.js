@@ -174,8 +174,8 @@ async function addToTalentPool(applicationId) {
     if (note === null) return;
 
     const currentUser = Auth.getCurrentUser && Auth.getCurrentUser();
-    if (!currentUser || !currentUser.companyId) {
-        alert('当前账号未关联公司，无法加入人才库');
+    if (!currentUser || !currentUser.companyId || !currentUser.userId) {
+        alert('当前账号未关联公司或用户信息不完整，无法加入人才库');
         return;
     }
 
@@ -192,12 +192,12 @@ async function addToTalentPool(applicationId) {
             return;
         }
 
+        // 按数据库结构，只需要 resumeId, companyId, operatorId, tag
         const talentPayload = {
-            name: app.userName || '',
-            phone: app.phone || '',
-            email: app.email || '',
-            position: app.jobTitle || '',
-            note: note || ''
+            resumeId: app.resumeId,
+            companyId: currentUser.companyId,
+            operatorId: currentUser.userId,
+            tag: note || ''
         };
 
         await ApiService.addTalent(talentPayload);
