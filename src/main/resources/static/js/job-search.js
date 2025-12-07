@@ -40,7 +40,7 @@ async function searchJobs() {
     if (jobName) params.append('jobName', jobName);
     if (city) params.append('city', city);
     if (education) params.append('education', education);
-    if (workExperience) params.append('workExperience2', workExperience);
+    if (workExperience) params.append('workExperience', workExperience);
     if (salaryMin) params.append('salaryMin', salaryMin);
     if (salaryMax) params.append('salaryMax', salaryMax);
 
@@ -196,7 +196,7 @@ async function applyJob(jobId) {
         return;
     }
 
-    const optionsText = resumes.map((r, index) => `${index + 1}. ${r.title || '未命名简历'}`).join('\n');
+    const optionsText = resumes.map((r, index) => `${index + 1}. ${r.resumeName || '未命名简历'}`).join('\n');
     const input = prompt(`请选择要用于投递的简历编号：\n${optionsText}`);
     if (!input) return;
     const index = parseInt(input, 10) - 1;

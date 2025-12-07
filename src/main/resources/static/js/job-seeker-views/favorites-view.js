@@ -52,7 +52,7 @@ async function loadFavoriteJobs(currentUser) {
                     <h3>${escapeHtml(fav.jobTitle || '')}</h3>
                 </div>
                 <div class="job-info">
-                    <span class="company">公司ID: ${fav.companyId || ''}</span>
+                    <span class="company">公司: ${fav.companyName || '未知公司'}</span>
                 </div>
                 <div class="job-actions">
                     <button class="btn" data-job-id="${fav.jobId}">查看详情</button>

@@ -43,10 +43,16 @@ function renderJobSearchView(container, currentUser) {
                             <select id="experience-filter" class="filter-select">
                                 <option value="">不限经验</option>
                                 <option value="0">应届生</option>
-                                <option value="1">1年及以上</option>
-                                <option value="3">3年及以上</option>
-                                <option value="5">5年及以上</option>
-                                <option value="10">10年及以上</option>
+                                <option value="1">1年经验</option>
+                                <option value="2">2年经验</option>
+                                <option value="3">3年经验</option>
+                                <option value="4">4年经验</option>
+                                <option value="5">5年经验</option>
+                                <option value="6">6年经验</option>
+                                <option value="7">7年经验</option>
+                                <option value="8">8年经验</option>
+                                <option value="9">9年经验</option>
+                                <option value="10">10年经验</option>
                             </select>
                         </div>
                         

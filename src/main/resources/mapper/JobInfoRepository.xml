@@ -77,7 +77,7 @@
                 )
             </if>
             <if test="query.workExperience != null">
-                AND ji.work_experience >= #{query.workExperience}
+                AND ji.work_experience &lt;= #{query.workExperience}
             </if>
             <if test="query.salaryMin != null">
                 AND ji.salary_max >= #{query.salaryMin}
@@ -88,7 +88,13 @@
             <if test="query.companyId != null">
                 AND ji.company_id = #{query.companyId}
             </if>
-            ${ew.customSqlSegment}
+            <if test="ew != null and ew.sqlSegment != null and ew.sqlSegment != '' and !ew.sqlSegment.trim().isEmpty()">
+                <bind name="trimmedSegment" value="ew.sqlSegment.trim()"/>
+                <if test="!trimmedSegment.toUpperCase().startsWith('ORDER BY') and !trimmedSegment.toUpperCase().startsWith('AND')">
+                    AND
+                </if>
+                ${ew.sqlSegment}
+            </if>
         </where>
     </select>
 

@@ -6,9 +6,11 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.platform.ats.common.BizException;
 import com.platform.ats.common.ErrorCode;
+import com.platform.ats.entity.company.CompanyInfo;
 import com.platform.ats.entity.favorite.JobFavorite;
 import com.platform.ats.entity.favorite.vo.JobFavoriteVO;
 import com.platform.ats.entity.job.JobInfo;
+import com.platform.ats.repository.CompanyInfoRepository;
 import com.platform.ats.repository.JobFavoriteRepository;
 import com.platform.ats.repository.JobInfoRepository;
 import org.springframework.beans.BeanUtils;
@@ -22,11 +24,14 @@ public class JobFavoriteServiceImpl implements JobFavoriteService {
 
     private final JobFavoriteRepository jobFavoriteRepository;
     private final JobInfoRepository jobInfoRepository;
+    private final CompanyInfoRepository companyInfoRepository;
 
     public JobFavoriteServiceImpl(JobFavoriteRepository jobFavoriteRepository,
-                                  JobInfoRepository jobInfoRepository) {
+                                  JobInfoRepository jobInfoRepository,
+                                  CompanyInfoRepository companyInfoRepository) {
         this.jobFavoriteRepository = jobFavoriteRepository;
         this.jobInfoRepository = jobInfoRepository;
+        this.companyInfoRepository = companyInfoRepository;
     }
 
     @Override
@@ -121,6 +126,13 @@ public class JobFavoriteServiceImpl implements JobFavoriteService {
             if (jobInfo != null) {
                 vo.setJobTitle(jobInfo.getJobName());
                 vo.setCompanyId(jobInfo.getCompanyId());
+                // 获取公司名称
+                if (jobInfo.getCompanyId() != null) {
+                    CompanyInfo companyInfo = companyInfoRepository.selectById(jobInfo.getCompanyId());
+                    if (companyInfo != null) {
+                        vo.setCompanyName(companyInfo.getCompanyName());
+                    }
+                }
             }
             return vo;
         }).toList());

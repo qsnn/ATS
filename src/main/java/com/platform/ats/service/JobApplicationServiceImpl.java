@@ -10,8 +10,10 @@ import com.platform.ats.entity.application.JobApplication;
 import com.platform.ats.entity.application.dto.JobApplicationCreateDTO;
 import com.platform.ats.entity.application.vo.JobApplicationVO;
 import com.platform.ats.entity.application.vo.JobApplicationEmployerVO;
+import com.platform.ats.entity.company.CompanyInfo;
 import com.platform.ats.entity.job.JobInfo;
 import com.platform.ats.entity.resume.ResumeInfo;
+import com.platform.ats.repository.CompanyInfoRepository;
 import com.platform.ats.repository.JobApplicationRepository;
 import com.platform.ats.repository.JobInfoRepository;
 import com.platform.ats.repository.ResumeInfoRepository;
@@ -32,13 +34,16 @@ public class JobApplicationServiceImpl implements JobApplicationService {
     private final JobApplicationRepository jobApplicationRepository;
     private final JobInfoRepository jobInfoRepository;
     private final ResumeInfoRepository resumeInfoRepository;
+    private final CompanyInfoRepository companyInfoRepository;
 
     public JobApplicationServiceImpl(JobApplicationRepository jobApplicationRepository,
                                      JobInfoRepository jobInfoRepository,
-                                     ResumeInfoRepository resumeInfoRepository) {
+                                     ResumeInfoRepository resumeInfoRepository,
+                                     CompanyInfoRepository companyInfoRepository) {
         this.jobApplicationRepository = jobApplicationRepository;
         this.jobInfoRepository = jobInfoRepository;
         this.resumeInfoRepository = resumeInfoRepository;
+        this.companyInfoRepository = companyInfoRepository;
     }
 
     @Override
@@ -96,7 +101,13 @@ public class JobApplicationServiceImpl implements JobApplicationService {
             if (jobInfo != null) {
                 vo.setJobTitle(jobInfo.getJobName());
                 vo.setCompanyId(jobInfo.getCompanyId());
-                // companyName 由前端根据 companyId 关联查询或后续补充
+                // 获取公司名称
+                if (jobInfo.getCompanyId() != null) {
+                    CompanyInfo companyInfo = companyInfoRepository.selectById(jobInfo.getCompanyId());
+                    if (companyInfo != null) {
+                        vo.setCompanyName(companyInfo.getCompanyName());
+                    }
+                }
             }
             return vo;
         }).toList());

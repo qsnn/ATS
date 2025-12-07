@@ -19,7 +19,8 @@ public class JobFavoriteVO {
     private String jobTitle;
 
     private Long companyId;
+    
+    private String companyName;
 
     private LocalDateTime createTime;
 }
-
