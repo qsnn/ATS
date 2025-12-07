@@ -56,11 +56,13 @@ async function loadFavoriteJobs(currentUser) {
                 </div>
                 <div class="job-actions">
                     <button class="btn" data-job-id="${fav.jobId}">查看详情</button>
+                    <button class="btn btn-success" data-apply-job-id="${fav.jobId}">使用简历投递</button>
                     <button class="btn btn-primary" data-fav-action="unfavorite" data-job-id="${fav.jobId}">取消收藏</button>
                 </div>
             `;
 
             const detailBtn = card.querySelector('button[data-job-id]:not([data-fav-action])');
+            const applyBtn = card.querySelector('button[data-apply-job-id]');
             const unfavBtn = card.querySelector('button[data-fav-action="unfavorite"]');
 
             if (detailBtn) {
@@ -69,6 +71,10 @@ async function loadFavoriteJobs(currentUser) {
                         viewJobDetail(fav.jobId);
                     }
                 };
+            }
+
+            if (applyBtn) {
+                applyBtn.onclick = () => openApplyFromFavoriteModal(currentUser, fav.jobId);
             }
 
             if (unfavBtn && window.JobSeekerApi && typeof JobSeekerApi.removeFavoriteJobApi === 'function') {
@@ -91,4 +97,47 @@ async function loadFavoriteJobs(currentUser) {
         console.error('加载收藏职位异常:', e);
         if (statusEl) statusEl.textContent = '请求异常，请稍后重试';
     }
+}
+
+async function openApplyFromFavoriteModal(currentUser, jobId) {
+    if (!currentUser || !jobId) return;
+    // 获取当前用户的简历列表
+    const res = await fetchUserResumesApi(currentUser.userId);
+    if (!res.success) {
+        alert(res.message || '加载简历列表失败');
+        return;
+    }
+    const resumes = res.data || [];
+    if (!resumes.length) {
+        alert('您还没有简历，请先在“我的简历”中创建简历。');
+        return;
+    }
+
+    // 构造简易选择框
+    const options = resumes.map(r => `${r.resumeId}:${r.resumeName || '未命名简历'}`).join('\n');
+    const input = prompt(`请选择用于投递的简历（输入编号前的ID）：\n${options}`, resumes[0].resumeId);
+    if (input === null) return;
+    const resumeId = Number(input);
+    if (!resumeId || !resumes.find(r => r.resumeId === resumeId)) {
+        alert('无效的简历ID');
+        return;
+    }
+
+    if (!window.JobSeekerApi || typeof JobSeekerApi.applyJobApi !== 'function') {
+        alert('投递接口未就绪');
+        return;
+    }
+
+    const payload = {
+        userId: currentUser.userId,
+        jobId,
+        resumeId
+    };
+
+    const result = await JobSeekerApi.applyJobApi(payload);
+    if (!result.success) {
+        alert(result.message || '投递失败');
+        return;
+    }
+    alert('投递成功');
 }

@@ -34,7 +34,8 @@ async function loadApplications(currentUser) {
             current: 1,
             size: 20
         });
-        const resp = await fetch(`http://124.71.101.139:10085/api/applications/my?${params.toString()}`);
+        const base = window.API_BASE || '/api';
+        const resp = await fetch(`${base}/applications/my?${params.toString()}`);
         if (!resp.ok) {
             const text = await resp.text();
             if (statusEl) statusEl.textContent = `网络错误: ${resp.status} ${text}`;
