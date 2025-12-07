@@ -176,3 +176,44 @@ function initSearchComponents() {
         }
     });
 }
+
+function initCityFilter() {
+    const locationSelect = document.getElementById('location-filter');
+    if (!locationSelect) {
+        return;
+    }
+
+    // 保留第一个“全部城市”选项，清空其他动态选项
+    const firstOption = locationSelect.querySelector('option');
+    locationSelect.innerHTML = '';
+    if (firstOption) {
+        locationSelect.appendChild(firstOption);
+    } else {
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = '全部城市';
+        locationSelect.appendChild(defaultOption);
+    }
+
+    // TODO: 如后端提供城市列表接口，可在此通过 fetch 动态加载
+    // 目前使用静态示例城市列表，保证功能可用且不再报错
+    const cities = [
+        '北京',
+        '上海',
+        '广州',
+        '深圳',
+        '杭州',
+        '南京',
+        '苏州',
+        '成都',
+        '武汉',
+        '西安'
+    ];
+
+    cities.forEach(city => {
+        const option = document.createElement('option');
+        option.value = city;
+        option.textContent = city;
+        locationSelect.appendChild(option);
+    });
+}
