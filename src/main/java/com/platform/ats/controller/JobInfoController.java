@@ -27,6 +27,11 @@ public class JobInfoController {
      */
     @GetMapping("/list")
     public ResponseEntity<IPage<JobInfoDetailDto>> list(Page<JobInfoDetailDto> page, JobInfoQueryDto queryDto) {
+        // 如果没有指定发布状态，默认只查询已发布的职位
+        if (queryDto.getPublishStatus() == null) {
+            queryDto.setPublishStatus(1);
+        }
+        
         IPage<JobInfoDetailDto> resultPage = jobInfoService.findJobPage(page, queryDto);
         return ResponseEntity.ok(resultPage);
     }
