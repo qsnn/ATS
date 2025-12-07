@@ -1,6 +1,7 @@
 package com.platform.ats.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.platform.ats.common.BizException;
@@ -40,18 +41,41 @@ public class JobFavoriteServiceImpl implements JobFavoriteService {
             throw new BizException(ErrorCode.NOT_FOUND, "职位不存在");
         }
 
-        JobFavorite exist = jobFavoriteRepository.selectOne(new LambdaQueryWrapper<JobFavorite>()
-                .eq(JobFavorite::getUserId, userId)
-                .eq(JobFavorite::getJobId, jobId));
-        if (exist != null) {
-            if (exist.getDeleteFlag() != null && exist.getDeleteFlag() == 1) {
-                exist.setDeleteFlag(0);
-                exist.setUpdateTime(LocalDateTime.now());
-                jobFavoriteRepository.updateById(exist);
-            }
-            return exist.getFavoriteId();
+        // 先尝试恢复已逻辑删除的收藏记录
+        JobFavorite recover = new JobFavorite();
+        recover.setDeleteFlag(0);
+        recover.setUpdateTime(LocalDateTime.now());
+        int recovered = jobFavoriteRepository.update(
+                recover,
+                new LambdaQueryWrapper<JobFavorite>()
+                        .eq(JobFavorite::getUserId, userId)
+                        .eq(JobFavorite::getJobId, jobId)
+                        .eq(JobFavorite::getDeleteFlag, 1)
+        );
+        if (recovered > 0) {
+            // 恢复成功，直接返回任意一条记录的 ID（这里简单重新查一遍）
+            JobFavorite exist = jobFavoriteRepository.selectOne(new LambdaQueryWrapper<JobFavorite>()
+                    .eq(JobFavorite::getUserId, userId)
+                    .eq(JobFavorite::getJobId, jobId)
+                    .eq(JobFavorite::getDeleteFlag, 0));
+            return exist != null ? exist.getFavoriteId() : null;
         }
 
+        // 判断是否已存在有效收藏
+        Long count = jobFavoriteRepository.selectCount(new LambdaQueryWrapper<JobFavorite>()
+                .eq(JobFavorite::getUserId, userId)
+                .eq(JobFavorite::getJobId, jobId)
+                .eq(JobFavorite::getDeleteFlag, 0));
+        if (count != null && count > 0) {
+            // 已有有效收藏，直接返回其中一条的 ID
+            JobFavorite exist = jobFavoriteRepository.selectOne(new LambdaQueryWrapper<JobFavorite>()
+                    .eq(JobFavorite::getUserId, userId)
+                    .eq(JobFavorite::getJobId, jobId)
+                    .eq(JobFavorite::getDeleteFlag, 0));
+            return exist != null ? exist.getFavoriteId() : null;
+        }
+
+        // 插入新的收藏记录
         JobFavorite entity = new JobFavorite();
         entity.setUserId(userId);
         entity.setJobId(jobId);
@@ -68,15 +92,15 @@ public class JobFavoriteServiceImpl implements JobFavoriteService {
         if (userId == null || jobId == null) {
             throw new BizException(ErrorCode.BAD_REQUEST, "取消收藏参数不完整");
         }
-        JobFavorite exist = jobFavoriteRepository.selectOne(new LambdaQueryWrapper<JobFavorite>()
+        // 使用 LambdaUpdateWrapper 直接更新，绕过 MyBatis Plus 逻辑删除拦截
+        LambdaUpdateWrapper<JobFavorite> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.set(JobFavorite::getDeleteFlag, 1)
+                .set(JobFavorite::getUpdateTime, LocalDateTime.now())
                 .eq(JobFavorite::getUserId, userId)
-                .eq(JobFavorite::getJobId, jobId));
-        if (exist == null) {
-            return true;
-        }
-        exist.setDeleteFlag(1);
-        exist.setUpdateTime(LocalDateTime.now());
-        jobFavoriteRepository.updateById(exist);
+                .eq(JobFavorite::getJobId, jobId)
+                .eq(JobFavorite::getDeleteFlag, 0);
+        jobFavoriteRepository.update(null, updateWrapper);
+        // 无论是否有记录被更新，都认为取消收藏操作成功（幂等）
         return true;
     }
 
@@ -112,4 +136,3 @@ public class JobFavoriteServiceImpl implements JobFavoriteService {
         return voPage;
     }
 }
-
