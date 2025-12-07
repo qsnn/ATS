@@ -52,16 +52,11 @@ function renderJobSearchView(container, currentUser) {
                         
                         <div class="filter-group">
                             <label>薪资范围</label>
-                            <select id="salary-filter" class="filter-select">
-                                <option value="">不限薪资</option>
-                                <option value="0-5000">5K以下</option>
-                                <option value="5000-10000">5K-10K</option>
-                                <option value="10000-15000">10K-15K</option>
-                                <option value="15000-20000">15K-20K</option>
-                                <option value="20000-30000">20K-30K</option>
-                                <option value="30000-50000">30K-50K</option>
-                                <option value="50000">50K以上</option>
-                            </select>
+                            <div style="display: flex; gap: 5px; align-items: center;">
+                                <input type="number" id="salary-min" placeholder="最低薪资" class="filter-select" style="flex: 1; min-width: 0;">
+                                <span>-</span>
+                                <input type="number" id="salary-max" placeholder="最高薪资" class="filter-select" style="flex: 1; min-width: 0;">
+                            </div>
                         </div>
                     </div>
                     
@@ -120,7 +115,8 @@ function initSearchComponents() {
     const locationFilter = document.getElementById('location-filter');
     const educationFilter = document.getElementById('education-filter');
     const experienceFilter = document.getElementById('experience-filter');
-    const salaryFilter = document.getElementById('salary-filter');
+    const salaryMin = document.getElementById('salary-min');
+    const salaryMax = document.getElementById('salary-max');
     const sortOrder = document.getElementById('sort-order');
     const resetBtn = document.getElementById('reset-filters');
     const prevBtn = document.getElementById('prev-page');

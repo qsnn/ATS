@@ -17,6 +17,8 @@ async function searchJobs() {
     const locEl = document.getElementById('location-filter');
     const eduEl = document.getElementById('education-filter');
     const expEl = document.getElementById('experience-filter');
+    const salaryMinEl = document.getElementById('salary-min');
+    const salaryMaxEl = document.getElementById('salary-max');
     const jobListContainer = document.getElementById('job-list');
 
     if (!jobListContainer) return; // 无容器则不渲染
@@ -25,6 +27,8 @@ async function searchJobs() {
     const city = locEl ? locEl.value : '';
     const education = eduEl ? eduEl.value : '';
     const workExperience = expEl ? expEl.value : '';
+    const salaryMin = salaryMinEl ? salaryMinEl.value : '';
+    const salaryMax = salaryMaxEl ? salaryMaxEl.value : '';
 
     // 构建查询参数（确保编码）
     const params = new URLSearchParams({
@@ -37,6 +41,8 @@ async function searchJobs() {
     if (city) params.append('city', city);
     if (education) params.append('education', education);
     if (workExperience) params.append('workExperience2', workExperience);
+    if (salaryMin) params.append('salaryMin', salaryMin);
+    if (salaryMax) params.append('salaryMax', salaryMax);
 
     try {
         const url = `${API_BASE_URL}/job/info/list?${params.toString()}`;

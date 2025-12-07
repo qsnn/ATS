@@ -10,7 +10,11 @@ function renderJobPostView(container, currentUser) {
                     </div>
                     <div class="form-group">
                         <label>薪资范围 *</label>
-                        <input type="text" id="job-salary" placeholder="如：¥20K-35K" required>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="number" id="job-salary-min" placeholder="最低薪资" required style="flex: 1;">
+                            <span>-</span>
+                            <input type="number" id="job-salary-max" placeholder="最高薪资" required style="flex: 1;">
+                        </div>
                     </div>
                 </div>
 
@@ -78,7 +82,8 @@ function renderJobPostView(container, currentUser) {
 
 async function postJob(user) {
     const title = document.getElementById('job-title').value.trim();
-    const salaryText = document.getElementById('job-salary').value.trim();
+    const salaryMinInput = document.getElementById('job-salary-min').value;
+    const salaryMaxInput = document.getElementById('job-salary-max').value;
     const province = document.getElementById('job-province').value.trim();
     const city = document.getElementById('job-city').value.trim();
     const district = document.getElementById('job-district').value.trim();
@@ -88,20 +93,22 @@ async function postJob(user) {
     const skills = document.getElementById('job-skills').value.trim();
     const requirements = document.getElementById('job-requirements').value.trim();
 
-    if (!title || !salaryText || !province || !city || !description) {
+    if (!title || !salaryMinInput || !salaryMaxInput || !province || !city || !description) {
         alert('请填写所有必填字段（带*的）');
         return;
     }
 
-    // 解析薪资：形如 "20K-35K"
-    let salaryMin = null;
-    let salaryMax = null;
-    const match = salaryText.match(/(\d+)\s*K\s*-\s*(\d+)\s*K/i);
-    if (match) {
-        salaryMin = parseInt(match[1], 10) * 1000;
-        salaryMax = parseInt(match[2], 10) * 1000;
-    } else {
-        alert('请按 20K-35K 格式填写薪资范围');
+    // 验证薪资输入
+    const salaryMin = parseInt(salaryMinInput, 10);
+    const salaryMax = parseInt(salaryMaxInput, 10);
+    
+    if (isNaN(salaryMin) || isNaN(salaryMax)) {
+        alert('请填写有效的数字薪资');
+        return;
+    }
+    
+    if (salaryMin >= salaryMax) {
+        alert('最低薪资必须小于最高薪资');
         return;
     }
 
