@@ -217,15 +217,46 @@ async function viewTalentDetail(talentId) {
     }
 }
 
-function inviteTalent(talentId) {
+async function inviteTalent(talentId) {
+    if (!talentId) return;
+
     const jobTitle = prompt('请输入要邀请的职位名称：', '前端开发工程师');
     if (!jobTitle) return;
 
-    const interviewTime = prompt('请输入建议的面试时间（YYYY-MM-DD HH:MM）：', '2024-01-25 14:00');
+    const interviewTime = prompt('请输入面试时间或安排说明：', '2024-01-25 14:00 在公司现场面试');
     if (!interviewTime) return;
 
-    alert(`已向人才发送面试邀请\n职位：${jobTitle}\n时间：${interviewTime}\n（模拟操作）`);
-    closeTalentModal();
+    const currentUser = Auth.getCurrentUser && Auth.getCurrentUser();
+    if (!currentUser || !currentUser.userId) {
+        alert('未登录或用户信息缺失，无法安排面试');
+        return;
+    }
+
+    try {
+        const talent = await ApiService.getTalentById(talentId);
+        if (!talent) {
+            alert('无法获取人才信息，邀约失败');
+            return;
+        }
+
+        const intro = `职位：${jobTitle}\n安排：${interviewTime}`;
+        const payload = {
+            deliveryId: null,
+            interviewerId: currentUser.userId,
+            interviewIntro: intro,
+            intervieweeName: talent.candidateName || ''
+        };
+
+        await ApiService.request('/interview', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+
+        alert('已向该人才发送面试邀约');
+        closeTalentModal();
+    } catch (e) {
+        console.error('邀请面试失败:', e);
+    }
 }
 
 // 调整 removeTalent 调用后台删除 API
@@ -254,10 +285,53 @@ function searchTalent() {
 }
 
 function exportTalent() {
-    alert('正在导出人才库数据...（模拟操作）');
-    setTimeout(() => {
-        alert('人才库数据已导出为 talent_pool_export.csv');
-    }, 1000);
+    const user = Auth.getCurrentUser && Auth.getCurrentUser();
+    if (!user || !user.companyId) {
+        alert('当前账号未关联公司，无法导出人才库');
+        return;
+    }
+
+    ApiService.getTalentPool()
+        .then(list => {
+            if (!list || !list.length) {
+                alert('人才库为空，无需导出');
+                return;
+            }
+
+            const headers = ['人才ID', '姓名', '职位', '电话', '邮箱', '来源', '来源职位', '备注', '加入时间'];
+            const rows = list.map(t => [
+                t.talentId || '',
+                t.candidateName || '',
+                t.position || '',
+                t.phone || '',
+                t.email || '',
+                t.source || '',
+                t.sourceJob || '',
+                (t.note || '').replace(/\n/g, ' '),
+                t.addedDate || ''
+            ]);
+
+            const csvContent = [headers, ...rows]
+                .map(row => row.map(field => {
+                    const value = String(field).replace(/"/g, '""');
+                    return `"${value}"`;
+                }).join(','))
+                .join('\r\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const today = new Date().toISOString().slice(0, 10);
+            a.download = `talent_pool_${user.companyId}_${today}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        })
+        .catch(e => {
+            console.error('导出人才库失败:', e);
+        });
 }
 
 function closeTalentModal() {
