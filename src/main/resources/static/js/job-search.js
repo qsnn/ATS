@@ -30,6 +30,8 @@ async function searchJobs() {
     const params = new URLSearchParams({
         current: 1,
         size: 20,
+        // 默认只显示已发布的职位
+        publishStatus: 1
     });
     if (jobName) params.append('jobName', jobName);
     if (city) params.append('city', city);
@@ -228,7 +230,15 @@ async function viewJobDetail(jobId) {
             return;
         }
         const job = await resp.json();
-        const msg = `职位：${job.jobName || ''}\n公司：${job.companyName || ''}\n地点：${job.city || ''}\n经验要求：${job.workExperience || ''}\n学历要求：${job.education || ''}\n薪资范围：${(job.salaryMin || 0) / 1000}K - ${(job.salaryMax || 0) / 1000}K\n\n职位描述：\n${job.jobDesc || ''}`;
+        const msg = `职位：${job.jobName || ''}
+公司：${job.companyName || ''}
+地点：${job.city || ''}
+经验要求：${job.workExperience || ''}
+学历要求：${job.education || ''}
+薪资范围：${(job.salaryMin || 0) / 1000}K - ${(job.salaryMax || 0) / 1000}K
+
+职位描述：
+${job.jobDesc || ''}`;
         alert(msg);
     } catch (e) {
         console.error('查看职位详情异常:', e);
