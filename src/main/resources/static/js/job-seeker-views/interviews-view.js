@@ -30,7 +30,9 @@ async function loadInterviews(currentUser) {
     tbody.innerHTML = '';
 
     try {
-        const resp = await fetch(`http://124.71.101.139:10085/api/interview/name/${encodeURIComponent(currentUser.realName || currentUser.username || '')}`);
+        const base = window.API_BASE || '/api';
+        const name = currentUser.realName || currentUser.username || '';
+        const resp = await fetch(`${base}/interview/name/${encodeURIComponent(name)}`);
         if (!resp.ok) {
             const text = await resp.text();
             if (statusEl) statusEl.textContent = `网络错误: ${resp.status} ${text}`;

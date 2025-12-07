@@ -1,6 +1,6 @@
-const RESUME_API_BASE = 'http://124.71.101.139:10085/api/resume';
-const USER_API_BASE = 'http://124.71.101.139:10085/api/user';
-const USER_PASSWORD_API_BASE = userId => `http://124.71.101.139:10085/api/user/${encodeURIComponent(userId)}/password`;
+const RESUME_API_BASE = `${window.API_BASE || '/api'}/resume`;
+const USER_API_BASE = `${window.API_BASE || '/api'}/user`;
+const USER_PASSWORD_API_BASE = userId => `${window.API_BASE || '/api'}/user/${encodeURIComponent(userId)}/password`;
 
 document.addEventListener('DOMContentLoaded', () => {
     const currentUser = Auth.getCurrentUser();
@@ -120,8 +120,12 @@ async function fetchUserResumesApi(userId) {
 
 // 修改密码 API 封装，供 profile 视图使用
 async function updateUserPasswordApi(payload) {
+    const currentUser = Auth.getCurrentUser();
+    if (!currentUser || !currentUser.userId) {
+        return { success: false, message: '未登录或用户信息缺失' };
+    }
     try {
-        const resp = await fetch(`${USER_PASSWORD_API_BASE}`, {
+        const resp = await fetch(`${USER_PASSWORD_API_BASE(currentUser.userId)}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
