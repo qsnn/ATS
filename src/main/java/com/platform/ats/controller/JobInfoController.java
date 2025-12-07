@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * 职位信息 前端控制器
  */
@@ -27,6 +29,20 @@ public class JobInfoController {
     public ResponseEntity<IPage<JobInfoDetailDto>> list(Page<JobInfoDetailDto> page, JobInfoQueryDto queryDto) {
         IPage<JobInfoDetailDto> resultPage = jobInfoService.findJobPage(page, queryDto);
         return ResponseEntity.ok(resultPage);
+    }
+
+    /**
+     * 获取所有工作地点
+     */
+    @GetMapping("/cities")
+    public ResponseEntity<List<String>> getAllCities() {
+        List<String> cities = jobInfoService.list().stream()
+                .map(JobInfo::getCity)
+                .filter(city -> city != null && !city.isEmpty())
+                .distinct()
+                .sorted()
+                .toList();
+        return ResponseEntity.ok(cities);
     }
 
     /**

@@ -7,6 +7,8 @@ import com.platform.ats.entity.job.JobInfo;
 import com.platform.ats.entity.job.dto.JobInfoDetailDto;
 import com.platform.ats.entity.job.dto.JobInfoQueryDto;
 
+import java.util.List;
+
 /**
  * 职位信息表 服务类
  */

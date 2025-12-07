@@ -299,16 +299,14 @@
 }
 
 .favorite-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
+    padding: 8px 16px;
+    border-radius: 6px;
     border: 1px solid #d1d5db;
     background: #ffffff;
     cursor: pointer;
     transition: all 0.2s;
+    color: #4b5563;
+    font-size: 14px;
 }
 
 .favorite-btn:hover {
@@ -317,7 +315,7 @@
 }
 
 .favorite-btn.favorited {
-    color: #ef4444;
+    color: #dc2626;
     border-color: #fecaca;
     background: #fef2f2;
 }

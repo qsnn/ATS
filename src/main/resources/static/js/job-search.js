@@ -10,6 +10,44 @@ function debounce(fn, wait) {
 }
 
 /**
+ * 初始化城市筛选选项
+ */
+async function initCityFilter() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/job/info/cities`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const cities = await response.json();
+        const locationFilter = document.getElementById('location-filter');
+        
+        if (locationFilter && cities.data) {
+            // 保存当前选中的值
+            const currentValue = locationFilter.value;
+            
+            // 清空现有选项（除了第一个"全部城市"选项）
+            locationFilter.innerHTML = '<option value="">全部城市</option>';
+            
+            // 添加从数据库获取的城市选项
+            cities.data.forEach(city => {
+                const option = document.createElement('option');
+                option.value = city;
+                option.textContent = city;
+                locationFilter.appendChild(option);
+            });
+            
+            // 恢复之前的选中值
+            if (currentValue) {
+                locationFilter.value = currentValue;
+            }
+        }
+    } catch (error) {
+        console.error('获取城市列表失败:', error);
+    }
+}
+
+/**
  * 根据条件搜索职位
  */
 async function searchJobs() {
@@ -46,6 +84,13 @@ async function searchJobs() {
     if (city) params.append('city', city);
     if (education) params.append('education', education);
     if (workExperience) params.append('workExperience', workExperience);
+    
+    // 添加薪资筛选参数
+    if (salaryRange) {
+        const [min, max] = salaryRange.split('-').map(Number);
+        if (!isNaN(min)) params.append('salaryMin', min);
+        if (!isNaN(max)) params.append('salaryMax', max);
+    }
     
     // 添加排序参数
     switch (sort) {
@@ -186,10 +231,7 @@ function renderJobList(jobs) {
                     <button class="btn btn-outline detail-btn" data-job-id="${job.jobId}">查看详情</button>
                     <div class="job-action-buttons">
                         <button class="btn favorite-btn" data-job-id="${job.jobId}" style="display:none;">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                <path d="M14 7.5C14 11 8 14.5 8 14.5C8 14.5 2 11 2 7.5C2 5.9087 2.63214 4.38258 3.75736 3.25736C4.88258 2.13214 6.4087 1.5 8 1.5C9.5913 1.5 11.1174 2.13214 12.2426 3.25736C13.3679 4.38258 14 5.9087 14 7.5Z" 
-                                      stroke="currentColor" stroke-width="1.5" fill="none"/>
-                            </svg>
+                            收藏
                         </button>
                         <button class="btn btn-primary apply-btn" data-job-id="${job.jobId}">投递简历</button>
                     </div>
@@ -227,7 +269,7 @@ function bindJobCardEvents(currentUser) {
     
     // 收藏按钮
     document.querySelectorAll('.favorite-btn').forEach(button => {
-        const jobId = button.getAttribute('data-job-id');
+        const jobId = parseInt(button.getAttribute('data-job-id')); // 转换为整数
         if (jobId && currentUser && currentUser.role === 'job-seeker') {
             button.style.display = '';
             
@@ -238,11 +280,7 @@ function bindJobCardEvents(currentUser) {
             }).then(res => {
                 if (res && res.success && res.data === true) {
                     button.classList.add('favorited');
-                    button.innerHTML = `
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                            <path d="M14 7.5C14 11 8 14.5 8 14.5C8 14.5 2 11 2 7.5C2 5.9087 2.63214 4.38258 3.75736 3.25736C4.88258 2.13214 6.4087 1.5 8 1.5C9.5913 1.5 11.1174 2.13214 12.2426 3.25736C13.3679 4.38258 14 5.9087 14 7.5Z"/>
-                        </svg>
-                    `;
+                    button.textContent = '已收藏';
                 }
             }).catch(() => {});
             
@@ -260,12 +298,7 @@ function bindJobCardEvents(currentUser) {
                     
                     if (result.success) {
                         button.classList.remove('favorited');
-                        button.innerHTML = `
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                <path d="M14 7.5C14 11 8 14.5 8 14.5C8 14.5 2 11 2 7.5C2 5.9087 2.63214 4.38258 3.75736 3.25736C4.88258 2.13214 6.4087 1.5 8 1.5C9.5913 1.5 11.1174 2.13214 12.2426 3.25736C13.3679 4.38258 14 5.9087 14 7.5Z" 
-                                      stroke="currentColor" stroke-width="1.5" fill="none"/>
-                            </svg>
-                        `;
+                        button.textContent = '收藏';
                     } else {
                         alert(result.message || '取消收藏失败');
                     }
@@ -278,11 +311,7 @@ function bindJobCardEvents(currentUser) {
                     
                     if (result.success) {
                         button.classList.add('favorited');
-                        button.innerHTML = `
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                                <path d="M14 7.5C14 11 8 14.5 8 14.5C8 14.5 2 11 2 7.5C2 5.9087 2.63214 4.38258 3.75736 3.25736C4.88258 2.13214 6.4087 1.5 8 1.5C9.5913 1.5 11.1174 2.13214 12.2426 3.25736C13.3679 4.38258 14 5.9087 14 7.5Z"/>
-                            </svg>
-                        `;
+                        button.textContent = '已收藏';
                     } else {
                         alert(result.message || '收藏失败');
                     }

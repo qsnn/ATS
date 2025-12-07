@@ -24,12 +24,7 @@ function renderJobSearchView(container, currentUser) {
                             <label>工作地点</label>
                             <select id="location-filter" class="filter-select">
                                 <option value="">全部城市</option>
-                                <option value="北京">北京</option>
-                                <option value="上海">上海</option>
-                                <option value="深圳">深圳</option>
-                                <option value="广州">广州</option>
-                                <option value="杭州">杭州</option>
-                                <option value="成都">成都</option>
+                                <!-- 城市选项将通过API动态加载 -->
                             </select>
                         </div>
                         
@@ -106,6 +101,9 @@ function renderJobSearchView(container, currentUser) {
 
     // 初始化搜索组件
     initSearchComponents();
+    
+    // 初始化城市筛选选项
+    initCityFilter();
     
     // 初始搜索
     window.currentSearchState = {

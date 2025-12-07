@@ -13,6 +13,9 @@ import com.platform.ats.repository.JobInfoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class JobInfoServiceImpl extends ServiceImpl<JobInfoRepository, JobInfo> implements JobInfoService {
@@ -72,12 +75,43 @@ public class JobInfoServiceImpl extends ServiceImpl<JobInfoRepository, JobInfo> 
             queryWrapper.eq("ji.city", queryDto.getCity());
         }
         
+        // 学历要求筛选逻辑修改：大专包含本科和硕士，本科包含硕士
         if (queryDto.getEducation() != null && !queryDto.getEducation().isEmpty()) {
-            queryWrapper.eq("ji.education", queryDto.getEducation());
+            List<String> educations = new ArrayList<>();
+            switch (queryDto.getEducation()) {
+                case "大专":
+                    educations.add("大专");
+                    educations.add("本科");
+                    educations.add("硕士");
+                    educations.add("博士");
+                    break;
+                case "本科":
+                    educations.add("本科");
+                    educations.add("硕士");
+                    educations.add("博士");
+                    break;
+                case "硕士":
+                    educations.add("硕士");
+                    educations.add("博士");
+                    break;
+                default:
+                    educations.add(queryDto.getEducation());
+                    break;
+            }
+            queryWrapper.in("ji.education", educations);
         }
         
         if (queryDto.getWorkExperience() != null && !queryDto.getWorkExperience().isEmpty()) {
             queryWrapper.eq("ji.work_experience", queryDto.getWorkExperience());
+        }
+        
+        // 添加薪资筛选条件
+        if (queryDto.getSalaryMin() != null) {
+            queryWrapper.ge("ji.salary_max", queryDto.getSalaryMin());
+        }
+        
+        if (queryDto.getSalaryMax() != null) {
+            queryWrapper.le("ji.salary_min", queryDto.getSalaryMax());
         }
         
         // 添加排序
