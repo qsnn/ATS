@@ -1,8 +1,6 @@
 package com.platform.ats.entity.favorite;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -21,13 +19,16 @@ public class JobFavorite {
 
     private Long jobId;
 
+    @TableField(value = "create_time", fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
+    @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 
     /**
      * 删除标记：0-未删 1-已删
      */
+    @TableLogic
+    @TableField("delete_flag")
     private Integer deleteFlag;
 }
-

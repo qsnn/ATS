@@ -15,7 +15,6 @@
             ii.interviewee_id       AS intervieweeId,
             ii.interview_intro      AS interviewIntro,
             ii.interviewee_name     AS intervieweeName,
-            ii.create_time          AS interviewTime,
             ja.status               AS status
         FROM interview_info ii
             JOIN job_application ja ON ii.delivery_id = ja.application_id
@@ -27,4 +26,3 @@
     </select>
 
 </mapper>
-

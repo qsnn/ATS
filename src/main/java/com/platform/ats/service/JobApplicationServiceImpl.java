@@ -176,4 +176,28 @@ public class JobApplicationServiceImpl implements JobApplicationService {
         int rows = jobApplicationRepository.update(null, wrapper);
         return rows > 0;
     }
+    
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean withdrawApplication(Long applicationId, Long userId) {
+        if (applicationId == null || userId == null) {
+            throw new BizException(ErrorCode.BAD_REQUEST, "参数不完整");
+        }
+        
+        JobApplication application = jobApplicationRepository.selectById(applicationId);
+        if (application == null) {
+            throw new BizException(ErrorCode.NOT_FOUND, "申请记录不存在");
+        }
+        
+        if (!userId.equals(application.getUserId())) {
+            throw new BizException(ErrorCode.FORBIDDEN, "无权操作此申请");
+        }
+        
+        LambdaUpdateWrapper<JobApplication> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(JobApplication::getApplicationId, applicationId)
+                .set(JobApplication::getStatus, "WITHDRAWN")
+                .set(JobApplication::getUpdateTime, LocalDateTime.now());
+        int rows = jobApplicationRepository.update(null, wrapper);
+        return rows > 0;
+    }
 }

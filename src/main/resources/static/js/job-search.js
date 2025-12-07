@@ -188,7 +188,12 @@ async function applyJob(jobId) {
         return;
     }
 
-    const optionsText = resumes.map((r, index) => `${index + 1}. ${r.title || '未命名简历'}`).join('\n');
+    const optionsText = resumes.map((r, index) => {
+        // 修复简历标题显示问题
+        const title = r.resumeName || r.title || '未命名简历';
+        return `${index + 1}. ${title}`;
+    }).join('\n');
+    
     const input = prompt(`请选择要用于投递的简历编号：\n${optionsText}`);
     if (!input) return;
     const index = parseInt(input, 10) - 1;
@@ -228,7 +233,15 @@ async function viewJobDetail(jobId) {
             return;
         }
         const job = await resp.json();
-        const msg = `职位：${job.jobName || ''}\n公司：${job.companyName || ''}\n地点：${job.city || ''}\n经验要求：${job.workExperience || ''}\n学历要求：${job.education || ''}\n薪资范围：${(job.salaryMin || 0) / 1000}K - ${(job.salaryMax || 0) / 1000}K\n\n职位描述：\n${job.jobDesc || ''}`;
+        const msg = `职位：${job.jobName || ''}
+公司：${job.companyName || ''}
+地点：${job.city || ''}
+经验要求：${job.workExperience || ''}
+学历要求：${job.education || ''}
+薪资范围：${(job.salaryMin || 0) / 1000}K - ${(job.salaryMax || 0) / 1000}K
+
+职位描述：
+${job.jobDesc || ''}`;
         alert(msg);
     } catch (e) {
         console.error('查看职位详情异常:', e);

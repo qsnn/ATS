@@ -37,10 +37,6 @@ public class InterviewScheduleVO {
     /** 面试者姓名 */
     private String intervieweeName;
 
-    /** 面试时间，这里沿用创建时间，如后续表结构增加专门字段可再调整 */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime interviewTime;
-
     /** 当前面试状态：从职位申请或面试结果推导 */
     private String status;
 }

@@ -20,4 +20,7 @@ public interface JobApplicationService {
 
     // 更新申请状态（例如：REJECTED, INTERVIEWED 等）
     boolean updateStatus(Long applicationId, String status, String reason);
+    
+    // 求职者取消申请
+    boolean withdrawApplication(Long applicationId, Long userId);
 }

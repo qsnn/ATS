@@ -9,7 +9,7 @@ function renderInterviewsView(container, currentUser) {
                     <tr>
                         <th>职位名称</th>
                         <th>公司</th>
-                        <th>面试时间</th>
+                        <th>面试安排</th>
                         <th>状态</th>
                     </tr>
                 </thead>
@@ -65,8 +65,7 @@ async function loadInterviews(currentUser) {
             companyTd.textContent = item.companyName || '';
 
             const timeTd = document.createElement('td');
-            const t = item.interviewTime || '';
-            timeTd.textContent = t ? String(t).replace('T', ' ') : '';
+            timeTd.textContent = item.interviewIntro || '';
 
             const statusTd = document.createElement('td');
             statusTd.textContent = item.status || '';

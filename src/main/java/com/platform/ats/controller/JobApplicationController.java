@@ -38,13 +38,13 @@ public class JobApplicationController {
         return Result.success(res);
     }
 
-    // Employer 视角：按公司分页查询所有职位的申请人
+    // Employer 视角：分页查询该公司下所有申请记录
     @GetMapping("/company/{companyId}")
-    @Operation(summary = "分页查询公司所有职位的申请记录（企业端）")
+    @Operation(summary = "分页查询公司下所有申请记录")
     public Result<IPage<JobApplicationEmployerVO>> pageCompanyApplications(@PathVariable Long companyId,
-                                                                           @RequestParam(defaultValue = "1") long current,
-                                                                           @RequestParam(defaultValue = "10") long size,
-                                                                           @RequestParam(required = false) String status) {
+                                                                          @RequestParam(defaultValue = "1") long current,
+                                                                          @RequestParam(defaultValue = "10") long size,
+                                                                          @RequestParam(required = false) String status) {
         Page<JobApplicationEmployerVO> page = new Page<>(current, size);
         IPage<JobApplicationEmployerVO> res = jobApplicationService.pageCompanyApplications(page, companyId, status);
         return Result.success(res);
@@ -63,6 +63,14 @@ public class JobApplicationController {
     public Result<Boolean> updateStatus(@PathVariable Long applicationId,
                                         @RequestBody JobStatusUpdateRequest request) {
         boolean success = jobApplicationService.updateStatus(applicationId, request.getStatus(), request.getReason());
+        return Result.success(success);
+    }
+
+    @PutMapping("/{applicationId}/withdraw")
+    @Operation(summary = "取消申请")
+    public Result<Boolean> withdrawApplication(@PathVariable Long applicationId,
+                                              @RequestParam Long userId) {
+        boolean success = jobApplicationService.withdrawApplication(applicationId, userId);
         return Result.success(success);
     }
 

@@ -10,6 +10,7 @@ function renderApplicationsView(container, currentUser) {
                         <th>公司</th>
                         <th>申请日期</th>
                         <th>状态</th>
+                        <th>操作</th>
                     </tr>
                 </thead>
                 <tbody id="applications-tbody"></tbody>
@@ -83,10 +84,20 @@ async function loadApplications(currentUser) {
             const statusTd = document.createElement('td');
             statusTd.textContent = mapApplicationStatus(app.status);
 
+            const actionTd = document.createElement('td');
+            if (app.status === 'APPLIED' || app.status === 'SCREENING') {
+                const cancelButton = document.createElement('button');
+                cancelButton.className = 'btn btn-danger btn-sm';
+                cancelButton.textContent = '取消申请';
+                cancelButton.onclick = () => withdrawApplication(app.applicationId, currentUser.userId);
+                actionTd.appendChild(cancelButton);
+            }
+
             tr.appendChild(jobTd);
             tr.appendChild(companyTd);
             tr.appendChild(dateTd);
             tr.appendChild(statusTd);
+            tr.appendChild(actionTd);
 
             tbody.appendChild(tr);
         });
@@ -113,5 +124,40 @@ function mapApplicationStatus(status) {
             return '已撤回';
         default:
             return status;
+    }
+}
+
+async function withdrawApplication(applicationId, userId) {
+    if (!confirm('确定要取消此申请吗？')) {
+        return;
+    }
+    
+    try {
+        const base = window.API_BASE || '/api';
+        const resp = await fetch(`${base}/applications/${applicationId}/withdraw?userId=${userId}`, {
+            method: 'PUT'
+        });
+        
+        if (!resp.ok) {
+            const text = await resp.text();
+            alert(`网络错误: ${resp.status} ${text}`);
+            return;
+        }
+        
+        const json = await resp.json();
+        if (json.code !== 200 || !json.data) {
+            alert(json.message || '取消申请失败');
+            return;
+        }
+        
+        alert('申请已取消');
+        // 重新加载申请列表
+        const currentUser = window.Auth && Auth.getCurrentUser ? Auth.getCurrentUser() : null;
+        if (currentUser) {
+            loadApplications(currentUser);
+        }
+    } catch (e) {
+        console.error('取消申请异常:', e);
+        alert('请求异常，请稍后重试');
     }
 }
