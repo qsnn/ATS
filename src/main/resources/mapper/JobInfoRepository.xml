@@ -67,11 +67,11 @@
             <if test="query.education != null and query.education != ''">
                 AND (ji.education = #{query.education}
                 <choose>
-                    <when test="query.education == '大专'">
-                        OR ji.education IN ('本科', '硕士')
+                    <when test="query.education == '硕士'">
+                        OR ji.education IN ('本科', '大专')
                     </when>
                     <when test="query.education == '本科'">
-                        OR ji.education IN ('硕士')
+                        OR ji.education = '大专'
                     </when>
                 </choose>
                 )

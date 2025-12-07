@@ -32,9 +32,9 @@ function renderJobSearchView(container, currentUser) {
                             <label>学历要求</label>
                             <select id="education-filter" class="filter-select">
                                 <option value="">不限学历</option>
-                                <option value="大专">大专</option>
-                                <option value="本科">本科</option>
                                 <option value="硕士">硕士</option>
+                                <option value="本科">本科</option>
+                                <option value="大专">大专</option>
                             </select>
                         </div>
                         
