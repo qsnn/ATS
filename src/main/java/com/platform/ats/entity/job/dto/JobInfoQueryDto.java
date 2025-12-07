@@ -19,8 +19,8 @@ public class JobInfoQueryDto implements Serializable {
     private Long companyId;
     
     // 薪资筛选
-    private Integer salaryMin;
-    private Integer salaryMax;
+    private BigDecimal salaryMin;
+    private BigDecimal salaryMax;
     
     // 排序字段
     private String orderBy;

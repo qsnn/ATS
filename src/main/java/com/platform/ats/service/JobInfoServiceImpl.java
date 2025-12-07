@@ -107,11 +107,11 @@ public class JobInfoServiceImpl extends ServiceImpl<JobInfoRepository, JobInfo> 
         
         // 添加薪资筛选条件
         if (queryDto.getSalaryMin() != null) {
-            queryWrapper.ge("ji.salary_max", new BigDecimal(queryDto.getSalaryMin()));
+            queryWrapper.ge("ji.salary_max", queryDto.getSalaryMin());
         }
         
         if (queryDto.getSalaryMax() != null) {
-            queryWrapper.le("ji.salary_min", new BigDecimal(queryDto.getSalaryMax()));
+            queryWrapper.le("ji.salary_min", queryDto.getSalaryMax());
         }
         
         // 添加排序

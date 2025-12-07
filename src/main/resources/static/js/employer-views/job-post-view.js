@@ -99,8 +99,8 @@ async function postJob(user) {
     }
 
     // 验证薪资输入
-    const salaryMin = parseInt(salaryMinInput, 10);
-    const salaryMax = parseInt(salaryMaxInput, 10);
+    const salaryMin = parseFloat(salaryMinInput);
+    const salaryMax = parseFloat(salaryMaxInput);
     
     if (isNaN(salaryMin) || isNaN(salaryMax)) {
         alert('请填写有效的数字薪资');

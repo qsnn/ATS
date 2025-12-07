@@ -62,9 +62,6 @@
             <if test="query.workExperience != null">
                 AND ji.work_experience >= #{query.workExperience}
             </if>
-            <if test="query.workExperience2 != null">
-                AND ji.work_experience_2 >= #{query.workExperience2}
-            </if>
             <if test="query.salaryMin != null">
                 AND ji.salary_max >= #{query.salaryMin}
             </if>

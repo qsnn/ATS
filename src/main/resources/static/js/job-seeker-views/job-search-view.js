@@ -53,9 +53,9 @@ function renderJobSearchView(container, currentUser) {
                         <div class="filter-group">
                             <label>薪资范围</label>
                             <div style="display: flex; gap: 5px; align-items: center;">
-                                <input type="number" id="salary-min" placeholder="最低薪资" class="filter-select" style="flex: 1; min-width: 0;">
+                                <input type="number" step="0.01" id="salary-min" placeholder="最低薪资" class="filter-select" style="flex: 1; min-width: 0;">
                                 <span>-</span>
-                                <input type="number" id="salary-max" placeholder="最高薪资" class="filter-select" style="flex: 1; min-width: 0;">
+                                <input type="number" step="0.01" id="salary-max" placeholder="最高薪资" class="filter-select" style="flex: 1; min-width: 0;">
                             </div>
                         </div>
                     </div>
