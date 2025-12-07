@@ -1,8 +1,32 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.platform.ats.repository.JobInfoRepository">
 
-    <select id="findJobPage" resultType="com.platform.ats.entity.job.dto.JobInfoDetailDto">
+    <resultMap id="JobInfoDetailDtoMap" type="com.platform.ats.entity.job.dto.JobInfoDetailDto">
+        <id property="jobId" column="job_id"/>
+        <result property="companyId" column="company_id"/>
+        <result property="jobName" column="job_name"/>
+        <result property="department" column="department"/>
+        <result property="province" column="province"/>
+        <result property="city" column="city"/>
+        <result property="district" column="district"/>
+        <result property="salaryMin" column="salary_min"/>
+        <result property="salaryMax" column="salary_max"/>
+        <result property="education" column="education"/>
+        <result property="workExperience" column="work_experience"/>
+        <result property="skillRequire" column="skill_require"/>
+        <result property="jobDesc" column="job_desc"/>
+        <result property="qualification" column="qualification"/>
+        <result property="publisherId" column="publisher_id"/>
+        <result property="publishStatus" column="publish_status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="deleteFlag" column="delete_flag"/>
+        <result property="companyName" column="company_name"/>
+        <result property="publisherName" column="publisher_name"/>
+    </resultMap>
+
+    <select id="findJobPage" resultMap="JobInfoDetailDtoMap">
         SELECT
         ji.*,
         ci.company_name,
@@ -13,6 +37,7 @@
         LEFT JOIN sys_user su ON ji.publisher_id = su.user_id
         <where>
             ji.delete_flag = 0
+            AND ji.publish_status = 1
             <if test="query.jobName != null and query.jobName != ''">
                 AND ji.job_name LIKE CONCAT('%', #{query.jobName}, '%')
             </if>
@@ -32,7 +57,7 @@
                 AND ji.company_id = #{query.companyId}
             </if>
         </where>
-        ORDER BY ji.update_time DESC
+        ${ew.customSqlSegment}
     </select>
 
 </mapper>

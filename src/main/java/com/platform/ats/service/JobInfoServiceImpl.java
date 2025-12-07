@@ -1,5 +1,6 @@
 package com.platform.ats.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -12,14 +13,19 @@ import com.platform.ats.repository.JobInfoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * 职位信息表 服务实现类
- */
+
 @Service
 public class JobInfoServiceImpl extends ServiceImpl<JobInfoRepository, JobInfo> implements JobInfoService {
 
+    private final JobInfoRepository jobInfoRepository;
+
+    public JobInfoServiceImpl(JobInfoRepository jobInfoRepository) {
+        this.jobInfoRepository = jobInfoRepository;
+    }
+
     /**
      * 发布职位
+     *
      * @param jobId 职位ID
      * @return 是否成功
      */
@@ -34,6 +40,7 @@ public class JobInfoServiceImpl extends ServiceImpl<JobInfoRepository, JobInfo> 
 
     /**
      * 下架职位
+     *
      * @param jobId 职位ID
      * @return 是否成功
      */
@@ -54,8 +61,51 @@ public class JobInfoServiceImpl extends ServiceImpl<JobInfoRepository, JobInfo> 
      */
     @Override
     public IPage<JobInfoDetailDto> findJobPage(Page<JobInfoDetailDto> page, JobInfoQueryDto queryDto) {
+        QueryWrapper<JobInfoDetailDto> queryWrapper = new QueryWrapper<>();
+        
+        // 添加筛选条件
+        if (queryDto.getJobName() != null && !queryDto.getJobName().isEmpty()) {
+            queryWrapper.like("ji.job_name", queryDto.getJobName());
+        }
+        
+        if (queryDto.getCity() != null && !queryDto.getCity().isEmpty()) {
+            queryWrapper.eq("ji.city", queryDto.getCity());
+        }
+        
+        if (queryDto.getEducation() != null && !queryDto.getEducation().isEmpty()) {
+            queryWrapper.eq("ji.education", queryDto.getEducation());
+        }
+        
+        if (queryDto.getWorkExperience() != null && !queryDto.getWorkExperience().isEmpty()) {
+            queryWrapper.eq("ji.work_experience", queryDto.getWorkExperience());
+        }
+        
+        // 添加排序
+        if (queryDto.getOrderBy() != null && !queryDto.getOrderBy().isEmpty()) {
+            String direction = "ASC";
+            if (queryDto.getOrderDirection() != null && queryDto.getOrderDirection().equalsIgnoreCase("DESC")) {
+                direction = "DESC";
+            }
+            
+            switch (queryDto.getOrderBy()) {
+                case "salary_max":
+                    queryWrapper.orderBy(true, direction.equals("DESC"), "ji.salary_max");
+                    break;
+                case "salary_min":
+                    queryWrapper.orderBy(true, direction.equals("DESC"), "ji.salary_min");
+                    break;
+                case "update_time":
+                default:
+                    queryWrapper.orderBy(true, direction.equals("DESC"), "ji.update_time");
+                    break;
+            }
+        } else {
+            // 默认按更新时间倒序排列
+            queryWrapper.orderBy(true, false, "ji.update_time");
+        }
+        
         // baseMapper 是 ServiceImpl 内置的与 Repository/Mapper 对应的对象
-        return baseMapper.findJobPage(page, queryDto);
+        return jobInfoRepository.findJobPage(page, queryDto, queryWrapper);
     }
 
     /**

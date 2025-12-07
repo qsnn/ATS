@@ -39,35 +39,47 @@ public class JobInfoController {
     }
 
     /**
-     * 新增或修改职位
-     */
-    @PostMapping("/saveOrUpdate")
-    public ResponseEntity<Boolean> saveOrUpdate(@RequestBody JobInfo jobInfo) {
-        return ResponseEntity.ok(jobInfoService.saveOrUpdate(jobInfo));
-    }
-
-
-    /**
-     * 根据ID删除职位
-     */
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Boolean> delete(@PathVariable Long id) {
-        return ResponseEntity.ok(jobInfoService.removeById(id));
-    }
-
-    /**
      * 发布职位
      */
-    @PutMapping("/publish/{jobId}")
-    public ResponseEntity<Boolean> publishJob(@PathVariable Long jobId) {
-        return ResponseEntity.ok(jobInfoService.publishJob(jobId));
+    @PutMapping("/publish/{id}")
+    public ResponseEntity<Boolean> publishJob(@PathVariable Long id) {
+        boolean result = jobInfoService.publishJob(id);
+        return ResponseEntity.ok(result);
     }
 
     /**
      * 下架职位
      */
-    @PutMapping("/unpublish/{jobId}")
-    public ResponseEntity<Boolean> unpublishJob(@PathVariable Long jobId) {
-        return ResponseEntity.ok(jobInfoService.unpublishJob(jobId));
+    @PutMapping("/unpublish/{id}")
+    public ResponseEntity<Boolean> unpublishJob(@PathVariable Long id) {
+        boolean result = jobInfoService.unpublishJob(id);
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * 创建职位
+     */
+    @PostMapping
+    public ResponseEntity<Boolean> create(@RequestBody JobInfo jobInfo) {
+        boolean result = jobInfoService.saveOrUpdate(jobInfo);
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * 更新职位
+     */
+    @PutMapping
+    public ResponseEntity<Boolean> update(@RequestBody JobInfo jobInfo) {
+        boolean result = jobInfoService.saveOrUpdate(jobInfo);
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * 删除职位
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Boolean> delete(@PathVariable Long id) {
+        boolean result = jobInfoService.removeById(id);
+        return ResponseEntity.ok(result);
     }
 }
