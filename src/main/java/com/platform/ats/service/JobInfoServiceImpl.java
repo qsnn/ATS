@@ -101,8 +101,8 @@ public class JobInfoServiceImpl extends ServiceImpl<JobInfoRepository, JobInfo> 
             queryWrapper.in("ji.education", educations);
         }
         
-        if (queryDto.getWorkExperience() != null && !queryDto.getWorkExperience().isEmpty()) {
-            queryWrapper.eq("ji.work_experience", queryDto.getWorkExperience());
+        if (queryDto.getWorkExperience2() != null) {
+            queryWrapper.ge("ji.work_experience_2", queryDto.getWorkExperience2());
         }
         
         // 添加薪资筛选条件

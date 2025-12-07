@@ -15,6 +15,7 @@ public class JobInfoQueryDto implements Serializable {
     private String city;
     private String education;
     private String workExperience;
+    private Integer workExperience2;
     private Integer publishStatus;
     private Long companyId;
     

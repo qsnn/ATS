@@ -36,7 +36,7 @@ async function searchJobs() {
     if (jobName) params.append('jobName', jobName);
     if (city) params.append('city', city);
     if (education) params.append('education', education);
-    if (workExperience) params.append('workExperience', workExperience);
+    if (workExperience) params.append('workExperience2', workExperience);
 
     try {
         const url = `${API_BASE_URL}/job/info/list?${params.toString()}`;

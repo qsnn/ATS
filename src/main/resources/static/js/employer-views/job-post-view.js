@@ -31,12 +31,22 @@ function renderJobPostView(container, currentUser) {
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>工作经验要求</label>
-                        <input type="text" id="job-experience" placeholder="如：3-5年">
+                        <label>工作经验要求（最少年限）</label>
+                        <select id="job-experience">
+                            <option value="0">应届生</option>
+                            <option value="1">1年及以上</option>
+                            <option value="3">3年及以上</option>
+                            <option value="5">5年及以上</option>
+                            <option value="10">10年及以上</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label>学历要求</label>
-                        <input type="text" id="job-education" placeholder="如：本科">
+                        <select id="job-education">
+                            <option value="大专">大专</option>
+                            <option value="本科">本科</option>
+                            <option value="硕士">硕士</option>
+                        </select>
                     </div>
                 </div>
 
@@ -72,8 +82,8 @@ async function postJob(user) {
     const province = document.getElementById('job-province').value.trim();
     const city = document.getElementById('job-city').value.trim();
     const district = document.getElementById('job-district').value.trim();
-    const experience = document.getElementById('job-experience').value.trim();
-    const education = document.getElementById('job-education').value.trim();
+    const experience = document.getElementById('job-experience').value;
+    const education = document.getElementById('job-education').value;
     const description = document.getElementById('job-description').value.trim();
     const skills = document.getElementById('job-skills').value.trim();
     const requirements = document.getElementById('job-requirements').value.trim();
@@ -105,6 +115,7 @@ async function postJob(user) {
         salaryMin,
         salaryMax,
         workExperience: experience || null,
+        workExperience2: experience ? parseInt(experience) : null,
         education: education || null,
         skillRequire: skills || null,
         jobDesc: description,
