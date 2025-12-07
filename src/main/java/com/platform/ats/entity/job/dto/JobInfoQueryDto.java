@@ -14,14 +14,13 @@ public class JobInfoQueryDto implements Serializable {
     private String jobName;
     private String city;
     private String education;
-    private String workExperience;
-    private Integer workExperience2;
+    private Integer workExperience;
     private Integer publishStatus;
     private Long companyId;
     
     // 薪资筛选
-    private BigDecimal salaryMin;
-    private BigDecimal salaryMax;
+    private Integer salaryMin;
+    private Integer salaryMax;
     
     // 排序字段
     private String orderBy;

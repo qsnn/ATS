@@ -33,12 +33,12 @@ public class JobFavoriteServiceImpl implements JobFavoriteService {
     @Transactional(rollbackFor = Exception.class)
     public Long addFavorite(Long userId, Long jobId) {
         if (userId == null || jobId == null) {
-            throw new BizException(ErrorCode.BAD_REQUEST, "收藏参数不完整");
+            throw new BizException(ErrorCode.PARAM_MISSING, "收藏参数不完整");
         }
 
         JobInfo jobInfo = jobInfoRepository.selectById(jobId);
         if (jobInfo == null) {
-            throw new BizException(ErrorCode.NOT_FOUND, "职位不存在");
+            throw new BizException(ErrorCode.JOB_NOT_FOUND, "职位不存在");
         }
 
         // 先尝试恢复已逻辑删除的收藏记录
@@ -82,7 +82,7 @@ public class JobFavoriteServiceImpl implements JobFavoriteService {
     @Transactional(rollbackFor = Exception.class)
     public boolean removeFavorite(Long userId, Long jobId) {
         if (userId == null || jobId == null) {
-            throw new BizException(ErrorCode.BAD_REQUEST, "取消收藏参数不完整");
+            throw new BizException(ErrorCode.PARAM_MISSING, "取消收藏参数不完整");
         }
         // 使用 LambdaUpdateWrapper 直接更新，绕过 MyBatis Plus 逻辑删除拦截
         LambdaUpdateWrapper<JobFavorite> updateWrapper = new LambdaUpdateWrapper<>();

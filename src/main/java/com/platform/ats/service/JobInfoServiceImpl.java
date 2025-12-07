@@ -101,17 +101,17 @@ public class JobInfoServiceImpl extends ServiceImpl<JobInfoRepository, JobInfo> 
             queryWrapper.in("ji.education", educations);
         }
         
-        if (queryDto.getWorkExperience2() != null) {
-            queryWrapper.ge("ji.work_experience_2", queryDto.getWorkExperience2());
+        if (queryDto.getWorkExperience() != null) {
+            queryWrapper.ge("ji.work_experience", queryDto.getWorkExperience());
         }
         
         // 添加薪资筛选条件
         if (queryDto.getSalaryMin() != null) {
-            queryWrapper.ge("ji.salary_max", queryDto.getSalaryMin());
+            queryWrapper.ge("ji.salary_max", new BigDecimal(queryDto.getSalaryMin()));
         }
         
         if (queryDto.getSalaryMax() != null) {
-            queryWrapper.le("ji.salary_min", queryDto.getSalaryMax());
+            queryWrapper.le("ji.salary_min", new BigDecimal(queryDto.getSalaryMax()));
         }
         
         // 添加排序
@@ -154,7 +154,7 @@ public class JobInfoServiceImpl extends ServiceImpl<JobInfoRepository, JobInfo> 
         // 例如：校验薪资范围
         if (jobInfo.getSalaryMin() != null && jobInfo.getSalaryMax() != null) {
             if (jobInfo.getSalaryMin().compareTo(jobInfo.getSalaryMax()) > 0) {
-                throw new BizException(ErrorCode.BAD_REQUEST, "最低薪资不能高于最高薪资");
+                throw new BizException(ErrorCode.JOB_SALARY_RANGE_INVALID, "最低薪资不能高于最高薪资");
             }
         }
         // 例如：如果职位ID为空，则为新增，设置默认状态为草稿

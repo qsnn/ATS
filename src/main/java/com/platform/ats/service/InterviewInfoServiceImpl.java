@@ -33,16 +33,16 @@ public class InterviewInfoServiceImpl implements InterviewInfoService {
     public InterviewInfoVO create(InterviewInfo interviewInfo) {
         // 参数校验
         if (interviewInfo == null) {
-            throw new BizException(ErrorCode.BAD_REQUEST, "面试信息不能为空");
+            throw new BizException(ErrorCode.PARAM_MISSING, "面试信息不能为空");
         }
 
         // 通过 deliveryId 反查投递记录，填充面试者ID
         if (interviewInfo.getDeliveryId() == null) {
-            throw new BizException(ErrorCode.BAD_REQUEST, "投递记录ID不能为空");
+            throw new BizException(ErrorCode.PARAM_MISSING, "投递记录ID不能为空");
         }
         JobApplication application = jobApplicationRepository.selectById(interviewInfo.getDeliveryId());
         if (application == null) {
-            throw new BizException(ErrorCode.NOT_FOUND, "对应的投递记录不存在");
+            throw new BizException(ErrorCode.APPLICATION_NOT_FOUND, "对应的投递记录不存在");
         }
         interviewInfo.setIntervieweeId(application.getUserId());
 
@@ -60,12 +60,12 @@ public class InterviewInfoServiceImpl implements InterviewInfoService {
     public InterviewInfoVO update(InterviewInfo interviewInfo) {
         // 参数校验
         if (interviewInfo == null || interviewInfo.getArrangeId() == null) {
-            throw new BizException(ErrorCode.BAD_REQUEST, "面试信息或安排ID不能为空");
+            throw new BizException(ErrorCode.INTERVIEW_NOT_FOUND, "面试信息或安排ID不能为空");
         }
 
         int rows = interviewInfoRepository.updateById(interviewInfo);
         if (rows == 0) {
-            throw new BizException(ErrorCode.NOT_FOUND, "面试安排不存在或更新失败");
+            throw new BizException(ErrorCode.INTERVIEW_NOT_FOUND, "面试安排不存在或更新失败");
         }
 
         InterviewInfo updatedInterviewInfo = interviewInfoRepository.selectById(interviewInfo.getArrangeId());
@@ -78,7 +78,7 @@ public class InterviewInfoServiceImpl implements InterviewInfoService {
     @Transactional(rollbackFor = Exception.class)
     public boolean delete(Long arrangeId) {
         if (arrangeId == null) {
-            throw new BizException(ErrorCode.BAD_REQUEST, "安排ID不能为空");
+            throw new BizException(ErrorCode.PARAM_MISSING, "安排ID不能为空");
         }
 
         UpdateWrapper<InterviewInfo> updateWrapper = new UpdateWrapper<>();
@@ -87,7 +87,7 @@ public class InterviewInfoServiceImpl implements InterviewInfoService {
 
         int result = interviewInfoRepository.update(null, updateWrapper);
         if (result == 0) {
-            throw new BizException(ErrorCode.NOT_FOUND, "面试安排不存在或删除失败");
+            throw new BizException(ErrorCode.INTERVIEW_NOT_FOUND, "面试安排不存在或删除失败");
         }
 
         return true;
@@ -96,7 +96,7 @@ public class InterviewInfoServiceImpl implements InterviewInfoService {
     @Override
     public List<InterviewInfoVO> getById(Long interviewerId) {
         if (interviewerId == null) {
-            throw new BizException(ErrorCode.BAD_REQUEST, "面试官ID不能为空");
+            throw new BizException(ErrorCode.PARAM_MISSING, "面试官ID不能为空");
         }
         List<InterviewInfo> interviewInfoList = interviewInfoRepository.selectList(new LambdaQueryWrapper<InterviewInfo>()
                 .eq(InterviewInfo::getInterviewerId, interviewerId)
@@ -114,7 +114,7 @@ public class InterviewInfoServiceImpl implements InterviewInfoService {
     @Override
     public List<InterviewScheduleVO> getByUserId(Long userId) {
         if (userId == null) {
-            throw new BizException(ErrorCode.BAD_REQUEST, "面试者ID不能为空");
+            throw new BizException(ErrorCode.PARAM_MISSING, "面试者ID不能为空");
         }
         // 使用自定义 join 查询，返回带职位和公司信息的面试安排
         return interviewInfoRepository.selectScheduleByUserId(userId);

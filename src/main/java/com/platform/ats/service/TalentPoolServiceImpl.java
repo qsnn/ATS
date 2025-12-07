@@ -33,7 +33,7 @@ public class TalentPoolServiceImpl implements TalentPoolService {
     @Override
     public TalentPoolVO update(TalentPool talentPool) {
         if (talentPool.getTalentId() == null) {
-            throw new BizException(ErrorCode.BAD_REQUEST, "talentId不能为空");
+            throw new BizException(ErrorCode.TALENT_NOT_FOUND, "talentId不能为空");
         }
         talentPool.setDeleteFlag(null);
         talentPoolRepository.updateById(talentPool);
@@ -68,7 +68,7 @@ public class TalentPoolServiceImpl implements TalentPoolService {
     @Override
     public List<TalentPoolDetailVO> listDetailByCompanyId(Long companyId) {
         if (companyId == null) {
-            throw new BizException(ErrorCode.BAD_REQUEST, "companyId不能为空");
+            throw new BizException(ErrorCode.PARAM_MISSING, "companyId不能为空");
         }
         return talentPoolRepository.selectDetailByCompanyId(companyId);
     }

@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -41,13 +42,18 @@ public class JobInfoController {
      */
     @GetMapping("/cities")
     public ResponseEntity<List<String>> getAllCities() {
-        List<String> cities = jobInfoService.list().stream()
-                .map(JobInfo::getCity)
-                .filter(city -> city != null && !city.isEmpty())
-                .distinct()
-                .sorted()
-                .toList();
-        return ResponseEntity.ok(cities);
+        try {
+            List<String> cities = jobInfoService.list().stream()
+                    .map(JobInfo::getCity)
+                    .filter(city -> city != null && !city.isEmpty())
+                    .distinct()
+                    .sorted()
+                    .toList();
+            return ResponseEntity.ok(cities);
+        } catch (Exception e) {
+            // 发生异常时返回空列表而不是500错误
+            return ResponseEntity.ok(new ArrayList<>());
+        }
     }
 
     /**

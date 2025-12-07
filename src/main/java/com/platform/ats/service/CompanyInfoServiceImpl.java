@@ -32,7 +32,7 @@ public class CompanyInfoServiceImpl implements CompanyInfoService {
     @Override
     public CompanyInfoVO update(CompanyInfo companyInfo) {
         if (companyInfo.getCompanyId() == null) {
-            throw new BizException(ErrorCode.BAD_REQUEST, "companyId不能为空");
+            throw new BizException(ErrorCode.PARAM_MISSING, "companyId不能为空");
         }
         companyInfo.setDeleteFlag(null);
         companyInfoRepository.updateById(companyInfo);

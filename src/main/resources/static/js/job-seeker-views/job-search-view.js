@@ -139,7 +139,8 @@ function initSearchComponents() {
     locationFilter.addEventListener('change', triggerSearch);
     educationFilter.addEventListener('change', triggerSearch);
     experienceFilter.addEventListener('change', triggerSearch);
-    salaryFilter.addEventListener('change', triggerSearch);
+    salaryMin.addEventListener('input', triggerSearch);
+    salaryMax.addEventListener('input', triggerSearch);
     sortOrder.addEventListener('change', triggerSearch);
     
     // 重置筛选
@@ -148,7 +149,8 @@ function initSearchComponents() {
         locationFilter.value = '';
         educationFilter.value = '';
         experienceFilter.value = '';
-        salaryFilter.value = '';
+        salaryMin.value = '';
+        salaryMax.value = '';
         sortOrder.value = 'update_time_desc';
         triggerSearch();
     });

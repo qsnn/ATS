@@ -43,12 +43,12 @@ public class ResumeInfoServiceImpl implements ResumeInfoService {
     @Override
     public ResumeInfoVo update(ResumeInfoDTO resumeInfoDTO) {
         if (resumeInfoDTO.getResumeId() == null) {
-            throw new BizException(ErrorCode.BAD_REQUEST, "resumeId不能为空");
+            throw new BizException(ErrorCode.PARAM_MISSING, "resumeId不能为空");
         }
 
         ResumeInfo resumeInfo = resumeInfoRepository.selectById(resumeInfoDTO.getResumeId());
         if (resumeInfo == null) {
-            throw new BizException(ErrorCode.NOT_FOUND, "简历不存在");
+            throw new BizException(ErrorCode.RESUME_NOT_FOUND, "简历不存在");
         }
 
         BeanUtils.copyProperties(resumeInfoDTO, resumeInfo);
@@ -65,7 +65,7 @@ public class ResumeInfoServiceImpl implements ResumeInfoService {
     @Transactional  // 添加事务注解
     public boolean delete(Long resumeId) {
         if (resumeId == null) {
-            throw new BizException(ErrorCode.BAD_REQUEST, "resumeId不能为空");
+            throw new BizException(ErrorCode.PARAM_MISSING, "resumeId不能为空");
         }
 
         // 方法1：使用 UpdateWrapper（推荐）
@@ -78,7 +78,7 @@ public class ResumeInfoServiceImpl implements ResumeInfoService {
         System.out.println("UpdateWrapper 更新结果: " + result);
 
         if (result == 0) {
-            throw new BizException(ErrorCode.NOT_FOUND, "简历不存在或更新失败");
+            throw new BizException(ErrorCode.RESUME_NOT_FOUND, "简历不存在或更新失败");
         }
 
         return true;
@@ -88,7 +88,7 @@ public class ResumeInfoServiceImpl implements ResumeInfoService {
     public ResumeInfoDTO getById(Long resumeId) {
         ResumeInfo resumeInfo = resumeInfoRepository.selectById(resumeId);
         if (resumeInfo == null) {
-            throw new BizException(ErrorCode.NOT_FOUND, "简历不存在");
+            throw new BizException(ErrorCode.RESUME_NOT_FOUND, "简历不存在");
         }
 
         ResumeInfoDTO resumeInfoDTO = new ResumeInfoDTO();
@@ -107,7 +107,7 @@ public class ResumeInfoServiceImpl implements ResumeInfoService {
     @Override
     public List<ResumeInfoDTO> listByUserId(Long userId) {
         if (userId == null) {
-            throw new BizException(ErrorCode.BAD_REQUEST, "userId不能为空");
+            throw new BizException(ErrorCode.PARAM_MISSING, "userId不能为空");
         }
         List<ResumeInfo> list = resumeInfoRepository.selectList(
                 new LambdaQueryWrapper<ResumeInfo>()

@@ -45,17 +45,20 @@ public class JobApplicationServiceImpl implements JobApplicationService {
     @Transactional(rollbackFor = Exception.class)
     public Long apply(JobApplicationCreateDTO dto) {
         if (dto == null || dto.getUserId() == null || dto.getJobId() == null || dto.getResumeId() == null) {
-            throw new BizException(ErrorCode.BAD_REQUEST, "申请参数不完整");
+            throw new BizException(ErrorCode.APPLICATION_RESUME_REQUIRED, "申请参数不完整");
         }
 
         JobInfo jobInfo = jobInfoRepository.selectById(dto.getJobId());
         if (jobInfo == null) {
-            throw new BizException(ErrorCode.NOT_FOUND, "职位不存在");
+            throw new BizException(ErrorCode.JOB_NOT_FOUND, "职位不存在");
         }
 
         ResumeInfo resumeInfo = resumeInfoRepository.selectById(dto.getResumeId());
-        if (resumeInfo == null || !dto.getUserId().equals(resumeInfo.getUserId())) {
-            throw new BizException(ErrorCode.FORBIDDEN, "无法使用该简历申请");
+        if (resumeInfo == null) {
+            throw new BizException(ErrorCode.RESUME_NOT_FOUND, "简历不存在");
+        }
+        if (!dto.getUserId().equals(resumeInfo.getUserId())) {
+            throw new BizException(ErrorCode.RESUME_OWNER_MISMATCH, "无法使用该简历申请");
         }
 
         Long count = jobApplicationRepository.selectCount(new LambdaQueryWrapper<JobApplication>()
@@ -63,7 +66,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
                 .eq(JobApplication::getJobId, dto.getJobId())
                 .eq(JobApplication::getResumeId, dto.getResumeId()));
         if (count != null && count > 0) {
-            throw new BizException(ErrorCode.BAD_REQUEST, "已投递过该职位");
+            throw new BizException(ErrorCode.APPLICATION_ALREADY_EXISTS, "已投递过该职位");
         }
 
         JobApplication entity = new JobApplication();
@@ -166,7 +169,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
     @Override
     public boolean updateStatus(Long applicationId, String status, String reason) {
         if (applicationId == null || status == null || status.isEmpty()) {
-            throw new BizException(ErrorCode.BAD_REQUEST, "状态更新参数不完整");
+            throw new BizException(ErrorCode.APPLICATION_STATUS_INVALID, "状态更新参数不完整");
         }
 
         LambdaUpdateWrapper<JobApplication> wrapper = new LambdaUpdateWrapper<>();
@@ -181,18 +184,18 @@ public class JobApplicationServiceImpl implements JobApplicationService {
     @Transactional(rollbackFor = Exception.class)
     public boolean withdrawApplication(Long applicationId, Long userId) {
         if (applicationId == null || userId == null) {
-            throw new BizException(ErrorCode.BAD_REQUEST, "参数不完整");
+            throw new BizException(ErrorCode.PARAM_MISSING, "参数不完整");
         }
-        
+
         JobApplication application = jobApplicationRepository.selectById(applicationId);
         if (application == null) {
-            throw new BizException(ErrorCode.NOT_FOUND, "申请记录不存在");
+            throw new BizException(ErrorCode.APPLICATION_NOT_FOUND, "申请记录不存在");
         }
-        
+
         if (!userId.equals(application.getUserId())) {
-            throw new BizException(ErrorCode.FORBIDDEN, "无权操作此申请");
+            throw new BizException(ErrorCode.APPLICATION_OWNER_MISMATCH, "无权操作此申请");
         }
-        
+
         LambdaUpdateWrapper<JobApplication> wrapper = new LambdaUpdateWrapper<>();
         wrapper.eq(JobApplication::getApplicationId, applicationId)
                 .set(JobApplication::getStatus, "WITHDRAWN")

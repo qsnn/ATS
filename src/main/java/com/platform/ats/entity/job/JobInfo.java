@@ -47,10 +47,7 @@ public class JobInfo implements Serializable {
     private String education;
 
     @TableField("work_experience")
-    private String workExperience;
-
-    @TableField("work_experience_2")
-    private Integer workExperience2;
+    private Integer workExperience;
 
     @TableField("skill_require")
     private String skillRequire;
