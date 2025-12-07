@@ -16,18 +16,38 @@ function renderJobPostView(container, currentUser) {
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>工作地点 *</label>
-                        <input type="text" id="job-location" required>
+                        <label>省份 *</label>
+                        <input type="text" id="job-province" required>
                     </div>
+                    <div class="form-group">
+                        <label>城市 *</label>
+                        <input type="text" id="job-city" required>
+                    </div>
+                    <div class="form-group">
+                        <label>地区</label>
+                        <input type="text" id="job-district">
+                    </div>
+                </div>
+
+                <div class="form-row">
                     <div class="form-group">
                         <label>工作经验要求</label>
                         <input type="text" id="job-experience" placeholder="如：3-5年">
+                    </div>
+                    <div class="form-group">
+                        <label>学历要求</label>
+                        <input type="text" id="job-education" placeholder="如：本科">
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label>职位描述 *</label>
                     <textarea id="job-description" rows="6" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>技能要求</label>
+                    <textarea id="job-skills" rows="4" placeholder="如：熟练掌握Java、SpringBoot"></textarea>
                 </div>
 
                 <div class="form-group">
@@ -49,12 +69,16 @@ function renderJobPostView(container, currentUser) {
 async function postJob(user) {
     const title = document.getElementById('job-title').value.trim();
     const salaryText = document.getElementById('job-salary').value.trim();
-    const location = document.getElementById('job-location').value.trim();
+    const province = document.getElementById('job-province').value.trim();
+    const city = document.getElementById('job-city').value.trim();
+    const district = document.getElementById('job-district').value.trim();
     const experience = document.getElementById('job-experience').value.trim();
+    const education = document.getElementById('job-education').value.trim();
     const description = document.getElementById('job-description').value.trim();
+    const skills = document.getElementById('job-skills').value.trim();
     const requirements = document.getElementById('job-requirements').value.trim();
 
-    if (!title || !salaryText || !location || !description) {
+    if (!title || !salaryText || !province || !city || !description) {
         alert('请填写所有必填字段（带*的）');
         return;
     }
@@ -71,35 +95,21 @@ async function postJob(user) {
         return;
     }
 
-    // 简单从“工作地点”解析省/市：支持 "省-市" 或 "省 市"，否则全部当作 city，并同步给 province
-    let province = '';
-    let city = '';
-    if (location.includes('-')) {
-        const parts = location.split('-').map(s => s.trim());
-        province = parts[0] || '';
-        city = parts[1] || parts[0] || '';
-    } else if (location.includes(' ')) {
-        const parts = location.split(' ').map(s => s.trim());
-        province = parts[0] || '';
-        city = parts[1] || parts[0] || '';
-    } else {
-        city = location;
-        province = location;
-    }
-
     const jobInfo = {
         jobName: title,
         companyId: user.companyId || null,
         publisherId: user.userId,
         province,
         city,
+        district: district || null,
         salaryMin,
         salaryMax,
-        workExperience: experience,
+        workExperience: experience || null,
+        education: education || null,
+        skillRequire: skills || null,
         jobDesc: description,
         // "职位要求" 映射到任职资格 qualification
-        qualification: requirements
-        // 如需后续扩展：education、skillRequire、district 可在此补充
+        qualification: requirements || null
     };
 
     try {

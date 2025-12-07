@@ -52,11 +52,18 @@ async function loadJobList(user) {
             const salary = min && max ? `${(min / 1000).toFixed(0)}K-${(max / 1000).toFixed(0)}K` : '-';
             const statusText = job.publishStatus === 1 ? '已发布' : '未发布';
             const updateTime = job.updateTime ? String(job.updateTime).replace('T', ' ') : '';
+            
+            // 构造完整地址显示
+            let location = '';
+            if (job.province) location += job.province;
+            if (job.city) location += job.city;
+            if (job.district) location += job.district;
+            
             return `
                 <tr>
                     <td>${job.jobName || ''}</td>
                     <td>${salary}</td>
-                    <td>${job.city || ''}</td>
+                    <td>${location || ''}</td>
                     <td>${statusText}</td>
                     <td>${updateTime}</td>
                     <td>
