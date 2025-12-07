@@ -31,7 +31,10 @@ async function loadApplicants(user) {
         const data = (json && typeof json === 'object' && 'code' in json)
             ? (json.code === 200 ? json.data : null)
             : json;
-        const applicants = data && data.records ? data.records : [];
+        const allApplicants = data && data.records ? data.records : [];
+
+        // 需求：Employer 拒绝申请后，该申请不再出现在申请人管理列表中
+        const applicants = allApplicants.filter(app => app.status !== 'REJECTED');
 
         if (!applicants.length) {
             list.innerHTML = '<p>暂无申请人。</p>';
@@ -72,15 +75,40 @@ async function viewResume(resumeId) {
             return;
         }
 
-        const detailHtml = `\n姓名：${data.name || ''}\n` +
-            `电话：${data.phone || ''}\n` +
-            `邮箱：${data.email || ''}\n` +
-            `学历：${data.education || ''}\n` +
-            `工作经验：${data.workExperience || ''}\n` +
-            `项目经验：${data.projectExperience || ''}\n` +
-            `技能：${data.skills || ''}\n` +
-            `自我评价：${data.selfEvaluation || ''}`;
+        // 当前后端返回字段：realName, age, education, jobIntention, workExperience, workHistory, skill, createTime, updateTime 等
+        // 先用现有字段对齐展示，后续如后端补充 phone/email/projectExperience/selfEvaluation 再扩展
+        const detailLines = [];
+        detailLines.push(`姓名：${data.realName || ''}`);
+        if (data.age != null) {
+            detailLines.push(`年龄：${data.age}`);
+        }
+        if (data.genderDesc) {
+            detailLines.push(`性别：${data.genderDesc}`);
+        }
+        detailLines.push(`学历：${data.education || ''}`);
+        if (data.jobIntention) {
+            detailLines.push(`求职意向：${data.jobIntention}`);
+        }
+        if (data.workHistory || data.workExperience) {
+            detailLines.push(`工作经历：${data.workHistory || data.workExperience}`);
+        }
+        if (data.educationHistory) {
+            detailLines.push(`教育经历：${data.educationHistory}`);
+        }
+        if (data.skill) {
+            detailLines.push(`技能：${data.skill}`);
+        }
+        if (data.resumeName) {
+            detailLines.push(`简历名称：${data.resumeName}`);
+        }
+        if (data.createTime) {
+            detailLines.push(`创建时间：${data.createTime}`);
+        }
+        if (data.updateTime) {
+            detailLines.push(`更新时间：${data.updateTime}`);
+        }
 
+        const detailHtml = '\n' + detailLines.join('\n');
         alert(`简历详情：\n\n${detailHtml}`);
     } catch (e) {
         console.error('查看简历失败:', e);
@@ -100,19 +128,31 @@ async function scheduleInterview(applicationId) {
     }
 
     const currentUser = Auth.getCurrentUser && Auth.getCurrentUser();
-    if (!currentUser || !currentUser.userId) {
+    if (!currentUser || !currentUser.userId || !currentUser.companyId) {
         alert('未登录或用户信息缺失，无法安排面试');
         return;
     }
 
-    const payload = {
-        deliveryId: applicationId,
-        interviewerId: currentUser.userId,
-        interviewIntro: interviewIntro.trim(),
-        intervieweeName: ''
-    };
-
     try {
+        // 通过公司申请列表找到当前申请记录，以获取求职者姓名
+        const params = new URLSearchParams({ current: 1, size: 100 });
+        const data = await ApiService.request(`/applications/company/${encodeURIComponent(currentUser.companyId)}?${params.toString()}`);
+        const applicants = data && data.records ? data.records : [];
+        const app = applicants.find(a => a.applicationId === applicationId);
+        if (!app) {
+            alert('未找到对应的申请记录，无法安排面试');
+            return;
+        }
+
+        const intervieweeName = app.userName || app.realName || '';
+
+        const payload = {
+            deliveryId: applicationId,
+            interviewerId: currentUser.userId,
+            interviewIntro: interviewIntro.trim(),
+            intervieweeName: intervieweeName
+        };
+
         await ApiService.request('/interview', {
             method: 'POST',
             body: JSON.stringify(payload)

@@ -37,7 +37,6 @@ function renderCompanyView(container, currentUser) {
 }
 
 async function loadCompanyInfo(user) {
-    // 若用户对象中带有 companyId，则优先根据 companyId 查询
     const companyId = user.companyId;
     if (!companyId) {
         return;
@@ -50,8 +49,9 @@ async function loadCompanyInfo(user) {
         const c = json.data;
         document.getElementById('company-name').value = c.companyName || '';
         document.getElementById('company-description').value = c.companyDesc || '';
-        document.getElementById('company-address').value = c.address || '';
-        document.getElementById('company-contact').value = c.contactName || '';
+        // 对齐后端 CompanyInfoVO 字段：companyAddress, contactPerson
+        document.getElementById('company-address').value = c.companyAddress || '';
+        document.getElementById('company-contact').value = c.contactPerson || '';
         document.getElementById('company-phone').value = c.contactPhone || '';
     } catch (e) {
         console.error('加载公司信息失败:', e);
@@ -63,8 +63,9 @@ async function saveCompanyInfo(user) {
         companyId: user.companyId || null,
         companyName: document.getElementById('company-name').value.trim(),
         companyDesc: document.getElementById('company-description').value.trim(),
-        address: document.getElementById('company-address').value.trim(),
-        contactName: document.getElementById('company-contact').value.trim(),
+        // 保存时同样按后端实体字段命名
+        companyAddress: document.getElementById('company-address').value.trim(),
+        contactPerson: document.getElementById('company-contact').value.trim(),
         contactPhone: document.getElementById('company-phone').value.trim()
     };
 

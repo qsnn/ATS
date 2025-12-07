@@ -128,6 +128,11 @@ const ApiService = (function () {
         getTalentById: function (talentId) {
             return request(`/talent/${talentId}`);
         },
+
+        // 新增：对外暴露通用 request 方法，供各个视图统一调用
+        request: function (endpoint, options = {}) {
+            return request(endpoint, options);
+        },
     };
 })();
 
