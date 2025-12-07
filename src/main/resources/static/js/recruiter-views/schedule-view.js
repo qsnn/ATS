@@ -37,55 +37,36 @@ async function loadSchedule() {
     tbody.innerHTML = '<tr><td colspan="6">正在加载面试日程...</td></tr>';
 
     try {
-        // 这里应该调用获取面试日程的API
-        // const date = document.getElementById('schedule-date').value;
-        // const resp = await fetch(`${INTERVIEW_API_BASE}?date=${date}`);
+        // 获取当前用户的面试安排
+        const currentUser = Auth.getCurrentUser();
+        if (!currentUser || !currentUser.userId) {
+            throw new Error('用户未登录');
+        }
+        
+        const interviews = await ApiService.request(`/interview/user/${currentUser.userId}`);
 
-        // 模拟数据
-        const schedules = [
-            {
-                id: 1,
-                time: '10:00-11:00',
-                candidate: '张三',
-                position: '前端开发工程师',
-                type: '技术面试',
-                status: '待开始'
-            },
-            {
-                id: 2,
-                time: '14:00-15:00',
-                candidate: '李四',
-                position: 'Java开发工程师',
-                type: 'HR面试',
-                status: '已安排'
-            },
-            {
-                id: 3,
-                time: '16:00-17:00',
-                candidate: '王五',
-                position: 'UI设计师',
-                type: '技术面试',
-                status: '已完成'
-            }
-        ];
+        if (!interviews || interviews.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6">暂无面试安排</td></tr>';
+            return;
+        }
 
-        tbody.innerHTML = schedules.map(schedule => `
+        tbody.innerHTML = interviews.map(interview => `
             <tr>
-                <td>${schedule.time}</td>
-                <td>${schedule.candidate}</td>
-                <td>${schedule.position}</td>
-                <td>${schedule.type}</td>
+                <td>${new Date(interview.interviewTime).toLocaleString()}</td>
+                <td>${interview.candidateName || '未知'}</td>
+                <td>${interview.jobTitle || '未知职位'}</td>
+                <td>${interview.interviewType || '技术面试'}</td>
                 <td>
-                    <span class="tag ${getStatusClass(schedule.status)}">
-                        ${schedule.status}
+                    <span class="tag ${getStatusClass(interview.status || '已安排')}">
+                        ${interview.status || '已安排'}
                     </span>
                 </td>
                 <td>
-                    ${schedule.status === '已完成' ?
-                        `<button class="btn btn-sm" onclick="viewEvaluation(${schedule.id})">查看评价</button>` :
-                        `<button class="btn btn-primary btn-sm" onclick="startInterview(${schedule.id})">开始面试</button>`
+                    ${interview.status === '已完成' ?
+                        `<button class="btn btn-sm" onclick="viewEvaluation(${interview.id})">查看评价</button>` :
+                        `<button class="btn btn-primary btn-sm" onclick="startInterview(${interview.id})">开始面试</button>`
                     }
-                    <button class="btn btn-sm" onclick="reschedule(${schedule.id})">改期</button>
+                    <button class="btn btn-sm" onclick="reschedule(${interview.id})">改期</button>
                 </td>
             </tr>
         `).join('');

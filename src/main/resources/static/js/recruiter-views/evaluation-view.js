@@ -42,51 +42,42 @@ async function loadEvaluations() {
     tbody.innerHTML = '<tr><td colspan="6">正在加载面试评价...</td></tr>';
 
     try {
-        // 模拟数据
-        const evaluations = [
-            {
-                id: 1,
-                candidate: '张三',
-                position: '前端开发工程师',
-                interviewTime: '2024-01-20 10:00',
-                interviewer: '王经理',
-                overallScore: '85/100',
-                status: '已完成'
-            },
-            {
-                id: 2,
-                candidate: '李四',
-                position: 'Java开发工程师',
-                interviewTime: '2024-01-19 14:00',
-                interviewer: '张总监',
-                overallScore: '待评价',
-                status: '待评价'
-            }
-        ];
+        // 获取当前用户的面试信息
+        const currentUser = Auth.getCurrentUser();
+        if (!currentUser || !currentUser.userId) {
+            throw new Error('用户未登录');
+        }
+        
+        const interviews = await ApiService.request(`/interview/interviewer/${currentUser.userId}`);
 
-        tbody.innerHTML = evaluations.map(eval => `
+        if (!interviews || interviews.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6">暂无面试评价</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = interviews.map(interview => `
             <tr>
-                <td>${eval.candidate}</td>
-                <td>${eval.position}</td>
-                <td>${eval.interviewTime}</td>
-                <td>${eval.interviewer}</td>
+                <td>${interview.candidateName || '未知'}</td>
+                <td>${interview.jobTitle || '未知职位'}</td>
+                <td>${interview.interviewTime ? new Date(interview.interviewTime).toLocaleString() : '未知'}</td>
+                <td>${interview.interviewerName || '未知'}</td>
                 <td>
-                    <span class="${eval.status === '已完成' ? 'tag tag-success' : 'tag tag-warning'}">
-                        ${eval.overallScore}
+                    <span class="${interview.status === '已完成' ? 'tag tag-success' : 'tag tag-warning'}">
+                        ${interview.score || '待评价'}
                     </span>
                 </td>
                 <td>
-                    ${eval.status === '已完成' ?
-                        `<button class="btn btn-sm" onclick="viewEvaluation(${eval.id})">查看</button>` :
-                        `<button class="btn btn-primary btn-sm" onclick="completeEvaluation(${eval.id})">填写评价</button>`
+                    ${interview.status === '已完成' ?
+                        `<button class="btn btn-sm" onclick="viewEvaluation(${interview.id})">查看</button>` :
+                        `<button class="btn btn-primary btn-sm" onclick="completeEvaluation(${interview.id})">填写评价</button>`
                     }
-                    <button class="btn btn-sm" onclick="downloadEvaluation(${eval.id})">下载</button>
+                    <button class="btn btn-sm" onclick="downloadEvaluation(${interview.id})">下载</button>
                 </td>
             </tr>
         `).join('');
     } catch (e) {
         console.error('加载面试评价失败:', e);
-        tbody.innerHTML = '<tr><td colspan="6">加载失败，请稍后重试</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6">加载失败，请稍后重试: ' + e.message + '</td></tr>';
     }
 }
 

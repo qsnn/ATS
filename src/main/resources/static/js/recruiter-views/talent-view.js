@@ -48,38 +48,8 @@ async function loadTalentPool() {
     talentList.innerHTML = `<div class="empty-state"><div class="icon">🔄</div><p>正在加载人才数据...</p></div>`;
 
     try {
-        // 这里应该调用获取人才库的API
-        // const resp = await fetch(`${TALENT_API_BASE}?recruiterId=${currentUser.userId}`);
-
-        // 模拟数据
-        const talents = [
-            {
-                id: 1,
-                name: '张三',
-                position: '前端开发工程师',
-                experience: '3年',
-                education: '本科',
-                phone: '138****5678',
-                email: 'zhangsan@email.com',
-                source: '主动申请',
-                skills: ['Vue', 'React', 'JavaScript'],
-                note: '技术扎实，沟通能力好',
-                createTime: '2024-01-15'
-            },
-            {
-                id: 2,
-                name: '李四',
-                position: 'Java开发工程师',
-                experience: '5年',
-                education: '硕士',
-                phone: '139****1234',
-                email: 'lisi@email.com',
-                source: '内推',
-                skills: ['Java', 'Spring', 'MySQL'],
-                note: '架构经验丰富',
-                createTime: '2024-01-10'
-            }
-        ];
+        // 从API获取人才库数据
+        const talents = await ApiService.getTalentPool();
 
         if (!talents || talents.length === 0) {
             talentList.innerHTML = `
@@ -99,7 +69,7 @@ async function loadTalentPool() {
             <div class="talent-card">
                 <div class="talent-header">
                     <div>
-                        <h3 class="talent-name">${talent.name}</h3>
+                        <h3 class="talent-name">${talent.name || '未命名'}</h3>
                         <div style="font-size: 14px; color: #666; margin-top: 4px;">
                             ${talent.position || '未填写职位'} · ${talent.experience || '经验不详'} · ${talent.education || '学历不详'}
                         </div>
@@ -123,8 +93,8 @@ async function loadTalentPool() {
                 </div>
 
                 <div class="talent-tags">
-                    ${(talent.skills || []).slice(0, 5).map(skill =>
-                        `<span class="talent-tag">${skill}</span>`
+                    ${(talent.skills || '').split(',').filter(s => s.trim()).slice(0, 5).map(skill =>
+                        `<span class="talent-tag">${skill.trim()}</span>`
                     ).join('')}
                 </div>
 
@@ -144,7 +114,8 @@ async function loadTalentPool() {
             </div>
         `).join('');
     } catch (error) {
-        talentList.innerHTML = `<div class="empty-state"><div class="icon">❌</div><p>加载人才数据失败</p></div>`;
+        console.error('加载人才数据失败:', error);
+        talentList.innerHTML = `<div class="empty-state"><div class="icon">❌</div><p>加载人才数据失败: ${error.message}</p></div>`;
     }
 }
 
@@ -157,7 +128,6 @@ function updateTalentStats(talents = []) {
 
 // 人才管理相关函数
 function viewTalentDetail(talentId) {
-    // 这里可以打开模态框显示详细信息
     alert(`查看人才 ${talentId} 详情（后续实现）`);
 }
 
@@ -169,30 +139,112 @@ function inviteTalent(talentId) {
 }
 
 function editTalent(talentId) {
-    const newNote = prompt('请输入新的备注信息：');
-    if (newNote) {
-        alert(`人才 ${talentId} 的备注已更新（模拟操作）`);
-        loadTalentPool(); // 刷新列表
-    }
+    alert(`编辑人才 ${talentId}（后续实现）`);
 }
 
-function removeTalent(talentId) {
+async function removeTalent(talentId) {
     if (confirm('确定要从人才库移除该人才吗？此操作不可恢复。')) {
-        alert(`人才 ${talentId} 已从人才库移除（模拟操作）`);
-        loadTalentPool(); // 刷新列表
+        try {
+            await ApiService.removeTalent(talentId);
+            alert('人才移除成功！');
+            loadTalentPool(); // 刷新列表
+        } catch (error) {
+            console.error('移除人才失败:', error);
+            alert('移除人才失败: ' + error.message);
+        }
     }
 }
 
 function addNewTalent() {
-    const name = prompt('请输入人才姓名：');
-    if (!name) return;
-    const position = prompt('请输入职位：');
-    if (!position) return;
-    const phone = prompt('请输入手机号：');
-    const email = prompt('请输入邮箱：');
-
-    alert(`人才 "${name}" 已成功添加到人才库（模拟操作）`);
-    loadTalentPool(); // 刷新列表
+    // 创建一个简单的模态框来收集人才信息
+    const modalHtml = `
+        <div id="add-talent-modal" class="talent-modal" style="display: block;">
+            <div class="talent-modal-content">
+                <div class="talent-modal-header">
+                    <h3 class="talent-modal-title">添加新人才</h3>
+                    <button class="close-modal" onclick="closeTalentModal()">&times;</button>
+                </div>
+                <form id="add-talent-form">
+                    <div style="margin-bottom: 15px;">
+                        <label>姓名 *</label>
+                        <input type="text" id="talent-name" required placeholder="请输入姓名">
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label>职位</label>
+                        <input type="text" id="talent-position" placeholder="请输入职位">
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label>工作经验</label>
+                        <input type="text" id="talent-experience" placeholder="如：3年">
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label>学历</label>
+                        <input type="text" id="talent-education" placeholder="如：本科">
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label>电话</label>
+                        <input type="tel" id="talent-phone" placeholder="请输入电话号码">
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label>邮箱</label>
+                        <input type="email" id="talent-email" placeholder="请输入邮箱地址">
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label>技能（逗号分隔）</label>
+                        <input type="text" id="talent-skills" placeholder="如：Java,Spring,MySQL">
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label>备注</label>
+                        <textarea id="talent-note" placeholder="请输入备注信息"></textarea>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label>来源</label>
+                        <select id="talent-source">
+                            <option value="主动申请">主动申请</option>
+                            <option value="内推">内推</option>
+                            <option value="招聘网站">招聘网站</option>
+                            <option value="猎头推荐">猎头推荐</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                        <button type="button" class="btn" onclick="closeTalentModal()">取消</button>
+                        <button type="submit" class="btn btn-primary">添加人才</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    
+    // 添加模态框到页面
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // 绑定表单提交事件
+    document.getElementById('add-talent-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const talentData = {
+            name: document.getElementById('talent-name').value,
+            position: document.getElementById('talent-position').value,
+            experience: document.getElementById('talent-experience').value,
+            education: document.getElementById('talent-education').value,
+            phone: document.getElementById('talent-phone').value,
+            email: document.getElementById('talent-email').value,
+            skills: document.getElementById('talent-skills').value,
+            note: document.getElementById('talent-note').value,
+            source: document.getElementById('talent-source').value
+        };
+        
+        try {
+            await ApiService.addTalent(talentData);
+            alert('人才添加成功！');
+            closeTalentModal();
+            loadTalentPool(); // 刷新列表
+        } catch (error) {
+            console.error('添加人才失败:', error);
+            alert('添加人才失败: ' + error.message);
+        }
+    });
 }
 
 function filterTalent() {
@@ -212,4 +264,11 @@ function exportTalentData() {
     setTimeout(() => {
         alert('人才数据已导出为 talent_pool.csv（模拟）');
     }, 1000);
+}
+
+function closeTalentModal() {
+    const modal = document.getElementById('add-talent-modal');
+    if (modal) {
+        modal.remove();
+    }
 }

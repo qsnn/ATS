@@ -1,4 +1,4 @@
-const USER_API_BASE = 'http://124.71.101.139:10085/api/user';
+const USER_API_BASE = '/api/user';
 
 document.addEventListener('DOMContentLoaded', () => {
     const currentUser = Auth.getCurrentUser();
@@ -22,16 +22,18 @@ document.addEventListener('DOMContentLoaded', () => {
         greeting.textContent = '欢迎，' + (currentUser.realName || currentUser.username || '招聘专员');
     }
 
-    // 标签页事件绑定
-    document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
-        btn.addEventListener('click', function(e) {
+    // 侧边栏点击切换
+    document.querySelectorAll('.sidebar-nav a').forEach(a => {
+        a.addEventListener('click', e => {
             e.preventDefault();
-            const tabName = this.getAttribute('data-tab');
-            switchTab(tabName, currentUser);
+            const tabName = a.dataset.tab;
+            if (tabName) {
+                switchTab(tabName, currentUser);
+            }
         });
     });
 
-    // 默认显示第一个标签页
+    // 默认进入面试日程
     switchTab('schedule', currentUser);
 });
 
@@ -46,12 +48,12 @@ function handleLogout() {
  * @param {object} currentUser
  */
 function switchTab(tabName, currentUser = Auth.getCurrentUser()) {
-    // 激活标签按钮
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.getAttribute('data-tab') === tabName);
+    // 激活侧边栏
+    document.querySelectorAll('.sidebar-nav a').forEach(a => {
+        a.classList.toggle('active', a.dataset.tab === tabName);
     });
 
-    // 隐藏所有标签内容
+    // 隐藏所有 tab 内容
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.remove('active');
     });
@@ -69,11 +71,16 @@ function switchTab(tabName, currentUser = Auth.getCurrentUser()) {
 
     const renderFn = map[tabName];
     if (typeof renderFn === 'function') {
-        // 清空容器并重新渲染
         container.innerHTML = '';
-        renderFn(container, currentUser);
+        // 处理同步和异步两种情况
+        const result = renderFn(container, currentUser);
+        if (result instanceof Promise) {
+            result.catch(error => {
+                console.error('渲染页面失败:', error);
+                container.innerHTML = '<p>加载失败，请稍后重试</p>';
+            });
+        }
     }
 
-    // 显示当前标签
     container.classList.add('active');
 }

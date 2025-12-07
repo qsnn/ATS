@@ -47,57 +47,36 @@ async function loadCandidates() {
     tbody.innerHTML = '<tr><td colspan="6">正在加载候选人数据...</td></tr>';
 
     try {
-        // 这里应该调用获取候选人的API
-        // const resp = await fetch(`${APPLICATION_API_BASE}/recruiter/${currentUser.userId}`);
+        // 获取当前公司的申请信息
+        const currentUser = Auth.getCurrentUser();
+        if (!currentUser || !currentUser.companyId) {
+            throw new Error('用户未登录或缺少公司信息');
+        }
+        
+        const applications = await ApiService.request(`/applications/company/${currentUser.companyId}`);
 
-        // 模拟数据
-        const candidates = [
-            {
-                id: 1,
-                name: '张三',
-                position: '前端开发工程师',
-                applyTime: '2024-01-20',
-                status: '面试中',
-                progress: '二面通过',
-                statusClass: 'tag-info'
-            },
-            {
-                id: 2,
-                name: '李四',
-                position: 'Java开发工程师',
-                applyTime: '2024-01-19',
-                status: '新申请',
-                progress: '等待筛选',
-                statusClass: 'tag-warning'
-            },
-            {
-                id: 3,
-                name: '王五',
-                position: 'UI设计师',
-                applyTime: '2024-01-18',
-                status: '录用中',
-                progress: 'Offer已发',
-                statusClass: 'tag-success'
-            }
-        ];
+        if (!applications || applications.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6">暂无候选人申请</td></tr>';
+            return;
+        }
 
-        tbody.innerHTML = candidates.map(candidate => `
+        tbody.innerHTML = applications.map(application => `
             <tr>
-                <td>${candidate.name}</td>
-                <td>${candidate.position}</td>
-                <td>${candidate.applyTime}</td>
-                <td><span class="tag ${candidate.statusClass}">${candidate.status}</span></td>
-                <td>${candidate.progress}</td>
+                <td>${application.applicantName || '未知'}</td>
+                <td>${application.jobTitle || '未知职位'}</td>
+                <td>${application.applyTime ? new Date(application.applyTime).toLocaleDateString() : '未知'}</td>
+                <td><span class="tag ${getStatusClass(application.status)}">${application.status || '未知'}</span></td>
+                <td>${application.latestProgress || '无'}</td>
                 <td>
-                    <button class="btn btn-sm" onclick="viewCandidate(${candidate.id})">查看</button>
-                    <button class="btn btn-primary btn-sm" onclick="scheduleInterview(${candidate.id})">安排面试</button>
-                    <button class="btn btn-sm" onclick="addToTalentPool(${candidate.id})">加入人才库</button>
+                    <button class="btn btn-sm" onclick="viewCandidate(${application.id})">查看</button>
+                    <button class="btn btn-primary btn-sm" onclick="scheduleInterview(${application.id})">安排面试</button>
+                    <button class="btn btn-sm" onclick="addToTalentPool(${application.id})">加入人才库</button>
                 </td>
             </tr>
         `).join('');
     } catch (e) {
         console.error('加载候选人失败:', e);
-        tbody.innerHTML = '<tr><td colspan="6">加载失败，请稍后重试</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6">加载失败，请稍后重试: ' + e.message + '</td></tr>';
     }
 }
 
@@ -133,4 +112,26 @@ function exportCandidates() {
     setTimeout(() => {
         alert('候选人名单已导出为 candidates.csv（模拟）');
     }, 1000);
+}
+
+function getStatusClass(status) {
+    switch (status) {
+        case '新申请':
+        case 'new':
+            return 'tag-warning';
+        case '面试中':
+        case 'interview':
+            return 'tag-info';
+        case '录用中':
+        case 'offer':
+            return 'tag-success';
+        case '已拒绝':
+        case 'rejected':
+            return 'tag-danger';
+        case '已筛选':
+        case 'reviewed':
+            return 'tag-primary';
+        default:
+            return 'tag-default';
+    }
 }

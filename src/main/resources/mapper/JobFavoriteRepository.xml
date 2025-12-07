@@ -1,19 +1,11 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.platform.ats.repository.JobFavoriteRepository">
 
-    <resultMap id="JobFavoriteResultMap" type="com.platform.ats.entity.favorite.JobFavorite">
-        <id property="favoriteId" column="favorite_id" />
-        <result property="userId" column="user_id" />
-        <result property="jobId" column="job_id" />
-        <result property="createTime" column="create_time" />
-        <result property="updateTime" column="update_time" />
-        <result property="deleteFlag" column="delete_flag" />
-    </resultMap>
-
-    <sql id="Base_Column_List">
-        favorite_id, user_id, job_id, create_time, update_time, delete_flag
-    </sql>
-
+    <update id="updateDeletedFavoriteToActive">
+        UPDATE job_favorite 
+        SET delete_flag = 0, update_time = NOW()
+        WHERE user_id = #{userId} AND job_id = #{jobId} AND delete_flag = 1
+    </update>
 </mapper>
 

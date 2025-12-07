@@ -42,16 +42,8 @@ public class JobFavoriteServiceImpl implements JobFavoriteService {
         }
 
         // 先尝试恢复已逻辑删除的收藏记录
-        JobFavorite recover = new JobFavorite();
-        recover.setDeleteFlag(0);
-        recover.setUpdateTime(LocalDateTime.now());
-        int recovered = jobFavoriteRepository.update(
-                recover,
-                new LambdaQueryWrapper<JobFavorite>()
-                        .eq(JobFavorite::getUserId, userId)
-                        .eq(JobFavorite::getJobId, jobId)
-                        .eq(JobFavorite::getDeleteFlag, 1)
-        );
+        // 使用原生SQL更新，因为MyBatis Plus的逻辑删除机制会干扰对deleteFlag=1的记录的查询
+        int recovered = jobFavoriteRepository.updateDeletedFavoriteToActive(userId, jobId);
         if (recovered > 0) {
             // 恢复成功，直接返回任意一条记录的 ID（这里简单重新查一遍）
             JobFavorite exist = jobFavoriteRepository.selectOne(new LambdaQueryWrapper<JobFavorite>()
@@ -95,7 +87,6 @@ public class JobFavoriteServiceImpl implements JobFavoriteService {
         // 使用 LambdaUpdateWrapper 直接更新，绕过 MyBatis Plus 逻辑删除拦截
         LambdaUpdateWrapper<JobFavorite> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.set(JobFavorite::getDeleteFlag, 1)
-                .set(JobFavorite::getUpdateTime, LocalDateTime.now())
                 .eq(JobFavorite::getUserId, userId)
                 .eq(JobFavorite::getJobId, jobId)
                 .eq(JobFavorite::getDeleteFlag, 0);
