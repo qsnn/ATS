@@ -17,4 +17,7 @@ public interface JobApplicationService {
 
     // Employer 视角：按职位查询所有申请记录
     java.util.List<JobApplicationEmployerVO> listJobApplications(Long jobId);
+
+    // 更新申请状态（例如：REJECTED, INTERVIEWED 等）
+    boolean updateStatus(Long applicationId, String status, String reason);
 }

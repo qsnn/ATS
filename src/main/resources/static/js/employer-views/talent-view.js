@@ -149,15 +149,21 @@ async function loadTalentPool(user) {
     }
 }
 
-// 其他函数保持原样（viewTalentDetail, inviteTalent等）
-function viewTalentDetail(talentId) {
-    const talent = MockData.talentPool.find(t => t.id === talentId);
-    if (!talent) {
+// 其他函数保持原样（inviteTalent等）
+async function viewTalentDetail(talentId) {
+    if (!talentId) {
         alert('找不到该人才信息');
         return;
     }
 
-    const modalHTML = `
+    try {
+        const talent = await ApiService.getTalentById(talentId);
+        if (!talent) {
+            alert('找不到该人才信息');
+            return;
+        }
+
+        const modalHTML = `
         <div class="talent-modal" id="talent-detail-modal">
             <div class="talent-modal-content">
                 <div class="talent-modal-header">
@@ -167,30 +173,23 @@ function viewTalentDetail(talentId) {
 
                 <div class="talent-detail">
                     <div style="margin-bottom: 20px;">
-                        <h4 style="margin-bottom: 10px;">${talent.name} - ${talent.position}</h4>
+                        <h4 style="margin-bottom: 10px;">${talent.candidateName || ''} - ${talent.position || ''}</h4>
                         <div style="color: #666; font-size: 14px;">
-                            ${talent.experience}经验 · ${talent.education}
+                            ${talent.experience || ''}
                         </div>
                     </div>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
                         <div>
                             <strong>联系方式</strong>
-                            <p>📱 ${talent.phone}</p>
-                            <p>📧 ${talent.email}</p>
+                            <p>📱 ${talent.phone || ''}</p>
+                            <p>📧 ${talent.email || ''}</p>
                         </div>
                         <div>
                             <strong>人才来源</strong>
-                            <p>来源：${talent.source}</p>
-                            <p>添加时间：${talent.addedDate}</p>
+                            <p>来源：${talent.source || '未知'}</p>
+                            <p>添加时间：${talent.addedDate || ''}</p>
                             ${talent.sourceJob ? `<p>来源职位：${talent.sourceJob}</p>` : ''}
-                        </div>
-                    </div>
-
-                    <div style="margin-bottom: 20px;">
-                        <strong>技能标签</strong>
-                        <div class="talent-tags" style="margin-top: 10px;">
-                            ${talent.skills.map(skill => `<span class="talent-tag">${skill}</span>`).join('')}
                         </div>
                     </div>
 
@@ -206,13 +205,16 @@ function viewTalentDetail(talentId) {
 
                 <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
                     <button class="btn" onclick="closeTalentModal()">关闭</button>
-                    <button class="btn btn-primary" onclick="inviteTalent(${talent.id})">邀请面试</button>
+                    <button class="btn btn-primary" onclick="inviteTalent(${talent.talentId})">邀请面试</button>
                 </div>
             </div>
         </div>
     `;
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-    document.getElementById('talent-detail-modal').style.display = 'flex';
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        document.getElementById('talent-detail-modal').style.display = 'flex';
+    } catch (e) {
+        console.error('加载人才详情失败:', e);
+    }
 }
 
 function inviteTalent(talentId) {
@@ -228,24 +230,14 @@ function inviteTalent(talentId) {
 
 // 调整 removeTalent 调用后台删除 API
 async function removeTalent(talentId) {
+    if (!talentId) return;
     if (!confirm('确定要从人才库中移除该人才吗？')) return;
     try {
-        const resp = await fetch(`${TALENT_API_BASE}/${talentId}`, { method: 'DELETE' });
-        if (!resp.ok) {
-            const text = await resp.text();
-            alert(`网络错误: ${resp.status} ${text}`);
-            return;
-        }
-        const json = await resp.json();
-        if (!json || json.code !== 200) {
-            alert((json && json.message) || '移除失败');
-            return;
-        }
+        await ApiService.removeTalent(talentId);
         alert('人才已从人才库移除');
         loadTalentPool(Auth.getCurrentUser());
     } catch (e) {
         console.error('移除人才失败:', e);
-        alert('移除失败，请稍后重试');
     }
 }
 

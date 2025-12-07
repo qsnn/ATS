@@ -1,6 +1,7 @@
 package com.platform.ats.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.platform.ats.common.BizException;
@@ -160,5 +161,19 @@ public class JobApplicationServiceImpl implements JobApplicationService {
             }
             return vo;
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean updateStatus(Long applicationId, String status, String reason) {
+        if (applicationId == null || status == null || status.isEmpty()) {
+            throw new BizException(ErrorCode.BAD_REQUEST, "状态更新参数不完整");
+        }
+
+        LambdaUpdateWrapper<JobApplication> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(JobApplication::getApplicationId, applicationId)
+                .set(JobApplication::getStatus, status)
+                .set(JobApplication::getUpdateTime, LocalDateTime.now());
+        int rows = jobApplicationRepository.update(null, wrapper);
+        return rows > 0;
     }
 }

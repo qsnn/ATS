@@ -57,4 +57,33 @@ public class JobApplicationController {
         java.util.List<JobApplicationEmployerVO> list = jobApplicationService.listJobApplications(jobId);
         return Result.success(list);
     }
+
+    @PutMapping("/{applicationId}/status")
+    @Operation(summary = "更新申请状态（如：拒绝、面试中等）")
+    public Result<Boolean> updateStatus(@PathVariable Long applicationId,
+                                        @RequestBody JobStatusUpdateRequest request) {
+        boolean success = jobApplicationService.updateStatus(applicationId, request.getStatus(), request.getReason());
+        return Result.success(success);
+    }
+
+    public static class JobStatusUpdateRequest {
+        private String status;
+        private String reason;
+
+        public String getStatus() {
+            return status;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
+        }
+
+        public String getReason() {
+            return reason;
+        }
+
+        public void setReason(String reason) {
+            this.reason = reason;
+        }
+    }
 }
