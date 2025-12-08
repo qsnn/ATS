@@ -65,16 +65,6 @@ function renderJobPostView(container, currentUser) {
                     <textarea id="job-description" rows="6" required></textarea>
                 </div>
 
-                <div class="form-group">
-                    <label>技能要求</label>
-                    <textarea id="job-skills" rows="4" placeholder="如：熟练掌握Java、SpringBoot"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>职位要求</label>
-                    <textarea id="job-requirements" rows="4"></textarea>
-                </div>
-
                 <button type="submit" class="btn btn-primary">发布职位</button>
             </form>
         </div>
@@ -96,8 +86,6 @@ async function postJob(user) {
     const experience = document.getElementById('job-experience').value;
     const education = document.getElementById('job-education').value;
     const description = document.getElementById('job-description').value.trim();
-    const skills = document.getElementById('job-skills').value.trim();
-    const requirements = document.getElementById('job-requirements').value.trim();
 
     if (!title || !salaryMinInput || !salaryMaxInput || !province || !city || !description) {
         alert('请填写所有必填字段（带*的）');
@@ -129,10 +117,7 @@ async function postJob(user) {
         salaryMax,
         workExperience: experience ? parseInt(experience) : null,
         education: education || null,
-        skillRequire: skills || null,
-        jobDesc: description,
-        // "职位要求" 映射到任职资格 qualification
-        qualification: requirements || null
+        jobDesc: description
     };
 
     try {

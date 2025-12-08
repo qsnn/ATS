@@ -14,9 +14,7 @@
         <result property="salaryMax" column="salary_max"/>
         <result property="education" column="education"/>
         <result property="workExperience" column="work_experience"/>
-        <result property="skillRequire" column="skill_require"/>
         <result property="jobDesc" column="job_desc"/>
-        <result property="qualification" column="qualification"/>
         <result property="publisherId" column="publisher_id"/>
         <result property="publishStatus" column="publish_status"/>
         <result property="createTime" column="create_time"/>
@@ -39,9 +37,7 @@
         ji.salary_max,
         ji.education,
         ji.work_experience,
-        ji.skill_require,
         ji.job_desc,
-        ji.qualification,
         ji.publisher_id,
         ji.publish_status,
         ji.create_time,
