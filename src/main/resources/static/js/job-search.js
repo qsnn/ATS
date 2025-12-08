@@ -238,6 +238,7 @@ async function viewJobDetail(jobId) {
         const job = await resp.json();
         const msg = `职位：${job.jobName || ''}
 公司：${job.companyName || ''}
+部门：${job.department || ''}
 地点：${job.city || ''}
 经验要求：${job.workExperience || ''}
 学历要求：${job.education || ''}

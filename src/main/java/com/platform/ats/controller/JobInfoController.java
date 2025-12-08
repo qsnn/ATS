@@ -63,12 +63,18 @@ public class JobInfoController {
     }
 
     /**
-     * 根据ID获取职位详情
+     * 根据ID获取职位详情（包含公司名称等关联信息）
      */
     @GetMapping("/{id}")
-    public ResponseEntity<JobInfo> getById(@PathVariable Long id) {
-        JobInfo jobInfo = jobInfoService.getById(id);
-        return ResponseEntity.ok(jobInfo);
+    public ResponseEntity<JobInfoDetailDto> getById(@PathVariable Long id) {
+        JobInfoQueryDto queryDto = new JobInfoQueryDto();
+        queryDto.setJobId(id);
+        Page<JobInfoDetailDto> page = new Page<>(1, 1);
+        IPage<JobInfoDetailDto> resultPage = jobInfoService.findJobPage(page, queryDto);
+        if (resultPage.getRecords() == null || resultPage.getRecords().isEmpty()) {
+            return ResponseEntity.ok(null);
+        }
+        return ResponseEntity.ok(resultPage.getRecords().get(0));
     }
 
     /**

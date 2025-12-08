@@ -22,5 +22,10 @@ public class JobFavoriteVO {
     
     private String companyName;
 
+    /**
+     * 职位所属部门
+     */
+    private String department;
+
     private LocalDateTime createTime;
 }

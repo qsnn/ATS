@@ -11,6 +11,8 @@ import java.math.BigDecimal;
 public class JobInfoQueryDto implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    private Long jobId;
+
     private String jobName;
     private String city;
     private String education;
