@@ -19,7 +19,7 @@ async function loadApplicants(user) {
 
     try {
         const params = new URLSearchParams({ current: 1, size: 20 });
-        const resp = await fetch(`/api/applications/company/${encodeURIComponent(user.companyId)}?${params.toString()}`);
+        const resp = await fetch(`http://124.71.101.139:10085/api/applications/company/${encodeURIComponent(user.companyId)}?${params.toString()}`);
 
         if (!resp.ok) {
             const text = await resp.text();

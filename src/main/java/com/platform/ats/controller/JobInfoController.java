@@ -33,11 +33,6 @@ public class JobInfoController {
             @RequestParam(defaultValue = "10") Long size,
             JobInfoQueryDto queryDto) {
         
-        // 如果没有指定发布状态，默认只查询已发布的职位
-        if (queryDto.getPublishStatus() == null) {
-            queryDto.setPublishStatus(1);
-        }
-        
         // 创建分页对象
         Page<JobInfoDetailDto> page = new Page<>(current, size);
         
@@ -83,23 +78,14 @@ public class JobInfoController {
         }
         return ResponseEntity.ok(resultPage.getRecords().get(0));
     }
-
+    
     /**
-     * 发布职位
+     * 根据ID获取职位信息（用于编辑）
      */
-    @PutMapping("/publish/{id}")
-    public ResponseEntity<Boolean> publishJob(@PathVariable Long id) {
-        boolean result = jobInfoService.publishJob(id);
-        return ResponseEntity.ok(result);
-    }
-
-    /**
-     * 下架职位
-     */
-    @PutMapping("/unpublish/{id}")
-    public ResponseEntity<Boolean> unpublishJob(@PathVariable Long id) {
-        boolean result = jobInfoService.unpublishJob(id);
-        return ResponseEntity.ok(result);
+    @GetMapping("/detail/{id}")
+    public ResponseEntity<JobInfo> getDetailById(@PathVariable Long id) {
+        JobInfo jobInfo = jobInfoService.getById(id);
+        return ResponseEntity.ok(jobInfo);
     }
 
     /**

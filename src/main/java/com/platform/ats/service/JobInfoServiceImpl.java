@@ -76,6 +76,11 @@ public class JobInfoServiceImpl extends ServiceImpl<JobInfoRepository, JobInfo> 
             queryWrapper.eq("ji.city", queryDto.getCity());
         }
         
+        // 添加发布状态筛选条件
+        if (queryDto.getPublishStatus() != null) {
+            queryWrapper.eq("ji.publish_status", queryDto.getPublishStatus());
+        }
+        
         // 学历要求筛选逻辑修改：硕士包含本科和大专，本科包含大专
         if (queryDto.getEducation() != null && !queryDto.getEducation().isEmpty()) {
             List<String> educations = new ArrayList<>();
