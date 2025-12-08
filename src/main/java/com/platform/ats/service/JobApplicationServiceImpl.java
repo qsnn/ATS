@@ -86,12 +86,17 @@ public class JobApplicationServiceImpl implements JobApplicationService {
     }
 
     @Override
-    public IPage<JobApplicationVO> pageMyApplications(Page<JobApplicationVO> page, Long userId, String status) {
+    public IPage<JobApplicationVO> pageMyApplications(Page<JobApplicationVO> page, Long userId, List<String> status) {
         Page<JobApplication> entityPage = new Page<>(page.getCurrent(), page.getSize());
-        IPage<JobApplication> res = jobApplicationRepository.selectPage(entityPage,
-                new LambdaQueryWrapper<JobApplication>()
-                        .eq(JobApplication::getUserId, userId)
-                        .eq(status != null && !status.isEmpty(), JobApplication::getStatus, status));
+        
+        LambdaQueryWrapper<JobApplication> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(JobApplication::getUserId, userId);
+        
+        if (status != null && !status.isEmpty()) {
+            queryWrapper.in(JobApplication::getStatus, status);
+        }
+        
+        IPage<JobApplication> res = jobApplicationRepository.selectPage(entityPage, queryWrapper);
 
         Page<JobApplicationVO> voPage = new Page<>(res.getCurrent(), res.getSize(), res.getTotal());
         voPage.setRecords(res.getRecords().stream().map(entity -> {
@@ -115,11 +120,15 @@ public class JobApplicationServiceImpl implements JobApplicationService {
     }
 
     @Override
-    public IPage<JobApplicationEmployerVO> pageCompanyApplications(Page<JobApplicationEmployerVO> page, Long companyId, String status) {
+    public IPage<JobApplicationEmployerVO> pageCompanyApplications(Page<JobApplicationEmployerVO> page, Long companyId, List<String> status) {
         Page<JobApplication> entityPage = new Page<>(page.getCurrent(), page.getSize());
-        IPage<JobApplication> res = jobApplicationRepository.selectPage(entityPage,
-                new LambdaQueryWrapper<JobApplication>()
-                        .eq(status != null && !status.isEmpty(), JobApplication::getStatus, status));
+        
+        LambdaQueryWrapper<JobApplication> queryWrapper = new LambdaQueryWrapper<>();
+        if (status != null && !status.isEmpty()) {
+            queryWrapper.in(JobApplication::getStatus, status);
+        }
+        
+        IPage<JobApplication> res = jobApplicationRepository.selectPage(entityPage, queryWrapper);
 
         // 先根据职位过滤出属于该公司的申请
         if (companyId != null) {

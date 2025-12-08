@@ -6,14 +6,16 @@ import com.platform.ats.entity.application.dto.JobApplicationCreateDTO;
 import com.platform.ats.entity.application.vo.JobApplicationVO;
 import com.platform.ats.entity.application.vo.JobApplicationEmployerVO;
 
+import java.util.List;
+
 public interface JobApplicationService {
 
     Long apply(JobApplicationCreateDTO dto);
 
-    IPage<JobApplicationVO> pageMyApplications(Page<JobApplicationVO> page, Long userId, String status);
+    IPage<JobApplicationVO> pageMyApplications(Page<JobApplicationVO> page, Long userId, List<String> status);
 
     // Employer 视角：按公司分页查询申请记录
-    IPage<JobApplicationEmployerVO> pageCompanyApplications(Page<JobApplicationEmployerVO> page, Long companyId, String status);
+    IPage<JobApplicationEmployerVO> pageCompanyApplications(Page<JobApplicationEmployerVO> page, Long companyId, List<String> status);
 
     // Employer 视角：按职位查询所有申请记录
     java.util.List<JobApplicationEmployerVO> listJobApplications(Long jobId);

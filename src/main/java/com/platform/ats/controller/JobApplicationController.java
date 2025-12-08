@@ -12,6 +12,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/applications")
 @RequiredArgsConstructor
@@ -32,7 +34,7 @@ public class JobApplicationController {
     public Result<IPage<JobApplicationVO>> pageMyApplications(@RequestParam Long userId,
                                                               @RequestParam(defaultValue = "1") long current,
                                                               @RequestParam(defaultValue = "10") long size,
-                                                              @RequestParam(required = false) String status) {
+                                                              @RequestParam(required = false) List<String> status) {
         Page<JobApplicationVO> page = new Page<>(current, size);
         IPage<JobApplicationVO> res = jobApplicationService.pageMyApplications(page, userId, status);
         return Result.success(res);
@@ -44,7 +46,7 @@ public class JobApplicationController {
     public Result<IPage<JobApplicationEmployerVO>> pageCompanyApplications(@PathVariable Long companyId,
                                                                           @RequestParam(defaultValue = "1") long current,
                                                                           @RequestParam(defaultValue = "10") long size,
-                                                                          @RequestParam(required = false) String status) {
+                                                                          @RequestParam(required = false) List<String> status) {
         Page<JobApplicationEmployerVO> page = new Page<>(current, size);
         IPage<JobApplicationEmployerVO> res = jobApplicationService.pageCompanyApplications(page, companyId, status);
         return Result.success(res);

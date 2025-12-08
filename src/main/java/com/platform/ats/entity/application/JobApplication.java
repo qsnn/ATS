@@ -24,7 +24,7 @@ public class JobApplication {
     private Long resumeId;
 
     /**
-     * 申请状态：APPLIED/SCREENING/REJECTED/WITHDRAWN
+     * 申请状态：APPLIED/ACCEPTED/REJECTED/WITHDRAWN
      */
     private String status;
 
