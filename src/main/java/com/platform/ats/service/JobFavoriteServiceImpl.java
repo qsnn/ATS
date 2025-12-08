@@ -127,6 +127,7 @@ public class JobFavoriteServiceImpl implements JobFavoriteService {
                 vo.setJobTitle(jobInfo.getJobName());
                 vo.setCompanyId(jobInfo.getCompanyId());
                 vo.setDepartment(jobInfo.getDepartment());
+                vo.setPublishStatus(jobInfo.getPublishStatus());
                 // 获取公司名称
                 if (jobInfo.getCompanyId() != null) {
                     CompanyInfo companyInfo = companyInfoRepository.selectById(jobInfo.getCompanyId());

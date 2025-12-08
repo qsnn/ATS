@@ -26,6 +26,11 @@ public class JobFavoriteVO {
      * 职位所属部门
      */
     private String department;
+    
+    /**
+     * 职位发布状态：0-草稿 1-已发布 2-已下架
+     */
+    private Integer publishStatus;
 
     private LocalDateTime createTime;
 }

@@ -45,11 +45,15 @@ async function loadFavoriteJobs(currentUser) {
         if (statusEl) statusEl.textContent = `共 ${page.total || records.length} 条收藏职位`;
 
         records.forEach(fav => {
+            // 检查职位是否已下架
+            const isUnpublished = fav.publishStatus === 2;
+            
             const card = document.createElement('div');
             card.className = 'card job-card';
             card.innerHTML = `
                 <div class="job-header">
                     <h3>${escapeHtml(fav.jobTitle || '')}</h3>
+                    ${isUnpublished ? '<span style="color: #ff4d4f; font-size: 12px; margin-left: 10px;">[已下架]</span>' : ''}
                 </div>
                 <div class="job-info">
                     <span class="company">公司: ${escapeHtml(fav.companyName || '未知公司')}</span>
@@ -57,7 +61,7 @@ async function loadFavoriteJobs(currentUser) {
                 </div>
                 <div class="job-actions">
                     <button class="btn" data-job-id="${fav.jobId}">查看详情</button>
-                    <button class="btn btn-success" data-apply-job-id="${fav.jobId}">使用简历投递</button>
+                    <button class="btn btn-success" data-apply-job-id="${fav.jobId}" ${isUnpublished ? 'disabled' : ''}>使用简历投递</button>
                     <button class="btn btn-primary" data-fav-action="unfavorite" data-job-id="${fav.jobId}">取消收藏</button>
                 </div>
             `;
@@ -75,7 +79,7 @@ async function loadFavoriteJobs(currentUser) {
             }
 
             if (applyBtn) {
-                applyBtn.onclick = () => openApplyFromFavoriteModal(currentUser, fav.jobId);
+                applyBtn.onclick = () => openApplyFromFavoriteModal(currentUser, fav.jobId, fav);
             }
 
             if (unfavBtn && window.JobSeekerApi && typeof JobSeekerApi.removeFavoriteJobApi === 'function') {
@@ -100,8 +104,15 @@ async function loadFavoriteJobs(currentUser) {
     }
 }
 
-async function openApplyFromFavoriteModal(currentUser, jobId) {
+async function openApplyFromFavoriteModal(currentUser, jobId, jobInfo) {
     if (!currentUser || !jobId) return;
+    
+    // 检查职位是否已下架
+    if (jobInfo && jobInfo.publishStatus === 2) {
+        alert('该职位已下架，无法投递简历');
+        return;
+    }
+    
     // 获取当前用户的简历列表
     const res = await fetchUserResumesApi(currentUser.userId);
     if (!res.success) {
