@@ -23,6 +23,18 @@ function renderResumesView(container, currentUser) {
                             <input type="text" id="resume-name" class="form-control" required>
                         </div>
                         <div class="form-group">
+                            <label>性别</label>
+                            <select id="resume-gender" class="form-control">
+                                <option value="">请选择</option>
+                                <option value="1">男</option>
+                                <option value="2">女</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>年龄</label>
+                            <input type="number" id="resume-age" class="form-control">
+                        </div>
+                        <div class="form-group">
                             <label>电话 *</label>
                             <input type="text" id="resume-phone" class="form-control" required>
                         </div>
@@ -35,20 +47,16 @@ function renderResumesView(container, currentUser) {
                             <input type="text" id="resume-education" class="form-control">
                         </div>
                         <div class="form-group">
-                            <label>工作经历总结</label>
-                            <textarea id="resume-workExp" class="form-control" rows="3"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label>项目经历总结</label>
-                            <textarea id="resume-projectExp" class="form-control" rows="3"></textarea>
+                            <label>工作经验</label>
+                            <input type="text" id="resume-workExp" class="form-control">
                         </div>
                         <div class="form-group">
                             <label>掌握技能</label>
                             <textarea id="resume-skills" class="form-control" rows="3"></textarea>
                         </div>
                         <div class="form-group">
-                            <label>自我评价</label>
-                            <textarea id="resume-selfEval" class="form-control" rows="3"></textarea>
+                            <label>求职意向</label>
+                            <textarea id="resume-job-intention" class="form-control" rows="3"></textarea>
                         </div>
                         <div style="margin-top:12px; text-align:right;">
                             <button type="button" class="btn" id="resume-cancel-btn">取消</button>
@@ -176,13 +184,14 @@ function createNewResume(currentUser) {
     document.getElementById('resume-id').value = '';
     document.getElementById('resume-title').value = '';
     document.getElementById('resume-name').value = currentUser.realName || currentUser.username || '';
-    document.getElementById('resume-phone').value = currentUser.phone || '';
-    document.getElementById('resume-email').value = currentUser.email || '';
+    document.getElementById('resume-gender').value = '';
+    document.getElementById('resume-age').value = '';
+    document.getElementById('resume-phone').value = '';
+    document.getElementById('resume-email').value = '';
     document.getElementById('resume-education').value = '';
     document.getElementById('resume-workExp').value = '';
-    document.getElementById('resume-projectExp').value = '';
     document.getElementById('resume-skills').value = '';
-    document.getElementById('resume-selfEval').value = '';
+    document.getElementById('resume-job-intention').value = '';
     modal.style.display = 'block';
 }
 
@@ -194,14 +203,15 @@ function editResume(resume) {
     document.getElementById('resume-id').value = resume.resumeId || '';
     document.getElementById('resume-title').value = resume.resumeName || '';
     document.getElementById('resume-name').value = resume.realName || '';
+    document.getElementById('resume-gender').value = resume.gender || '';
+    document.getElementById('resume-age').value = resume.age || '';
     // phone/email 暂时从后端 DTO 中没有对应字段，保留为空或以后扩展
     document.getElementById('resume-phone').value = '';
     document.getElementById('resume-email').value = '';
     document.getElementById('resume-education').value = resume.education || '';
     document.getElementById('resume-workExp').value = resume.workExperience || '';
-    document.getElementById('resume-projectExp').value = resume.workHistory || '';
     document.getElementById('resume-skills').value = resume.skill || '';
-    document.getElementById('resume-selfEval').value = resume.jobIntention || '';
+    document.getElementById('resume-job-intention').value = resume.jobIntention || '';
     modal.style.display = 'block';
 }
 
@@ -210,9 +220,10 @@ function viewResumeDetail(resume) {
     const msg = `
 标题：${resume.resumeName || ''}
 姓名：${resume.realName || ''}
+性别：${resume.gender == 1 ? '男' : resume.gender == 2 ? '女' : ''}
+年龄：${resume.age || ''}
 学历：${resume.education || ''}
 工作经验：${resume.workExperience || ''}
-工作/项目经历：${resume.workHistory || ''}
 技能：${resume.skill || ''}
 求职意向：${resume.jobIntention || ''}
     `;
@@ -223,13 +234,14 @@ function viewResumeDetail(resume) {
 async function saveResume(currentUser, mode, resumeId) {
     const title = document.getElementById('resume-title').value.trim();
     const name = document.getElementById('resume-name').value.trim();
+    const gender = document.getElementById('resume-gender').value;
+    const age = document.getElementById('resume-age').value;
     const phone = document.getElementById('resume-phone').value.trim();
     const email = document.getElementById('resume-email').value.trim();
     const education = document.getElementById('resume-education').value.trim();
     const workExperience = document.getElementById('resume-workExp').value.trim();
-    const projectExperience = document.getElementById('resume-projectExp').value.trim();
     const skills = document.getElementById('resume-skills').value.trim();
-    const selfEvaluation = document.getElementById('resume-selfEval').value.trim();
+    const jobIntention = document.getElementById('resume-job-intention').value.trim();
 
     if (!title || !name || !phone || !email) {
         alert('简历标题、姓名、电话、邮箱为必填项');
@@ -241,11 +253,12 @@ async function saveResume(currentUser, mode, resumeId) {
         // 映射到后端 ResumeInfoDTO 字段
         resumeName: title,
         realName: name,
+        gender: gender ? parseInt(gender) : null,
+        age: age ? parseInt(age) : null,
         education,
         workExperience,
-        workHistory: projectExperience,
         skill: skills,
-        jobIntention: selfEvaluation
+        jobIntention
     };
     if (mode === 'update' && resumeId) {
         payload.resumeId = Number(resumeId);
