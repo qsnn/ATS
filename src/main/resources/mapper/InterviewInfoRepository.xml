@@ -15,7 +15,7 @@
             ii.interviewee_id       AS intervieweeId,
             ii.interview_intro      AS interviewIntro,
             ii.interviewee_name     AS intervieweeName,
-            ja.status               AS status
+            ii.status               AS status
         FROM interview_info ii
             JOIN job_application ja ON ii.delivery_id = ja.application_id
             JOIN job_info ji ON ja.job_id = ji.job_id

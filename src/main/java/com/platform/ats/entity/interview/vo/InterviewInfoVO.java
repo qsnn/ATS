@@ -11,4 +11,5 @@ public class InterviewInfoVO {
     private Long intervieweeId;
     private String interviewIntro;
     private String intervieweeName;
+    private String status;
 }

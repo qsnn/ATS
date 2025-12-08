@@ -6,6 +6,7 @@ function renderApplicationsView(container, currentUser) {
             <div class="status-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">
                 <button class="tab-btn active" data-status="">全部</button>
                 <button class="tab-btn" data-status="APPLIED">申请中</button>
+                <button class="tab-btn" data-status="OFFER">申请成功</button>
                 <button class="tab-btn" data-status="REJECTED">申请失败</button>
                 <button class="tab-btn" data-status="WITHDRAWN">已撤回</button>
             </div>
@@ -140,7 +141,10 @@ function mapApplicationStatus(status) {
     switch (status) {
         case 'APPLIED':
         case 'SCREENING':
+        case 'INTERVIEW':
             return '申请中';
+        case 'OFFER':
+            return '申请成功';
         case 'REJECTED':
             return '申请失败';
         case 'WITHDRAWN':

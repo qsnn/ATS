@@ -44,4 +44,10 @@ public class InterviewInfo {
 
     @TableField("interviewee_name")
     private String intervieweeName;
+
+    /**
+     * 面试状态：PREPARING_INTERVIEW-准备面试, INTERVIEW_ENDED-面试结束, ACCEPTED-录取, REJECTED-未录取
+     */
+    @TableField("status")
+    private String status;
 }

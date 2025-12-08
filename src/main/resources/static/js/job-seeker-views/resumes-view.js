@@ -205,9 +205,8 @@ function editResume(resume) {
     document.getElementById('resume-name').value = resume.realName || '';
     document.getElementById('resume-gender').value = resume.gender || '';
     document.getElementById('resume-age').value = resume.age || '';
-    // phone/email 暂时从后端 DTO 中没有对应字段，保留为空或以后扩展
-    document.getElementById('resume-phone').value = '';
-    document.getElementById('resume-email').value = '';
+    document.getElementById('resume-phone').value = resume.phone || '';
+    document.getElementById('resume-email').value = resume.email || '';
     document.getElementById('resume-education').value = resume.education || '';
     document.getElementById('resume-workExp').value = resume.workExperience || '';
     document.getElementById('resume-skills').value = resume.skill || '';
@@ -222,6 +221,8 @@ function viewResumeDetail(resume) {
 姓名：${resume.realName || ''}
 性别：${resume.gender == 1 ? '男' : resume.gender == 2 ? '女' : ''}
 年龄：${resume.age || ''}
+电话：${resume.phone || ''}
+邮箱：${resume.email || ''}
 学历：${resume.education || ''}
 工作经验：${resume.workExperience || ''}
 技能：${resume.skill || ''}
@@ -255,6 +256,8 @@ async function saveResume(currentUser, mode, resumeId) {
         realName: name,
         gender: gender ? parseInt(gender) : null,
         age: age ? parseInt(age) : null,
+        phone,
+        email,
         education,
         workExperience,
         skill: skills,

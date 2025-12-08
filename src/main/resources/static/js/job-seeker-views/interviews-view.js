@@ -68,7 +68,7 @@ async function loadInterviews(currentUser) {
             timeTd.textContent = item.interviewIntro || '';
 
             const statusTd = document.createElement('td');
-            statusTd.textContent = item.status || '';
+            statusTd.textContent = mapInterviewStatus(item.status);
 
             tr.appendChild(jobTd);
             tr.appendChild(companyTd);
@@ -80,5 +80,21 @@ async function loadInterviews(currentUser) {
     } catch (e) {
         console.error('加载面试安排异常:', e);
         if (statusEl) statusEl.textContent = '请求异常，请稍后重试';
+    }
+}
+
+function mapInterviewStatus(status) {
+    if (!status) return '未知';
+    switch (status) {
+        case 'PREPARING_INTERVIEW':
+            return '准备面试';
+        case 'INTERVIEW_ENDED':
+            return '面试结束';
+        case 'ACCEPTED':
+            return '录取';
+        case 'REJECTED':
+            return '未录取';
+        default:
+            return status;
     }
 }
