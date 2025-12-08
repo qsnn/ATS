@@ -21,6 +21,8 @@ public class ResumeInfoDTO {
     private String workExperience;
     private String skill;
     private String jobIntention;
+    private String phone;
+    private String email;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;

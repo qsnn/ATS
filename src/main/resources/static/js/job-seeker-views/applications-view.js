@@ -6,7 +6,6 @@ function renderApplicationsView(container, currentUser) {
             <div class="status-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">
                 <button class="tab-btn active" data-status="">全部</button>
                 <button class="tab-btn" data-status="APPLIED">申请中</button>
-                <button class="tab-btn" data-status="OFFER">申请成功</button>
                 <button class="tab-btn" data-status="REJECTED">申请失败</button>
                 <button class="tab-btn" data-status="WITHDRAWN">已撤回</button>
             </div>
@@ -113,7 +112,8 @@ async function loadApplications(currentUser, status = '') {
             statusTd.textContent = mapApplicationStatus(app.status);
 
             const actionTd = document.createElement('td');
-            if (app.status === 'APPLIED' || app.status === 'SCREENING') {
+            // 根据状态决定是否显示取消申请按钮
+            if (['APPLIED', 'SCREENING'].includes(app.status)) {
                 const cancelButton = document.createElement('button');
                 cancelButton.className = 'btn btn-danger btn-sm';
                 cancelButton.textContent = '取消申请';
@@ -139,15 +139,10 @@ function mapApplicationStatus(status) {
     if (!status) return '未知';
     switch (status) {
         case 'APPLIED':
-            return '已投递';
         case 'SCREENING':
-            return '筛选中';
-        case 'INTERVIEW':
-            return '面试中';
-        case 'OFFER':
-            return '已录用';
+            return '申请中';
         case 'REJECTED':
-            return '已淘汰';
+            return '申请失败';
         case 'WITHDRAWN':
             return '已撤回';
         default:

@@ -24,7 +24,7 @@ public class JobApplication {
     private Long resumeId;
 
     /**
-     * 申请状态：APPLIED/SCREENING/INTERVIEW/OFFER/REJECTED/WITHDRAWN
+     * 申请状态：APPLIED/SCREENING/REJECTED/WITHDRAWN
      */
     private String status;
 
@@ -32,4 +32,3 @@ public class JobApplication {
 
     private LocalDateTime updateTime;
 }
-

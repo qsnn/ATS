@@ -40,6 +40,12 @@ public class ResumeInfo {
     @TableField("job_intention")
     private String jobIntention;
 
+    @TableField("phone")
+    private String phone;
+
+    @TableField("email")
+    private String email;
+
     @TableField( value = "create_time",fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
