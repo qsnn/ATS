@@ -98,7 +98,7 @@ function renderResumesView(container, currentUser) {
     // 初始化分页状态
     window.resumePagination = {
         current: 1,
-        size: 20,
+        size: 10,
         total: 0,
         pages: 0
     };
@@ -133,6 +133,12 @@ async function initUserResumes(user) {
             paginationContainer.style.display = 'none';
         }
         return;
+    }
+
+    // 显示总数信息
+    const totalCountEl = document.getElementById('resume-list-total-count');
+    if (totalCountEl) {
+        totalCountEl.textContent = `共 ${resumes.length} 份简历`;
     }
 
     // 更新分页信息

@@ -26,7 +26,7 @@ function renderInterviewsView(container, currentUser) {
     // 初始化分页状态
     window.interviewsPagination = {
         current: 1,
-        size: 20,
+        size: 10,
         total: 0,
         pages: 0
     };

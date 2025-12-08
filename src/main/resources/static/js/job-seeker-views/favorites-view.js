@@ -16,7 +16,7 @@ function renderFavoritesView(container, currentUser) {
     // 初始化分页状态
     window.favoritesPagination = {
         current: 1,
-        size: 20,
+        size: 10,
         total: 0,
         pages: 0
     };
@@ -63,7 +63,7 @@ async function loadFavoriteJobs(currentUser) {
 
         // 更新分页信息
         window.favoritesPagination.total = page.total || 0;
-        window.favoritesPagination.pages = page.pages || 0;
+        window.favoritesPagination.pages = page.pages || Math.ceil((page.total || 0) / window.favoritesPagination.size) || 0;
         
         if (statusEl) statusEl.textContent = `共 ${window.favoritesPagination.total} 条收藏职位`;
 

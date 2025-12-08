@@ -12,7 +12,7 @@ function debounce(fn, wait) {
 // 全局分页状态
 window.jobSearchPagination = {
     current: 1,
-    size: 20,
+    size: 10,
     total: 0,
     pages: 0
 };
@@ -63,14 +63,21 @@ async function searchJobs() {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const data = await response.json();
+        const result = await response.json();
+        const data = result.data || result;
         // 后端返回的结构是 IPage，职位列表在 records 字段中
         renderJobList(data && data.records ? data.records : []);
         
         // 更新分页信息
         if (data) {
             window.jobSearchPagination.total = data.total || 0;
-            window.jobSearchPagination.pages = data.pages || 0;
+            window.jobSearchPagination.pages = data.pages || Math.ceil((data.total || 0) / window.jobSearchPagination.size) || 0;
+            
+            // 显示总数信息
+            const totalCountEl = document.getElementById('job-list-total-count');
+            if (totalCountEl) {
+                totalCountEl.textContent = `共找到 ${window.jobSearchPagination.total} 个职位`;
+            }
             
             if (paginationInfo) {
                 paginationInfo.textContent = `第 ${window.jobSearchPagination.current} 页，共 ${window.jobSearchPagination.pages} 页`;
@@ -241,7 +248,7 @@ async function applyJob(jobId) {
     }
     const resumes = resumeResult.data || [];
     if (resumes.length === 0) {
-        alert('您还没有简历，请先在“我的简历”中创建简历。');
+        alert('您还没有简历，请先在"我的简历"中创建简历。');
         return;
     }
 
@@ -273,7 +280,7 @@ async function applyJob(jobId) {
         return;
     }
 
-    alert('投递成功！您可以在“我的申请”中查看投递记录。');
+    alert('投递成功！您可以在"我的申请"中查看投递记录。');
 }
 
 async function viewJobDetail(jobId) {

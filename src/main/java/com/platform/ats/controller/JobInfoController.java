@@ -28,11 +28,18 @@ public class JobInfoController {
      * 分页并根据条件筛选职位列表（包含公司名称等详细信息）
      */
     @GetMapping("/list")
-    public ResponseEntity<IPage<JobInfoDetailDto>> list(Page<JobInfoDetailDto> page, JobInfoQueryDto queryDto) {
+    public ResponseEntity<IPage<JobInfoDetailDto>> list(
+            @RequestParam(defaultValue = "1") Long current,
+            @RequestParam(defaultValue = "10") Long size,
+            JobInfoQueryDto queryDto) {
+        
         // 如果没有指定发布状态，默认只查询已发布的职位
         if (queryDto.getPublishStatus() == null) {
             queryDto.setPublishStatus(1);
         }
+        
+        // 创建分页对象
+        Page<JobInfoDetailDto> page = new Page<>(current, size);
         
         try {
             IPage<JobInfoDetailDto> resultPage = jobInfoService.findJobPage(page, queryDto);

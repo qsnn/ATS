@@ -7,7 +7,7 @@ function renderApplicationsView(container, currentUser) {
                 <button class="tab-btn active" data-status="">全部</button>
                 <button class="tab-btn" data-status="APPLIED">申请中</button>
                 <button class="tab-btn" data-status="ACCEPTED">申请成功</button>
-                <button class="tab-btn" data-status="REJECTED">申请失败</button>
+                <button class="tab-btn" data-status="REJECTED">被驳回</button>
                 <button class="tab-btn" data-status="WITHDRAWN">已撤回</button>
             </div>
             <div id="applications-status" style="margin-bottom:8px;color:#666;">正在加载申请记录...</div>
@@ -55,7 +55,7 @@ function renderApplicationsView(container, currentUser) {
     // 初始化分页状态
     window.applicationsPagination = {
         current: 1,
-        size: 20,
+        size: 10,
         total: 0,
         pages: 0
     };
@@ -118,7 +118,7 @@ async function loadApplications(currentUser, status = '') {
 
         // 更新分页信息
         window.applicationsPagination.total = page.total || 0;
-        window.applicationsPagination.pages = page.pages || 0;
+        window.applicationsPagination.pages = page.pages || Math.ceil((page.total || 0) / window.applicationsPagination.size) || 0;
         
         if (statusEl) statusEl.textContent = `共 ${window.applicationsPagination.total} 条申请记录`;
 
@@ -209,7 +209,7 @@ function mapApplicationStatus(status) {
         case 'ACCEPTED':
             return '申请成功';
         case 'REJECTED':
-            return '申请失败';
+            return '被驳回';
         case 'WITHDRAWN':
             return '已撤回';
         default:
