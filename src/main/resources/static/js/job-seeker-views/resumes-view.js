@@ -139,6 +139,14 @@ async function initUserResumes(user) {
     const totalCountEl = document.getElementById('resume-list-total-count');
     if (totalCountEl) {
         totalCountEl.textContent = `共 ${resumes.length} 份简历`;
+    } else {
+        // 如果找不到专门的计数元素，就在列表上方显示
+        const countInfo = document.createElement('div');
+        countInfo.id = 'resume-list-total-count';
+        countInfo.textContent = `共 ${resumes.length} 份简历`;
+        countInfo.style.marginBottom = '10px';
+        countInfo.style.color = '#666';
+        listContainer.parentNode.insertBefore(countInfo, listContainer);
     }
 
     // 更新分页信息

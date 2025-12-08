@@ -98,7 +98,7 @@ function renderJobSearchView(container, currentUser) {
     // 初始搜索
     window.jobSearchPagination = {
         current: 1,
-        size: 20,
+        size: 10,
         total: 0,
         pages: 0
     };

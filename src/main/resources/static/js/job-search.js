@@ -75,8 +75,12 @@ async function searchJobs() {
             
             // 显示总数信息
             const totalCountEl = document.getElementById('job-list-total-count');
+            const resultsCountEl = document.getElementById('results-count');
             if (totalCountEl) {
                 totalCountEl.textContent = `共找到 ${window.jobSearchPagination.total} 个职位`;
+            }
+            if (resultsCountEl) {
+                resultsCountEl.textContent = `共找到 ${window.jobSearchPagination.total} 个职位`;
             }
             
             if (paginationInfo) {
