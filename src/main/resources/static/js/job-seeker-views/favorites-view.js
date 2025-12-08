@@ -114,15 +114,19 @@ async function openApplyFromFavoriteModal(currentUser, jobId) {
         return;
     }
 
-    // 构造简易选择框
-    const options = resumes.map(r => `${r.resumeId}:${r.resumeName || '未命名简历'}`).join('\n');
-    const input = prompt(`请选择用于投递的简历（输入编号前的ID）：\n${options}`, resumes[0].resumeId);
-    if (input === null) return;
-    const resumeId = Number(input);
-    if (!resumeId || !resumes.find(r => r.resumeId === resumeId)) {
-        alert('无效的简历ID');
+    // 使用与职位搜索页相同的编号选择方式：1. 简历A\n2. 简历B ...
+    const optionsText = resumes
+        .map((r, index) => `${index + 1}. ${r.resumeName || '未命名简历'}`)
+        .join('\n');
+    const input = prompt(`请选择用于投递的简历编号：\n${optionsText}`);
+    if (!input) return;
+    const index = parseInt(input, 10) - 1;
+    if (Number.isNaN(index) || index < 0 || index >= resumes.length) {
+        alert('输入的编号无效');
         return;
     }
+
+    const chosenResume = resumes[index];
 
     if (!window.JobSeekerApi || typeof JobSeekerApi.applyJobApi !== 'function') {
         alert('投递接口未就绪');
@@ -132,7 +136,7 @@ async function openApplyFromFavoriteModal(currentUser, jobId) {
     const payload = {
         userId: currentUser.userId,
         jobId,
-        resumeId
+        resumeId: chosenResume.resumeId
     };
 
     const result = await JobSeekerApi.applyJobApi(payload);
