@@ -23,6 +23,11 @@ function renderApplicationsView(container, currentUser) {
                 </thead>
                 <tbody id="applications-tbody"></tbody>
             </table>
+            <div class="pagination" id="applications-pagination" style="justify-content: center; align-items: center; gap: 10px; margin-top: 20px;">
+                <button class="btn pagination-btn" id="applications-prev-page">上一页</button>
+                <span class="pagination-info" id="applications-pagination-info"></span>
+                <button class="btn pagination-btn" id="applications-next-page">下一页</button>
+            </div>
         </div>
     `;
 
@@ -36,9 +41,24 @@ function renderApplicationsView(container, currentUser) {
             
             // 加载对应状态的数据
             const status = button.getAttribute('data-status');
+            // 重置分页到第一页
+            window.applicationsPagination = {
+                current: 1,
+                size: 20,
+                total: 0,
+                pages: 0
+            };
             loadApplications(currentUser, status);
         });
     });
+
+    // 初始化分页状态
+    window.applicationsPagination = {
+        current: 1,
+        size: 20,
+        total: 0,
+        pages: 0
+    };
 
     loadApplications(currentUser);
 }
@@ -46,6 +66,11 @@ function renderApplicationsView(container, currentUser) {
 async function loadApplications(currentUser, status = '') {
     const statusEl = document.getElementById('applications-status');
     const tbody = document.getElementById('applications-tbody');
+    const paginationContainer = document.getElementById('applications-pagination');
+    const paginationInfo = document.getElementById('applications-pagination-info');
+    const prevBtn = document.getElementById('applications-prev-page');
+    const nextBtn = document.getElementById('applications-next-page');
+
     if (!tbody || !currentUser) return;
 
     if (statusEl) statusEl.textContent = '正在加载申请记录...';
@@ -54,8 +79,8 @@ async function loadApplications(currentUser, status = '') {
     try {
         const params = new URLSearchParams({
             userId: currentUser.userId,
-            current: 1,
-            size: 20
+            current: window.applicationsPagination.current,
+            size: window.applicationsPagination.size
         });
         
         // 如果指定了状态，则添加到参数中
@@ -87,10 +112,43 @@ async function loadApplications(currentUser, status = '') {
 
         if (records.length === 0) {
             if (statusEl) statusEl.textContent = '暂无申请记录。去职位搜索页多投几份简历吧~';
+            if (paginationContainer) paginationContainer.style.display = 'none';
             return;
         }
 
-        if (statusEl) statusEl.textContent = `共 ${page.total || records.length} 条申请记录`;
+        // 更新分页信息
+        window.applicationsPagination.total = page.total || 0;
+        window.applicationsPagination.pages = page.pages || 0;
+        
+        if (statusEl) statusEl.textContent = `共 ${window.applicationsPagination.total} 条申请记录`;
+
+        if (paginationInfo) {
+            paginationInfo.textContent = `第 ${window.applicationsPagination.current} 页，共 ${window.applicationsPagination.pages} 页`;
+        }
+
+        if (paginationContainer) {
+            paginationContainer.style.display = 'flex';
+        }
+
+        if (prevBtn) {
+            prevBtn.disabled = window.applicationsPagination.current <= 1;
+            prevBtn.onclick = () => {
+                if (window.applicationsPagination.current > 1) {
+                    window.applicationsPagination.current--;
+                    loadApplications(currentUser, status);
+                }
+            };
+        }
+
+        if (nextBtn) {
+            nextBtn.disabled = window.applicationsPagination.current >= window.applicationsPagination.pages;
+            nextBtn.onclick = () => {
+                if (window.applicationsPagination.current < window.applicationsPagination.pages) {
+                    window.applicationsPagination.current++;
+                    loadApplications(currentUser, status);
+                }
+            };
+        }
 
         records.forEach(app => {
             const tr = document.createElement('tr');

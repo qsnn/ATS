@@ -15,8 +15,21 @@ function renderInterviewsView(container, currentUser) {
                 </thead>
                 <tbody id="interviews-tbody"></tbody>
             </table>
+            <div class="pagination" id="interviews-pagination" style="justify-content: center; align-items: center; gap: 10px; margin-top: 20px;">
+                <button class="btn pagination-btn" id="interviews-prev-page">上一页</button>
+                <span class="pagination-info" id="interviews-pagination-info"></span>
+                <button class="btn pagination-btn" id="interviews-next-page">下一页</button>
+            </div>
         </div>
     `;
+
+    // 初始化分页状态
+    window.interviewsPagination = {
+        current: 1,
+        size: 20,
+        total: 0,
+        pages: 0
+    };
 
     loadInterviews(currentUser);
 }
@@ -24,6 +37,11 @@ function renderInterviewsView(container, currentUser) {
 async function loadInterviews(currentUser) {
     const statusEl = document.getElementById('interviews-status');
     const tbody = document.getElementById('interviews-tbody');
+    const paginationContainer = document.getElementById('interviews-pagination');
+    const paginationInfo = document.getElementById('interviews-pagination-info');
+    const prevBtn = document.getElementById('interviews-prev-page');
+    const nextBtn = document.getElementById('interviews-next-page');
+
     if (!tbody || !currentUser) return;
 
     if (statusEl) statusEl.textContent = '正在加载面试安排...';
@@ -36,6 +54,8 @@ async function loadInterviews(currentUser) {
             if (statusEl) statusEl.textContent = '用户信息不完整，无法加载面试安排';
             return;
         }
+        
+        // 获取所有面试数据
         const resp = await fetch(`${base}/interview/user/${encodeURIComponent(userId)}`);
         if (!resp.ok) {
             const text = await resp.text();
@@ -47,15 +67,55 @@ async function loadInterviews(currentUser) {
             if (statusEl) statusEl.textContent = json.message || '加载失败';
             return;
         }
-        const list = json.data || [];
-        if (list.length === 0) {
+        const allList = json.data || [];
+        
+        if (allList.length === 0) {
             if (statusEl) statusEl.textContent = '暂无面试安排。';
+            if (paginationContainer) paginationContainer.style.display = 'none';
             return;
         }
 
-        if (statusEl) statusEl.textContent = `共 ${list.length} 条面试安排`;
+        // 分页处理
+        const totalPages = Math.ceil(allList.length / window.interviewsPagination.size);
+        const startIndex = (window.interviewsPagination.current - 1) * window.interviewsPagination.size;
+        const endIndex = startIndex + window.interviewsPagination.size;
+        const paginatedList = allList.slice(startIndex, endIndex);
 
-        list.forEach(item => {
+        // 更新分页信息
+        window.interviewsPagination.total = allList.length;
+        window.interviewsPagination.pages = totalPages;
+        
+        if (statusEl) statusEl.textContent = `共 ${window.interviewsPagination.total} 条面试安排`;
+
+        if (paginationInfo) {
+            paginationInfo.textContent = `第 ${window.interviewsPagination.current} 页，共 ${window.interviewsPagination.pages} 页`;
+        }
+
+        if (paginationContainer) {
+            paginationContainer.style.display = 'flex';
+        }
+
+        if (prevBtn) {
+            prevBtn.disabled = window.interviewsPagination.current <= 1;
+            prevBtn.onclick = () => {
+                if (window.interviewsPagination.current > 1) {
+                    window.interviewsPagination.current--;
+                    loadInterviews(currentUser);
+                }
+            };
+        }
+
+        if (nextBtn) {
+            nextBtn.disabled = window.interviewsPagination.current >= window.interviewsPagination.pages;
+            nextBtn.onclick = () => {
+                if (window.interviewsPagination.current < window.interviewsPagination.pages) {
+                    window.interviewsPagination.current++;
+                    loadInterviews(currentUser);
+                }
+            };
+        }
+
+        paginatedList.forEach(item => {
             const tr = document.createElement('tr');
 
             const jobTd = document.createElement('td');

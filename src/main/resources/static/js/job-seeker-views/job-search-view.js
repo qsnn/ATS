@@ -74,23 +74,14 @@ function renderJobSearchView(container, currentUser) {
             
             <div class="search-results-header">
                 <div class="results-info">
-                    <span id="results-count">正在加载职位...</span>
-                </div>
-                <div class="sort-options">
-                    <label>排序:</label>
-                    <select id="sort-order" class="filter-select">
-                        <option value="update_time_desc">最新发布</option>
-                        <option value="salary_desc">薪资最高</option>
-                        <option value="salary_asc">薪资最低</option>
-                    </select>
+                    <span id="results-count"></span>
                 </div>
             </div>
             
             <div class="job-list" id="job-list">
-                <div class="loading-placeholder">正在加载职位信息...</div>
             </div>
             
-            <div class="pagination" id="pagination-container" style="display: none;">
+            <div class="pagination" id="pagination-container" style="justify-content: center; align-items: center; gap: 10px; margin-top: 20px;">
                 <button class="btn pagination-btn" id="prev-page">上一页</button>
                 <span class="pagination-info" id="pagination-info"></span>
                 <button class="btn pagination-btn" id="next-page">下一页</button>
@@ -105,10 +96,11 @@ function renderJobSearchView(container, currentUser) {
     initCityFilter();
     
     // 初始搜索
-    window.currentSearchState = {
+    window.jobSearchPagination = {
         current: 1,
-        size: 10,
-        total: 0
+        size: 20,
+        total: 0,
+        pages: 0
     };
     
     searchJobs();
@@ -123,14 +115,13 @@ function initSearchComponents() {
     const experienceFilter = document.getElementById('experience-filter');
     const salaryMin = document.getElementById('salary-min');
     const salaryMax = document.getElementById('salary-max');
-    const sortOrder = document.getElementById('sort-order');
     const resetBtn = document.getElementById('reset-filters');
     const prevBtn = document.getElementById('prev-page');
     const nextBtn = document.getElementById('next-page');
 
     // 搜索事件
     const triggerSearch = () => {
-        window.currentSearchState.current = 1; // 重置到第一页
+        window.jobSearchPagination.current = 1; // 重置到第一页
         searchJobs();
     };
 
@@ -147,7 +138,6 @@ function initSearchComponents() {
     experienceFilter.addEventListener('change', triggerSearch);
     salaryMin.addEventListener('input', triggerSearch);
     salaryMax.addEventListener('input', triggerSearch);
-    sortOrder.addEventListener('change', triggerSearch);
     
     // 重置筛选
     resetBtn.addEventListener('click', () => {
@@ -157,26 +147,27 @@ function initSearchComponents() {
         experienceFilter.value = '';
         salaryMin.value = '';
         salaryMax.value = '';
-        sortOrder.value = 'update_time_desc';
         triggerSearch();
     });
     
     // 分页事件
-    prevBtn.addEventListener('click', () => {
-        if (window.currentSearchState.current > 1) {
-            window.currentSearchState.current--;
-            searchJobs();
-        }
-    });
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            if (window.jobSearchPagination.current > 1) {
+                window.jobSearchPagination.current--;
+                searchJobs();
+            }
+        });
+    }
     
-    nextBtn.addEventListener('click', () => {
-        const { current, size, total } = window.currentSearchState;
-        const totalPages = Math.ceil(total / size);
-        if (current < totalPages) {
-            window.currentSearchState.current++;
-            searchJobs();
-        }
-    });
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            if (window.jobSearchPagination.current < window.jobSearchPagination.pages) {
+                window.jobSearchPagination.current++;
+                searchJobs();
+            }
+        });
+    }
 }
 
 function initCityFilter() {
@@ -185,7 +176,7 @@ function initCityFilter() {
         return;
     }
 
-    // 保留第一个“全部城市”选项，清空其他动态选项
+    // 保留第一个"全部城市"选项，清空其他动态选项
     const firstOption = locationSelect.querySelector('option');
     locationSelect.innerHTML = '';
     if (firstOption) {

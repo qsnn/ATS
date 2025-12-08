@@ -5,6 +5,11 @@ function renderResumesView(container, currentUser) {
             <button class="btn btn-primary" id="create-resume-btn">创建新简历</button>
             <div class="list-container" style="margin-top: 1rem;">
                 <div id="resume-list">正在加载简历列表...</div>
+                <div class="pagination" id="resume-pagination" style="justify-content: center; align-items: center; gap: 10px; margin-top: 20px;">
+                    <button class="btn pagination-btn" id="resume-prev-page">上一页</button>
+                    <span class="pagination-info" id="resume-pagination-info"></span>
+                    <button class="btn pagination-btn" id="resume-next-page">下一页</button>
+                </div>
             </div>
 
             <!-- 简历编辑弹窗 -->
@@ -90,6 +95,14 @@ function renderResumesView(container, currentUser) {
         await saveResume(currentUser, mode, resumeId);
     });
 
+    // 初始化分页状态
+    window.resumePagination = {
+        current: 1,
+        size: 20,
+        total: 0,
+        pages: 0
+    };
+
     initUserResumes(currentUser);
 }
 
@@ -98,6 +111,11 @@ function renderResumesView(container, currentUser) {
  */
 async function initUserResumes(user) {
     const listContainer = document.getElementById('resume-list');
+    const paginationContainer = document.getElementById('resume-pagination');
+    const paginationInfo = document.getElementById('resume-pagination-info');
+    const prevBtn = document.getElementById('resume-prev-page');
+    const nextBtn = document.getElementById('resume-next-page');
+
     if (!listContainer || !user) return;
 
     listContainer.textContent = '正在加载简历列表...';
@@ -111,14 +129,52 @@ async function initUserResumes(user) {
     const resumes = result.data;
     if (!resumes || resumes.length === 0) {
         listContainer.textContent = '暂无简历，请点击上方「创建新简历」。';
+        if (paginationContainer) {
+            paginationContainer.style.display = 'none';
+        }
         return;
     }
+
+    // 更新分页信息
+    if (paginationInfo) {
+        paginationInfo.textContent = `第 ${window.resumePagination.current} 页，共 ${Math.ceil(resumes.length / window.resumePagination.size)} 页`;
+    }
+
+    if (paginationContainer) {
+        paginationContainer.style.display = 'flex';
+    }
+
+    if (prevBtn) {
+        prevBtn.disabled = window.resumePagination.current <= 1;
+        prevBtn.onclick = () => {
+            if (window.resumePagination.current > 1) {
+                window.resumePagination.current--;
+                initUserResumes(user);
+            }
+        };
+    }
+
+    if (nextBtn) {
+        const totalPages = Math.ceil(resumes.length / window.resumePagination.size);
+        nextBtn.disabled = window.resumePagination.current >= totalPages;
+        nextBtn.onclick = () => {
+            if (window.resumePagination.current < totalPages) {
+                window.resumePagination.current++;
+                initUserResumes(user);
+            }
+        };
+    }
+
+    // 分页处理
+    const startIndex = (window.resumePagination.current - 1) * window.resumePagination.size;
+    const endIndex = startIndex + window.resumePagination.size;
+    const paginatedResumes = resumes.slice(startIndex, endIndex);
 
     const ul = document.createElement('ul');
     ul.style.listStyle = 'none';
     ul.style.padding = '0';
 
-    resumes.forEach(resume => {
+    paginatedResumes.forEach(resume => {
         const li = document.createElement('li');
         li.style.border = '1px solid #ddd';
         li.style.padding = '8px 12px';

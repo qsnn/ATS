@@ -9,6 +9,14 @@ function debounce(fn, wait) {
     };
 }
 
+// 全局分页状态
+window.jobSearchPagination = {
+    current: 1,
+    size: 20,
+    total: 0,
+    pages: 0
+};
+
 /**
  * 根据条件搜索职位
  */
@@ -20,6 +28,10 @@ async function searchJobs() {
     const salaryMinEl = document.getElementById('salary-min');
     const salaryMaxEl = document.getElementById('salary-max');
     const jobListContainer = document.getElementById('job-list');
+    const paginationContainer = document.getElementById('pagination-container');
+    const paginationInfo = document.getElementById('pagination-info');
+    const prevBtn = document.getElementById('prev-page');
+    const nextBtn = document.getElementById('next-page');
 
     if (!jobListContainer) return; // 无容器则不渲染
 
@@ -32,8 +44,8 @@ async function searchJobs() {
 
     // 构建查询参数（确保编码）
     const params = new URLSearchParams({
-        current: 1,
-        size: 20,
+        current: window.jobSearchPagination.current,
+        size: window.jobSearchPagination.size,
         // 默认只显示已发布的职位
         publishStatus: 1
     });
@@ -54,6 +66,28 @@ async function searchJobs() {
         const data = await response.json();
         // 后端返回的结构是 IPage，职位列表在 records 字段中
         renderJobList(data && data.records ? data.records : []);
+        
+        // 更新分页信息
+        if (data) {
+            window.jobSearchPagination.total = data.total || 0;
+            window.jobSearchPagination.pages = data.pages || 0;
+            
+            if (paginationInfo) {
+                paginationInfo.textContent = `第 ${window.jobSearchPagination.current} 页，共 ${window.jobSearchPagination.pages} 页`;
+            }
+            
+            if (paginationContainer) {
+                paginationContainer.style.display = 'flex';
+            }
+            
+            if (prevBtn) {
+                prevBtn.disabled = window.jobSearchPagination.current <= 1;
+            }
+            
+            if (nextBtn) {
+                nextBtn.disabled = window.jobSearchPagination.current >= window.jobSearchPagination.pages;
+            }
+        }
     } catch (error) {
         console.error('获取职位列表失败:', error);
         if (jobListContainer) jobListContainer.innerHTML = '<p>加载职位信息失败，请稍后重试。</p>';
@@ -176,6 +210,21 @@ function escapeHtml(unsafe) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+}
+
+// 分页功能
+function goToPreviousPage() {
+    if (window.jobSearchPagination.current > 1) {
+        window.jobSearchPagination.current--;
+        searchJobs();
+    }
+}
+
+function goToNextPage() {
+    if (window.jobSearchPagination.current < window.jobSearchPagination.pages) {
+        window.jobSearchPagination.current++;
+        searchJobs();
+    }
 }
 
 async function applyJob(jobId) {

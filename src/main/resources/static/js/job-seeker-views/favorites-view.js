@@ -5,8 +5,21 @@ function renderFavoritesView(container, currentUser) {
             <h2>我的收藏</h2>
             <div id="favorites-status" style="margin-bottom:8px;color:#666;">正在加载收藏职位...</div>
             <div class="job-list" id="favorite-job-list"></div>
+            <div class="pagination" id="favorites-pagination" style="justify-content: center; align-items: center; gap: 10px; margin-top: 20px;">
+                <button class="btn pagination-btn" id="favorites-prev-page">上一页</button>
+                <span class="pagination-info" id="favorites-pagination-info"></span>
+                <button class="btn pagination-btn" id="favorites-next-page">下一页</button>
+            </div>
         </div>
     `;
+
+    // 初始化分页状态
+    window.favoritesPagination = {
+        current: 1,
+        size: 20,
+        total: 0,
+        pages: 0
+    };
 
     loadFavoriteJobs(currentUser);
 }
@@ -14,6 +27,11 @@ function renderFavoritesView(container, currentUser) {
 async function loadFavoriteJobs(currentUser) {
     const statusEl = document.getElementById('favorites-status');
     const listEl = document.getElementById('favorite-job-list');
+    const paginationContainer = document.getElementById('favorites-pagination');
+    const paginationInfo = document.getElementById('favorites-pagination-info');
+    const prevBtn = document.getElementById('favorites-prev-page');
+    const nextBtn = document.getElementById('favorites-next-page');
+
     if (!listEl || !currentUser) return;
 
     if (statusEl) statusEl.textContent = '正在加载收藏职位...';
@@ -27,8 +45,8 @@ async function loadFavoriteJobs(currentUser) {
     try {
         const result = await JobSeekerApi.fetchMyFavoriteJobsApi({
             userId: currentUser.userId,
-            current: 1,
-            size: 20
+            current: window.favoritesPagination.current,
+            size: window.favoritesPagination.size
         });
         if (!result.success) {
             if (statusEl) statusEl.textContent = result.message || '加载失败';
@@ -39,10 +57,43 @@ async function loadFavoriteJobs(currentUser) {
 
         if (records.length === 0) {
             if (statusEl) statusEl.textContent = '暂无收藏职位。去职位搜索页看看吧~';
+            if (paginationContainer) paginationContainer.style.display = 'none';
             return;
         }
 
-        if (statusEl) statusEl.textContent = `共 ${page.total || records.length} 条收藏职位`;
+        // 更新分页信息
+        window.favoritesPagination.total = page.total || 0;
+        window.favoritesPagination.pages = page.pages || 0;
+        
+        if (statusEl) statusEl.textContent = `共 ${window.favoritesPagination.total} 条收藏职位`;
+
+        if (paginationInfo) {
+            paginationInfo.textContent = `第 ${window.favoritesPagination.current} 页，共 ${window.favoritesPagination.pages} 页`;
+        }
+
+        if (paginationContainer) {
+            paginationContainer.style.display = 'flex';
+        }
+
+        if (prevBtn) {
+            prevBtn.disabled = window.favoritesPagination.current <= 1;
+            prevBtn.onclick = () => {
+                if (window.favoritesPagination.current > 1) {
+                    window.favoritesPagination.current--;
+                    loadFavoriteJobs(currentUser);
+                }
+            };
+        }
+
+        if (nextBtn) {
+            nextBtn.disabled = window.favoritesPagination.current >= window.favoritesPagination.pages;
+            nextBtn.onclick = () => {
+                if (window.favoritesPagination.current < window.favoritesPagination.pages) {
+                    window.favoritesPagination.current++;
+                    loadFavoriteJobs(currentUser);
+                }
+            };
+        }
 
         records.forEach(fav => {
             // 检查职位是否已下架
@@ -93,6 +144,9 @@ async function loadFavoriteJobs(currentUser) {
                         return;
                     }
                     card.remove();
+                    // 重新加载数据以更新总数
+                    window.favoritesPagination.current = 1;
+                    loadFavoriteJobs(currentUser);
                 };
             }
 
