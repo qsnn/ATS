@@ -2,6 +2,14 @@ function renderApplicationsView(container, currentUser) {
     container.innerHTML = `
         <div class="view applications-view active">
             <h2>我的申请</h2>
+            <!-- 添加状态筛选标签 -->
+            <div class="status-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">
+                <button class="tab-btn active" data-status="">全部</button>
+                <button class="tab-btn" data-status="APPLIED">申请中</button>
+                <button class="tab-btn" data-status="OFFER">申请成功</button>
+                <button class="tab-btn" data-status="REJECTED">申请失败</button>
+                <button class="tab-btn" data-status="WITHDRAWN">已撤回</button>
+            </div>
             <div id="applications-status" style="margin-bottom:8px;color:#666;">正在加载申请记录...</div>
             <table class="table">
                 <thead>
@@ -18,10 +26,24 @@ function renderApplicationsView(container, currentUser) {
         </div>
     `;
 
+    // 添加标签页点击事件监听
+    const tabButtons = container.querySelectorAll('.tab-btn');
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // 更新激活状态
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            
+            // 加载对应状态的数据
+            const status = button.getAttribute('data-status');
+            loadApplications(currentUser, status);
+        });
+    });
+
     loadApplications(currentUser);
 }
 
-async function loadApplications(currentUser) {
+async function loadApplications(currentUser, status = '') {
     const statusEl = document.getElementById('applications-status');
     const tbody = document.getElementById('applications-tbody');
     if (!tbody || !currentUser) return;
@@ -35,6 +57,12 @@ async function loadApplications(currentUser) {
             current: 1,
             size: 20
         });
+        
+        // 如果指定了状态，则添加到参数中
+        if (status) {
+            params.append('status', status);
+        }
+        
         const base = window.API_BASE || '/api';
         const resp = await fetch(`${base}/applications/my?${params.toString()}`);
         if (!resp.ok) {
@@ -154,7 +182,10 @@ async function withdrawApplication(applicationId, userId) {
         // 重新加载申请列表
         const currentUser = window.Auth && Auth.getCurrentUser ? Auth.getCurrentUser() : null;
         if (currentUser) {
-            loadApplications(currentUser);
+            // 获取当前激活的标签页状态
+            const activeTab = document.querySelector('.tab-btn.active');
+            const currentStatus = activeTab ? activeTab.getAttribute('data-status') : '';
+            loadApplications(currentUser, currentStatus);
         }
     } catch (e) {
         console.error('取消申请异常:', e);
