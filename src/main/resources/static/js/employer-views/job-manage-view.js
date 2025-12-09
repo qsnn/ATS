@@ -15,11 +15,11 @@ function renderJobManageView(container, currentUser) {
             <table class="table" style="width: 100%; table-layout: fixed;">
                 <thead>
                     <tr>
-                        <th style="width: 20%;">职位名称</th>
-                        <th style="width: 20%;">薪资范围</th>
-                        <th style="width: 20%;">工作地点</th>
-                        <th style="width: 20%;">更新时间</th>
-                        <th style="width: 20%;">操作</th>
+                        <th style="width: 20%; text-align: center;">职位名称</th>
+                        <th style="width: 20%; text-align: center;">薪资范围</th>
+                        <th style="width: 20%; text-align: center;">工作地点</th>
+                        <th style="width: 20%; text-align: center;">更新时间</th>
+                        <th style="width: 20%; text-align: center;">操作</th>
                     </tr>
                 </thead>
                 <tbody id="job-manage-tbody"></tbody>
@@ -323,18 +323,36 @@ async function loadJobList(user, status) {
             // 创建单元格元素
             const nameTd = document.createElement('td');
             nameTd.textContent = job.jobName || '';
+            nameTd.style.overflow = 'hidden';
+            nameTd.style.textOverflow = 'ellipsis';
+            nameTd.style.whiteSpace = 'nowrap';
+            nameTd.style.textAlign = 'center';
             
             const salaryTd = document.createElement('td');
             salaryTd.textContent = salary;
+            salaryTd.style.overflow = 'hidden';
+            salaryTd.style.textOverflow = 'ellipsis';
+            salaryTd.style.whiteSpace = 'nowrap';
+            salaryTd.style.textAlign = 'center';
             
             const locationTd = document.createElement('td');
             locationTd.textContent = location || '';
+            locationTd.style.overflow = 'hidden';
+            locationTd.style.textOverflow = 'ellipsis';
+            locationTd.style.whiteSpace = 'nowrap';
+            locationTd.style.textAlign = 'center';
             
             const updateTimeTd = document.createElement('td');
             updateTimeTd.textContent = updateTime;
+            updateTimeTd.style.overflow = 'hidden';
+            updateTimeTd.style.textOverflow = 'ellipsis';
+            updateTimeTd.style.whiteSpace = 'nowrap';
+            updateTimeTd.style.textAlign = 'center';
             
             const actionsTd = document.createElement('td');
             actionsTd.innerHTML = actions;
+            actionsTd.style.whiteSpace = 'nowrap';
+            actionsTd.style.textAlign = 'center';
             
             // 添加单元格到行
             tr.appendChild(nameTd);
