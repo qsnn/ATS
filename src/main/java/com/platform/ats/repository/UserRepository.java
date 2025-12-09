@@ -54,4 +54,9 @@ public interface UserRepository extends BaseMapper<SysUser> {
      * 逻辑删除用户
      */
     int logicDelete(@Param("userId") Long userId);
+
+    /**
+     * 根据企业ID查询HR用户列表
+     */
+    List<SysUser> selectHrByCompanyId(@Param("companyId") Long companyId);
 }

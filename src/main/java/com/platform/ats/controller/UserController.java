@@ -3,12 +3,14 @@ package com.platform.ats.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.platform.ats.entity.user.SysUser;
+import com.platform.ats.entity.user.dto.HrCreateDTO;
 import com.platform.ats.entity.user.dto.UserCreateDTO;
 import com.platform.ats.entity.user.dto.UserLoginDTO;
 import com.platform.ats.entity.user.dto.UserRegisterDTO;
 import com.platform.ats.entity.user.dto.UserUpdateDTO;
 import com.platform.ats.entity.user.dto.UserPasswordDTO;
 import com.platform.ats.entity.user.query.UserQuery;
+import com.platform.ats.entity.user.vo.HrVO;
 import com.platform.ats.entity.user.vo.Result;
 import com.platform.ats.entity.user.vo.UserProfileVO;
 import com.platform.ats.entity.user.vo.UserVO;
@@ -125,5 +127,19 @@ public class UserController {
     public Result<Boolean> checkEmailExists(@RequestParam String email) {
         Boolean exists = userService.checkEmailExists(email);
         return Result.success(exists);
+    }
+
+    @PostMapping("/hr")
+    @Operation(summary = "创建HR账户")
+    public Result<Long> createHrAccount(@Valid @RequestBody HrCreateDTO hrCreateDTO) {
+        Long userId = userService.createHrAccount(hrCreateDTO);
+        return Result.success(userId, "HR账户创建成功");
+    }
+
+    @GetMapping("/hr/{companyId}")
+    @Operation(summary = "获取企业下的所有HR账户")
+    public Result<java.util.List<HrVO>> getHrAccountsByCompanyId(@PathVariable Long companyId) {
+        java.util.List<HrVO> hrList = userService.getHrAccountsByCompanyId(companyId);
+        return Result.success(hrList);
     }
 }

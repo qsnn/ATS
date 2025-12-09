@@ -8,11 +8,13 @@ import com.platform.ats.common.ErrorCode;
 import com.platform.ats.entity.user.SysUser;
 import com.platform.ats.entity.user.UserStatus;
 import com.platform.ats.entity.user.UserType;
+import com.platform.ats.entity.user.dto.HrCreateDTO;
 import com.platform.ats.entity.user.dto.UserCreateDTO;
 import com.platform.ats.entity.user.dto.UserPasswordDTO;
 import com.platform.ats.entity.user.dto.UserRegisterDTO;
 import com.platform.ats.entity.user.dto.UserUpdateDTO;
 import com.platform.ats.entity.user.query.UserQuery;
+import com.platform.ats.entity.user.vo.HrVO;
 import com.platform.ats.entity.user.vo.UserProfileVO;
 import com.platform.ats.entity.user.vo.UserVO;
 import com.platform.ats.repository.UserRepository;
@@ -245,5 +247,53 @@ public class UserServiceImpl extends ServiceImpl<UserRepository, SysUser> implem
     @Override
     public Boolean checkEmailExists(String email) {
         return this.baseMapper.selectByEmail(email) != null;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Long createHrAccount(HrCreateDTO hrCreateDTO) {
+        SysUser sysUser = new SysUser();
+        
+        // 生成6位随机用户名
+        String username = generateRandomUsername();
+        
+        // 检查生成的用户名是否已存在，如果存在则重新生成
+        while (checkUsernameExists(username)) {
+            username = generateRandomUsername();
+        }
+        
+        sysUser.setUsername(username);
+        sysUser.setPassword(passwordEncoder.encode("123456")); // 默认密码
+        sysUser.setUserType(UserType.HR.getCode()); // HR类型
+        sysUser.setCompanyId(hrCreateDTO.getCompanyId());
+        sysUser.setStatus(UserStatus.NORMAL.getCode()); // 默认状态为正常
+        
+        this.baseMapper.insert(sysUser);
+        log.info("HR账户创建成功: username={}, userId={}", sysUser.getUsername(), sysUser.getUserId());
+        
+        return sysUser.getUserId();
+    }
+
+    @Override
+    public List<HrVO> getHrAccountsByCompanyId(Long companyId) {
+        List<SysUser> hrUsers = this.baseMapper.selectHrByCompanyId(companyId);
+        return hrUsers.stream().map(sysUser -> {
+            HrVO hrVO = new HrVO();
+            BeanUtils.copyProperties(sysUser, hrVO);
+            return hrVO;
+        }).collect(java.util.stream.Collectors.toList());
+    }
+
+    /**
+     * 生成6位随机用户名（数字和字母组合）
+     */
+    private String generateRandomUsername() {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        StringBuilder sb = new StringBuilder();
+        java.util.Random random = new java.util.Random();
+        for (int i = 0; i < 6; i++) {
+            sb.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return sb.toString();
     }
 }

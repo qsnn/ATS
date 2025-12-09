@@ -59,6 +59,7 @@ function switchTab(tabName, currentUser = Auth.getCurrentUser()) {
         manage: renderJobManageView,
         applicants: renderApplicantsView,
         talent: renderTalentView,
+        hr: renderHrManageView,
         company: renderCompanyView,
         profile: renderEmployerProfileView
     };

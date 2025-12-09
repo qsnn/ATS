@@ -6,7 +6,9 @@ import com.platform.ats.entity.user.dto.UserRegisterDTO;
 import com.platform.ats.entity.user.query.UserQuery;
 import com.platform.ats.entity.user.dto.UserCreateDTO;
 import com.platform.ats.entity.user.dto.UserUpdateDTO;
+import com.platform.ats.entity.user.dto.HrCreateDTO;
 import com.platform.ats.entity.user.dto.UserPasswordDTO;
+import com.platform.ats.entity.user.vo.HrVO;
 import com.platform.ats.entity.user.vo.UserProfileVO;
 import com.platform.ats.entity.user.vo.UserVO;
 
@@ -101,4 +103,14 @@ public interface UserService {
      * 当前登录用户自行修改密码
      */
     void changePassword(Long userId, UserPasswordDTO dto);
+
+    /**
+     * 创建HR账户
+     */
+    Long createHrAccount(HrCreateDTO hrCreateDTO);
+
+    /**
+     * 根据企业ID获取HR账户列表
+     */
+    List<HrVO> getHrAccountsByCompanyId(Long companyId);
 }

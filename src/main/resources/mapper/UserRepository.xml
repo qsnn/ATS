@@ -75,4 +75,10 @@
         SET delete_flag = 1, update_time = NOW()
         WHERE user_id = #{userId}
     </update>
+
+    <select id="selectHrByCompanyId" resultType="com.platform.ats.entity.user.SysUser">
+        SELECT * FROM sys_user
+        WHERE company_id = #{companyId} AND user_type = 3 AND delete_flag = 0
+        ORDER BY create_time DESC
+    </select>
 </mapper>
