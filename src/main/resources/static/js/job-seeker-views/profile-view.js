@@ -105,17 +105,36 @@ function renderProfileView(container, currentUser) {
             email
         };
 
-        const result = await updateUserProfileApi(payload);
-        if (result.success) {
-            alert('个人信息更新成功！');
-            const updatedUser = Auth.updateCurrentUser({ username, phone, email });
-
-            const greeting = document.getElementById('user-greeting');
-            if (greeting && updatedUser) {
-                greeting.textContent = '欢迎，' + (updatedUser.username || '求职者');
+        try {
+            const resp = await fetch(`/api/user/${user.userId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (!resp.ok) {
+                const text = await resp.text();
+                alert(`网络错误: ${resp.status} ${text}`);
+                return;
             }
-        } else {
-            alert('更新失败：' + result.message);
+            const json = await resp.json();
+            if (!json || json.code !== 200) {
+                alert((json && json.message) || '保存失败');
+                return;
+            }
+            alert('基本信息已保存');
+            // 同步更新本地 Auth 信息
+            if (window.Auth && typeof Auth.getCurrentUser === 'function' && typeof Auth.setCurrentUser === 'function') {
+                const current = Auth.getCurrentUser() || {};
+                Auth.setCurrentUser({
+                    ...current,
+                    username: username,
+                    email,
+                    phone
+                });
+            }
+        } catch (e) {
+            console.error('保存账号信息失败:', e);
+            alert('保存失败，请稍后重试');
         }
     });
 

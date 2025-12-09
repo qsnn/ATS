@@ -83,7 +83,7 @@ function switchTab(tabName, currentUser = Auth.getCurrentUser()) {
  */
 async function updateUserProfileApi(payload) {
     try {
-        const resp = await fetch(`${USER_API_BASE}`, {
+        const resp = await fetch(`${USER_API_BASE}/${payload.userId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)

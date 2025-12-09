@@ -76,9 +76,13 @@ public class UserController {
         return Result.success(userId, "创建成功");
     }
 
-    @PutMapping
+    @PutMapping("/{userId}")
     @Operation(summary = "更新用户")
-    public Result<Boolean> updateUser(@Valid @RequestBody UserUpdateDTO userUpdateDTO) {
+    public Result<Boolean> updateUser(@PathVariable Long userId, @Valid @RequestBody UserUpdateDTO userUpdateDTO) {
+        // 确保路径变量和请求体中的userId一致
+        if (!userId.equals(userUpdateDTO.getUserId())) {
+            return Result.error(400, "路径中的用户ID与请求体中的用户ID不一致");
+        }
         Boolean success = userService.updateUser(userUpdateDTO);
         return Result.success(success, "更新成功");
     }

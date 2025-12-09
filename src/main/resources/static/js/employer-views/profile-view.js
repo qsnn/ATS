@@ -118,7 +118,7 @@ function bindEmployerProfileSave(user) {
         };
 
         try {
-            const resp = await fetch('/api/user', {
+            const resp = await fetch(`/api/user/${user.userId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -139,7 +139,7 @@ function bindEmployerProfileSave(user) {
                 const current = Auth.getCurrentUser() || {};
                 Auth.setCurrentUser({
                     ...current,
-                    username,
+                    username: username,
                     email,
                     phone
                 });

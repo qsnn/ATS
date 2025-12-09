@@ -165,6 +165,13 @@ public class UserServiceImpl extends ServiceImpl<UserRepository, SysUser> implem
             throw new BizException(ErrorCode.USER_NOT_FOUND);
         }
 
+        // 检查用户名是否被其他用户使用
+        if (StringUtils.hasText(userUpdateDTO.getUsername()) &&
+                !Objects.equals(existingSysUser.getUsername(), userUpdateDTO.getUsername()) &&
+                checkUsernameExists(userUpdateDTO.getUsername())) {
+            throw new BizException(ErrorCode.USERNAME_EXISTS);
+        }
+
         // 检查手机号是否被其他用户使用
         if (StringUtils.hasText(userUpdateDTO.getPhone()) &&
                 !Objects.equals(existingSysUser.getPhone(), userUpdateDTO.getPhone()) &&
