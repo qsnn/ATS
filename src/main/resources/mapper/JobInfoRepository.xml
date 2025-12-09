@@ -84,6 +84,9 @@
             <if test="query.companyId != null">
                 AND ji.company_id = #{query.companyId}
             </if>
+            <if test="query.jobId != null">
+                AND ji.job_id = #{query.jobId}
+            </if>
             <if test="ew != null and ew.sqlSegment != null and ew.sqlSegment != '' and !ew.sqlSegment.trim().isEmpty()">
                 <bind name="trimmedSegment" value="ew.sqlSegment.trim()"/>
                 <if test="!trimmedSegment.toUpperCase().startsWith('ORDER BY') and !trimmedSegment.toUpperCase().startsWith('AND')">
