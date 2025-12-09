@@ -63,6 +63,12 @@ public class InterviewInfoServiceImpl extends ServiceImpl<InterviewInfoRepositor
 
         interviewInfoRepository.insert(interviewInfo);
 
+        // 更新申请状态为ACCEPTED
+        JobApplication updatedApplication = new JobApplication();
+        updatedApplication.setApplicationId(interviewInfo.getApplicationId());
+        updatedApplication.setStatus("ACCEPTED");
+        jobApplicationRepository.updateById(updatedApplication);
+
         return toVO(interviewInfo);
     }
 

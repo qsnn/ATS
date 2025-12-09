@@ -96,7 +96,7 @@ async function loadApplicants(currentUser, status = '') {
         if (status) {
             params.append('status', status);
         }
-        
+
         const resp = await fetch(`http://124.71.101.139:10085/api/applications/company/${encodeURIComponent(currentUser.companyId)}?${params.toString()}`);
         if (!resp.ok) {
             const text = await resp.text();
@@ -120,7 +120,7 @@ async function loadApplicants(currentUser, status = '') {
         // 更新分页信息
         window.applicantsPagination.total = page.total || 0;
         window.applicantsPagination.pages = page.pages || Math.ceil((page.total || 0) / window.applicantsPagination.size) || 0;
-        
+
         if (statusEl) statusEl.textContent = `共 ${window.applicantsPagination.total} 条申请人记录`;
 
         if (paginationInfo) {
@@ -193,10 +193,10 @@ async function loadApplicants(currentUser, status = '') {
             actionTd.style.whiteSpace = 'nowrap';
             actionTd.style.textAlign = 'center';
             actionTd.style.verticalAlign = 'middle';
-            
+
             // 根据不同状态显示不同的操作按钮
             const currentStatus = status || ''; // 当前标签页状态
-            
+
             // 查看简历按钮在所有状态下都显示
             const viewResumeButton = document.createElement('button');
             viewResumeButton.className = 'btn btn-sm';
@@ -321,10 +321,10 @@ async function scheduleInterview(applicationId, userId) {
         align-items: center;
         z-index: 10000;
     `;
-    
+
     const now = new Date();
     const minDate = now.toISOString().slice(0, 16); // 获取当前时间作为最小可选时间
-    
+
     modal.innerHTML = `
         <div style="background:white;padding:20px;border-radius:8px;width:400px;max-width:90%;">
             <h3>安排面试</h3>
@@ -342,30 +342,30 @@ async function scheduleInterview(applicationId, userId) {
             </div>
         </div>
     `;
-    
+
     document.body.appendChild(modal);
-    
+
     const confirmBtn = modal.querySelector('#confirm-interview');
     const cancelBtn = modal.querySelector('#cancel-interview');
-    
+
     // 取消按钮事件
     cancelBtn.onclick = () => {
         document.body.removeChild(modal);
     };
-    
+
     // 确认按钮事件
     confirmBtn.onclick = () => {
         const interviewTime = modal.querySelector('#interview-time').value;
         const interviewPlace = modal.querySelector('#interview-place').value;
-        
+
         if (!interviewTime || !interviewPlace) {
             alert('请填写完整的面试信息');
             return;
         }
-        
+
         // 关闭模态框
         document.body.removeChild(modal);
-        
+
         // 执行原逻辑，不再传递userName参数
         confirmScheduleInterview(applicationId, userId, interviewTime, interviewPlace);
     };
@@ -381,7 +381,7 @@ async function confirmScheduleInterview(applicationId, userId, interviewTime, in
     try {
         // 转换日期格式为后端需要的格式
         const formattedTime = interviewTime.replace('T', ' ') + ':00';
-        
+
         const payload = {
             applicationId: applicationId,  // 修改为applicationId
             interviewerId: currentUser.userId,
@@ -390,17 +390,29 @@ async function confirmScheduleInterview(applicationId, userId, interviewTime, in
             // 不再手动传递intervieweeName和intervieweeId，由后端从applicationId获取
         };
 
-        await ApiService.request('/interview', {
+        const response = await ApiService.request('/interview', {
             method: 'POST',
             body: JSON.stringify(payload)
         });
-        alert('面试安排已创建');
-        
+
+        alert(`面试安排成功！\n时间：${payload.interviewTime}\n地点：${payload.interviewPlace}`);
+
+        // 延迟刷新页面，确保后端数据同步完成
+        await new Promise(resolve => setTimeout(resolve, 200));
+
         // 重新加载申请人列表
-        const currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || '';
+        // 确保状态值是字符串形式，防止被意外转换为数字
+        let currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || '';
+        // 强制转换为字符串并确保是有效的状态值之一
+        currentStatus = String(currentStatus);
+        if (!['', 'APPLIED', 'ACCEPTED', 'REJECTED'].includes(currentStatus)) {
+            currentStatus = '';
+        }
         loadApplicants(currentUser, currentStatus);
     } catch (e) {
         console.error('安排面试失败:', e);
+        alert('安排面试失败，请稍后重试');
+        throw e; // 重新抛出错误，确保调用栈能正确处理
     }
 }
 
@@ -415,7 +427,7 @@ async function viewResume(resumeSnapshot, resumeId, applicationId) {
             console.error('解析简历快照失败:', e);
         }
     }
-    
+
     // 如果没有快照或解析失败，尝试通过applicationId获取申请详情
     if (applicationId) {
         try {
@@ -433,7 +445,7 @@ async function viewResume(resumeSnapshot, resumeId, applicationId) {
             console.error('通过申请ID获取简历信息失败:', e);
         }
     }
-    
+
     // 回退到原来的查询方式
     if (!resumeId) {
         alert('无法查看简历：缺少简历ID');
@@ -446,7 +458,7 @@ async function viewResume(resumeSnapshot, resumeId, applicationId) {
             alert('未找到简历信息');
             return;
         }
-        
+
         showResumeDetails(data);
     } catch (e) {
         console.error('查看简历失败:', e);
@@ -527,9 +539,15 @@ async function addToTalentPool(applicationId) {
 
         await ApiService.addTalent(talentPayload);
         alert('已加入人才库');
-        
+
         // 重新加载申请人列表
-        const currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || '';
+        // 确保状态值是字符串形式，防止被意外转换为数字
+        let currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || '';
+        // 强制转换为字符串并确保是有效的状态值之一
+        currentStatus = String(currentStatus);
+        if (!['', 'APPLIED', 'ACCEPTED', 'REJECTED'].includes(currentStatus)) {
+            currentStatus = '';
+        }
         loadApplicants(currentUser, currentStatus);
     } catch (e) {
         console.error('加入人才库失败:', e);
@@ -556,8 +574,13 @@ async function rejectApplicant(applicationId) {
         const currentUser = Auth.getCurrentUser && Auth.getCurrentUser();
         if (currentUser) {
             // 获取当前激活的标签页状态
-            const activeTab = document.querySelector('.tab-btn.active');
-            const currentStatus = activeTab ? activeTab.getAttribute('data-status') : '';
+            // 确保状态值是字符串形式，防止被意外转换为数字
+            let currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || '';
+            // 强制转换为字符串并确保是有效的状态值之一
+            currentStatus = String(currentStatus);
+            if (!['', 'APPLIED', 'ACCEPTED', 'REJECTED'].includes(currentStatus)) {
+                currentStatus = '';
+            }
             loadApplicants(currentUser, currentStatus);
         }
     } catch (e) {
