@@ -169,9 +169,8 @@ async function viewTalentDetail(talentId, resumeId) {
 
         const name = (resume && resume.name) || (talent && talent.candidateName) || '';
         const tag = (talent && talent.tag) || '';
-        const phone = (talent && talent.phone) || '';
-        const email = (talent && talent.email) || '';
-        const position = (resume && resume.jobIntention) || (talent && talent.position) || '';
+        const phone = (resume && resume.phone) || '';
+        const email = (resume && resume.email) || '';
 
         // 构建简历详细信息HTML
         let resumeDetails = '';
@@ -184,9 +183,14 @@ async function viewTalentDetail(talentId, resumeId) {
                         <span>${resume.name || ''}</span>
                     </div>
                     <div class="detail-item">
-                        <label>简历名称:</label>
-                        <span>${resume.resumeName || ''}</span>
+                        <label>性别:</label>
+                        <span>${resume.gender === 1 ? '男' : resume.gender === 2 ? '女' : ''}</span>
                     </div>
+                    <div class="detail-item">
+                        <label>年龄:</label>
+                        <span>${resume.age || ''}</span>
+                    </div>
+
                     <div class="detail-item">
                         <label>求职意向:</label>
                         <span>${resume.jobIntention || ''}</span>
@@ -202,30 +206,6 @@ async function viewTalentDetail(talentId, resumeId) {
                     <div class="detail-item">
                         <label>专业技能:</label>
                         <span>${resume.skill || ''}</span>
-                    </div>
-                    <div class="detail-item">
-                        <label>性别:</label>
-                        <span>${resume.gender === 1 ? '男' : resume.gender === 2 ? '女' : ''}</span>
-                    </div>
-                    <div class="detail-item">
-                        <label>年龄:</label>
-                        <span>${resume.age || ''}</span>
-                    </div>
-                    <div class="detail-item">
-                        <label>电话:</label>
-                        <span>${resume.phone || ''}</span>
-                    </div>
-                    <div class="detail-item">
-                        <label>邮箱:</label>
-                        <span>${resume.email || ''}</span>
-                    </div>
-                    <div class="detail-item">
-                        <label>创建时间:</label>
-                        <span>${resume.createTime || ''}</span>
-                    </div>
-                    <div class="detail-item">
-                        <label>更新时间:</label>
-                        <span>${resume.updateTime || ''}</span>
                     </div>
                 </div>
             `;
@@ -245,10 +225,6 @@ async function viewTalentDetail(talentId, resumeId) {
                         <div class="detail-item">
                             <label>标签:</label>
                             <span>${tag}</span>
-                        </div>
-                        <div class="detail-item">
-                            <label>职位意向:</label>
-                            <span>${position}</span>
                         </div>
                         <div class="detail-item">
                             <label>电话:</label>
@@ -276,47 +252,6 @@ async function viewTalentDetail(talentId, resumeId) {
     }
 }
 
-async function inviteTalent(talentId) {
-    if (!talentId) return;
-
-    const jobTitle = prompt('请输入要邀请的职位名称：', '前端开发工程师');
-    if (!jobTitle) return;
-
-    const interviewTime = prompt('请输入面试时间或安排说明：', '2024-01-25 14:00 在公司现场面试');
-    if (!interviewTime) return;
-
-    const currentUser = Auth.getCurrentUser && Auth.getCurrentUser();
-    if (!currentUser || !currentUser.userId) {
-        alert('未登录或用户信息缺失，无法安排面试');
-        return;
-    }
-
-    try {
-        const talent = await ApiService.getTalentById(talentId);
-        if (!talent) {
-            alert('无法获取人才信息，邀约失败');
-            return;
-        }
-
-        const intro = `职位：${jobTitle}\n安排：${interviewTime}`;
-        const payload = {
-            deliveryId: null,
-            interviewerId: currentUser.userId,
-            interviewIntro: intro,
-            intervieweeName: talent.candidateName || ''
-        };
-
-        await ApiService.request('/interview', {
-            method: 'POST',
-            body: JSON.stringify(payload)
-        });
-
-        alert('已向该人才发送面试邀约');
-        closeTalentModal();
-    } catch (e) {
-        console.error('邀请面试失败:', e);
-    }
-}
 
 // 调整 removeTalent 调用后台删除 API
 async function removeTalent(talentId) {
