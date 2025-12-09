@@ -197,12 +197,7 @@ async function loadJobList(user, status) {
         
         // 确保正确提取records数组
         const jobs = (page && Array.isArray(page.records)) ? page.records : 
-                     (Array.isArray(page)) ? page : [];
-
-        if (!jobs.length) {
-            tbody.innerHTML = '<tr><td colspan="5">暂无职位信息</td></tr>';
-            return;
-        }
+                     (page && Array.isArray(page)) ? page : [];
 
         // 清空现有内容
         while (tbody.firstChild) {

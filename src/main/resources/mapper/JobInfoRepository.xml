@@ -84,14 +84,14 @@
             <if test="query.companyId != null">
                 AND ji.company_id = #{query.companyId}
             </if>
-        </where>
-        <if test="ew != null and ew.sqlSegment != null and ew.sqlSegment != '' and !ew.sqlSegment.trim().isEmpty()">
-            <bind name="trimmedSegment" value="ew.sqlSegment.trim()"/>
-            <if test="!trimmedSegment.toUpperCase().startsWith('ORDER BY') and !trimmedSegment.toUpperCase().startsWith('AND')">
-                ORDER BY
+            <if test="ew != null and ew.sqlSegment != null and ew.sqlSegment != '' and !ew.sqlSegment.trim().isEmpty()">
+                <bind name="trimmedSegment" value="ew.sqlSegment.trim()"/>
+                <if test="!trimmedSegment.toUpperCase().startsWith('ORDER BY') and !trimmedSegment.toUpperCase().startsWith('AND')">
+                    AND
+                </if>
+                ${ew.sqlSegment}
             </if>
-            ${ew.sqlSegment}
-        </if>
+        </where>
     </select>
 
 </mapper>
