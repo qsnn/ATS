@@ -105,37 +105,29 @@ function renderProfileView(container, currentUser) {
             email
         };
 
-        try {
-            const resp = await fetch(`/api/user/${user.userId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            if (!resp.ok) {
-                const text = await resp.text();
-                alert(`网络错误: ${resp.status} ${text}`);
-                return;
-            }
-            const json = await resp.json();
-            if (!json || json.code !== 200) {
-                alert((json && json.message) || '保存失败');
-                return;
-            }
-            alert('基本信息已保存');
-            // 同步更新本地 Auth 信息
+        const result = await updateUserProfileApi(payload);
+        if (result.success) {
+            alert('个人信息更新成功！');
+            const updatedUser = Auth.updateCurrentUser({ username, phone, email });
+
+            // 更新当前用户对象中的用户名
             if (window.Auth && typeof Auth.getCurrentUser === 'function' && typeof Auth.setCurrentUser === 'function') {
-                const current = Auth.getCurrentUser() || {};
+                const currentUser = Auth.getCurrentUser() || {};
                 Auth.setCurrentUser({
-                    ...current,
-                    username: username,
-                    email,
-                    phone
+                    ...currentUser,
+                    username: username
                 });
             }
-        } catch (e) {
-            console.error('保存账号信息失败:', e);
-            alert('保存失败，请稍后重试');
+            
+            // 更新界面右上角的欢迎信息
+            const greeting = document.getElementById('user-greeting');
+            if (greeting) {
+                greeting.textContent = '欢迎，' + (username || '求职者');
+            }
+        } else {
+            alert('更新失败：' + result.message);
         }
+
     });
 
     // 修改密码提交

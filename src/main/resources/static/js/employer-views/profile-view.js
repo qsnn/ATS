@@ -144,6 +144,12 @@ function bindEmployerProfileSave(user) {
                     phone
                 });
             }
+            
+            // 更新界面右上角的欢迎信息
+            const greeting = document.getElementById('user-greeting');
+            if (greeting) {
+                greeting.textContent = '欢迎，' + (username || '企业管理员');
+            }
         } catch (e) {
             console.error('保存账号信息失败:', e);
             alert('保存失败，请稍后重试');
