@@ -119,10 +119,28 @@ async function loadInterviews(currentUser) {
             const tr = document.createElement('tr');
 
             const jobTd = document.createElement('td');
-            jobTd.textContent = item.jobName || '';
+            
+            // 检查职位是否已下架或已删除
+            let jobText = item.jobName || '';
+            if (item.publishStatus === 2) {
+                jobText += ' [已下架]';
+            } else if (item.publishStatus === null) {
+                jobText += ' [已删除]';
+            }
+            
+            jobTd.textContent = jobText;
 
             const companyTd = document.createElement('td');
-            companyTd.textContent = item.companyName || '';
+            
+            // 如果职位已下架或已删除，在公司名旁边也加上标记
+            let companyText = item.companyName || '';
+            if (item.publishStatus === 2) {
+                companyText += ' [已下架]';
+            } else if (item.publishStatus === null) {
+                companyText += ' [已删除]';
+            }
+            
+            companyTd.textContent = companyText;
 
             const timeTd = document.createElement('td');
             timeTd.textContent = item.interviewIntro || '';

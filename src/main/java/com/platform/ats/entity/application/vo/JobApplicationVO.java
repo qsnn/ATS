@@ -22,5 +22,10 @@ public class JobApplicationVO {
     private String status;
 
     private LocalDateTime applyTime;
+    
+    /**
+     * 职位发布状态
+     */
+    private Integer publishStatus;
 }
 

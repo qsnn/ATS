@@ -156,7 +156,16 @@ async function loadApplications(currentUser, status = '') {
             const jobTd = document.createElement('td');
             const link = document.createElement('a');
             link.href = '#';
-            link.textContent = app.jobTitle || '未知职位';
+            
+            // 检查职位是否已下架或已删除
+            let jobText = app.jobTitle || '未知职位';
+            if (app.publishStatus === 2) {
+                jobText += ' [已下架]';
+            } else if (app.publishStatus === null) {
+                jobText += ' [已删除]';
+            }
+            
+            link.textContent = jobText;
             link.onclick = (e) => {
                 e.preventDefault();
                 if (typeof viewJobDetail === 'function' && app.jobId) {
@@ -169,6 +178,13 @@ async function loadApplications(currentUser, status = '') {
 
             const companyTd = document.createElement('td');
             companyTd.textContent = app.companyName || '';
+            
+            // 如果职位已下架或已删除，在公司名旁边也加上标记
+            if (app.publishStatus === 2) {
+                companyTd.innerHTML = (app.companyName || '') + ' <span style="color: #ff4d4f;">[已下架]</span>';
+            } else if (app.publishStatus === null) {
+                companyTd.innerHTML = (app.companyName || '') + ' <span style="color: #ff4d4f;">[已删除]</span>';
+            }
 
             const dateTd = document.createElement('td');
             const applyTime = app.applyTime || '';

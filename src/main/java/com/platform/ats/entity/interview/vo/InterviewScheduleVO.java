@@ -39,4 +39,7 @@ public class InterviewScheduleVO {
 
     /** 当前面试状态：从职位申请或面试结果推导 */
     private String status;
+    
+    /** 职位发布状态 */
+    private Integer publishStatus;
 }

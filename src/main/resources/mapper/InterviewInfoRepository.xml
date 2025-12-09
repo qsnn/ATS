@@ -15,11 +15,12 @@
             ii.interviewee_id       AS intervieweeId,
             ii.interview_intro      AS interviewIntro,
             ii.interviewee_name     AS intervieweeName,
-            ii.status               AS status
+            ii.status               AS status,
+            ji.publish_status       AS publishStatus
         FROM interview_info ii
             JOIN job_application ja ON ii.delivery_id = ja.application_id
-            JOIN job_info ji ON ja.job_id = ji.job_id
-            JOIN company_info ci ON ji.company_id = ci.company_id
+            LEFT JOIN job_info ji ON ja.job_id = ji.job_id
+            LEFT JOIN company_info ci ON ji.company_id = ci.company_id
         WHERE
             ii.interviewee_id = #{userId}
             AND ii.delete_flag = 0

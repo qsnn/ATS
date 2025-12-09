@@ -96,8 +96,9 @@ async function loadFavoriteJobs(currentUser) {
         }
 
         records.forEach(fav => {
-            // 检查职位是否已下架
+            // 检查职位是否已下架或已删除
             const isUnpublished = fav.publishStatus === 2;
+            const isDeleted = fav.publishStatus === null;
             
             const card = document.createElement('div');
             card.className = 'card job-card';
@@ -105,14 +106,18 @@ async function loadFavoriteJobs(currentUser) {
                 <div class="job-header">
                     <h3>${escapeHtml(fav.jobTitle || '')}</h3>
                     ${isUnpublished ? '<span style="color: #ff4d4f; font-size: 12px; margin-left: 10px;">[已下架]</span>' : ''}
+                    ${isDeleted ? '<span style="color: #ff4d4f; font-size: 12px; margin-left: 10px;">[已删除]</span>' : ''}
                 </div>
                 <div class="job-info">
-                    <span class="company">公司: ${escapeHtml(fav.companyName || '未知公司')}</span>
+                    <span class="company">公司: ${escapeHtml(fav.companyName || '未知公司')}
+                    ${isUnpublished ? '<span style="color: #ff4d4f;">[已下架]</span>' : ''}
+                    ${isDeleted ? '<span style="color: #ff4d4f;">[已删除]</span>' : ''}
+                    </span>
                     <span class="department">部门: ${escapeHtml(fav.department || '')}</span>
                 </div>
                 <div class="job-actions">
                     <button class="btn" data-job-id="${fav.jobId}">查看详情</button>
-                    <button class="btn btn-success" data-apply-job-id="${fav.jobId}" ${isUnpublished ? 'disabled' : ''}>使用简历投递</button>
+                    <button class="btn btn-success" data-apply-job-id="${fav.jobId}" ${isUnpublished || isDeleted ? 'disabled' : ''}>使用简历投递</button>
                     <button class="btn btn-primary" data-fav-action="unfavorite" data-job-id="${fav.jobId}">取消收藏</button>
                 </div>
             `;
@@ -161,9 +166,14 @@ async function loadFavoriteJobs(currentUser) {
 async function openApplyFromFavoriteModal(currentUser, jobId, jobInfo) {
     if (!currentUser || !jobId) return;
     
-    // 检查职位是否已下架
+    // 检查职位是否已下架或已删除
     if (jobInfo && jobInfo.publishStatus === 2) {
         alert('该职位已下架，无法投递简历');
+        return;
+    }
+    
+    if (jobInfo && jobInfo.publishStatus === null) {
+        alert('该职位已删除，无法投递简历');
         return;
     }
     
