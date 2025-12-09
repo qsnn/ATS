@@ -85,14 +85,7 @@ async function loadApplications(currentUser, status = '') {
         
         // 如果指定了状态，则添加到参数中
         if (status) {
-            // 如果是复合状态（用逗号分隔），则分别添加每个状态
-            if (status.includes(',')) {
-                status.split(',').forEach(s => {
-                    params.append('status', s);
-                });
-            } else {
-                params.append('status', status);
-            }
+            params.append('status', status);
         }
         
         const base = window.API_BASE || '/api';
@@ -195,7 +188,7 @@ async function loadApplications(currentUser, status = '') {
 
             const actionTd = document.createElement('td');
             // 根据状态决定是否显示取消申请按钮
-            if (['APPLIED', 'SCREENING'].includes(app.status)) {
+            if (['APPLIED'].includes(app.status)) {
                 const cancelButton = document.createElement('button');
                 cancelButton.className = 'btn btn-danger btn-sm';
                 cancelButton.textContent = '取消申请';
@@ -230,43 +223,5 @@ function mapApplicationStatus(status) {
             return '已撤回';
         default:
             return status;
-    }
-}
-
-async function withdrawApplication(applicationId, userId) {
-    if (!confirm('确定要取消此申请吗？')) {
-        return;
-    }
-    
-    try {
-        const base = window.API_BASE || '/api';
-        const resp = await fetch(`${base}/applications/${applicationId}/withdraw?userId=${userId}`, {
-            method: 'PUT'
-        });
-        
-        if (!resp.ok) {
-            const text = await resp.text();
-            alert(`网络错误: ${resp.status} ${text}`);
-            return;
-        }
-        
-        const json = await resp.json();
-        if (json.code !== 200 || !json.data) {
-            alert(json.message || '取消申请失败');
-            return;
-        }
-        
-        alert('申请已取消');
-        // 重新加载申请列表
-        const currentUser = window.Auth && Auth.getCurrentUser ? Auth.getCurrentUser() : null;
-        if (currentUser) {
-            // 获取当前激活的标签页状态
-            const activeTab = document.querySelector('.tab-btn.active');
-            const currentStatus = activeTab ? activeTab.getAttribute('data-status') : '';
-            loadApplications(currentUser, currentStatus);
-        }
-    } catch (e) {
-        console.error('取消申请异常:', e);
-        alert('请求异常，请稍后重试');
     }
 }

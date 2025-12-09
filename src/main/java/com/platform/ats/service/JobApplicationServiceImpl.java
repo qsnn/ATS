@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.platform.ats.common.BizException;
 import com.platform.ats.common.ErrorCode;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,7 +33,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
-public class JobApplicationServiceImpl implements JobApplicationService {
+public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationRepository, JobApplication> implements JobApplicationService {
 
     private final JobApplicationRepository jobApplicationRepository;
     private final JobInfoRepository jobInfoRepository;
@@ -137,12 +139,18 @@ public class JobApplicationServiceImpl implements JobApplicationService {
     }
 
     @Override
-    public IPage<JobApplicationEmployerVO> pageCompanyApplications(Page<JobApplicationEmployerVO> page, Long companyId, List<String> status) {
+    public IPage<JobApplicationEmployerVO> pageCompanyApplications(Page<JobApplicationEmployerVO> page, Long companyId, List<String> status, List<String> excludeStatus) {
         Page<JobApplication> entityPage = new Page<>(page.getCurrent(), page.getSize());
         
         LambdaQueryWrapper<JobApplication> queryWrapper = new LambdaQueryWrapper<>();
+        
         if (status != null && !status.isEmpty()) {
             queryWrapper.in(JobApplication::getStatus, status);
+        }
+        
+        // 处理排除状态
+        if (excludeStatus != null && !excludeStatus.isEmpty()) {
+            queryWrapper.notIn(JobApplication::getStatus, excludeStatus);
         }
         
         IPage<JobApplication> res = jobApplicationRepository.selectPage(entityPage, queryWrapper);
@@ -168,6 +176,10 @@ public class JobApplicationServiceImpl implements JobApplicationService {
         Page<JobApplicationEmployerVO> voPage = new Page<>(res.getCurrent(), res.getSize(), res.getTotal());
         voPage.setRecords(buildEmployerVOs(res.getRecords()));
         return voPage;
+    }
+
+    public IPage<JobApplicationEmployerVO> pageCompanyApplications(Page<JobApplicationEmployerVO> page, Long companyId, List<String> status) {
+        return pageCompanyApplications(page, companyId, status, Arrays.asList("WITHDRAWN"));
     }
 
     @Override

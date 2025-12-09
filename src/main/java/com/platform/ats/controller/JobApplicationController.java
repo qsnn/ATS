@@ -46,9 +46,10 @@ public class JobApplicationController {
     public Result<IPage<JobApplicationEmployerVO>> pageCompanyApplications(@PathVariable Long companyId,
                                                                           @RequestParam(defaultValue = "1") long current,
                                                                           @RequestParam(defaultValue = "10") long size,
-                                                                          @RequestParam(required = false) List<String> status) {
+                                                                          @RequestParam(required = false) List<String> status,
+                                                                          @RequestParam(required = false) List<String> excludeStatus) {
         Page<JobApplicationEmployerVO> page = new Page<>(current, size);
-        IPage<JobApplicationEmployerVO> res = jobApplicationService.pageCompanyApplications(page, companyId, status);
+        IPage<JobApplicationEmployerVO> res = jobApplicationService.pageCompanyApplications(page, companyId, status, excludeStatus);
         return Result.success(res);
     }
 
