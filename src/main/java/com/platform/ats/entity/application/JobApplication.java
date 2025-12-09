@@ -31,4 +31,9 @@ public class JobApplication {
     private LocalDateTime applyTime;
 
     private LocalDateTime updateTime;
+    
+    /**
+     * 简历快照（包含所有简历信息）
+     */
+    private String resumeSnapshot;
 }

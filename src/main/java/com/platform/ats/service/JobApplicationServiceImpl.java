@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.platform.ats.common.BizException;
 import com.platform.ats.common.ErrorCode;
 import com.platform.ats.entity.application.JobApplication;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,15 +37,18 @@ public class JobApplicationServiceImpl implements JobApplicationService {
     private final JobInfoRepository jobInfoRepository;
     private final ResumeInfoRepository resumeInfoRepository;
     private final CompanyInfoRepository companyInfoRepository;
+    private final ObjectMapper objectMapper;
 
     public JobApplicationServiceImpl(JobApplicationRepository jobApplicationRepository,
                                      JobInfoRepository jobInfoRepository,
                                      ResumeInfoRepository resumeInfoRepository,
-                                     CompanyInfoRepository companyInfoRepository) {
+                                     CompanyInfoRepository companyInfoRepository,
+                                     ObjectMapper objectMapper) {
         this.jobApplicationRepository = jobApplicationRepository;
         this.jobInfoRepository = jobInfoRepository;
         this.resumeInfoRepository = resumeInfoRepository;
         this.companyInfoRepository = companyInfoRepository;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -77,9 +82,20 @@ public class JobApplicationServiceImpl implements JobApplicationService {
         JobApplication entity = new JobApplication();
         entity.setUserId(dto.getUserId());
         entity.setJobId(dto.getJobId());
-        entity.setResumeId(dto.getResumeId());        entity.setStatus("APPLIED");
+        entity.setResumeId(dto.getResumeId());
+        entity.setStatus("APPLIED");
         entity.setApplyTime(LocalDateTime.now());
         entity.setUpdateTime(LocalDateTime.now());
+        
+        // 添加简历快照
+        try {
+            String resumeSnapshot = objectMapper.writeValueAsString(resumeInfo);
+            entity.setResumeSnapshot(resumeSnapshot);
+        } catch (Exception e) {
+            // 即使快照创建失败，也不应该阻止申请提交
+            // 可以记录日志，但不应该抛出异常中断申请流程
+            e.printStackTrace();
+        }
 
         jobApplicationRepository.insert(entity);
         return entity.getApplicationId();
@@ -161,27 +177,57 @@ public class JobApplicationServiceImpl implements JobApplicationService {
         return buildEmployerVOs(list);
     }
 
+    @Override
+    public JobApplicationEmployerVO getApplicationById(Long applicationId) {
+        JobApplication application = jobApplicationRepository.selectById(applicationId);
+        if (application == null) {
+            return null;
+        }
+        
+        List<JobApplication> applications = new ArrayList<>();
+        applications.add(application);
+        List<JobApplicationEmployerVO> vos = buildEmployerVOs(applications);
+        return vos.isEmpty() ? null : vos.get(0);
+    }
+
     private List<JobApplicationEmployerVO> buildEmployerVOs(List<JobApplication> applications) {
         if (applications == null || applications.isEmpty()) {
             return java.util.Collections.emptyList();
         }
         return applications.stream().map(entity -> {
             JobApplicationEmployerVO vo = new JobApplicationEmployerVO();
-            vo.setApplicationId(entity.getApplicationId());
-            vo.setJobId(entity.getJobId());
-            vo.setResumeId(entity.getResumeId());
-            vo.setStatus(entity.getStatus());
-            vo.setApplyTime(entity.getApplyTime());
-
+            BeanUtils.copyProperties(entity, vo);
+            
             JobInfo jobInfo = jobInfoRepository.selectById(entity.getJobId());
             if (jobInfo != null) {
                 vo.setJobTitle(jobInfo.getJobName());
             }
 
-            ResumeInfo resumeInfo = resumeInfoRepository.selectById(entity.getResumeId());
-            if (resumeInfo != null) {
-                vo.setResumeTitle(resumeInfo.getResumeName());
-                vo.setUserId(resumeInfo.getUserId());
+            // 使用简历快照而不是直接查询简历
+            if (entity.getResumeSnapshot() != null && !entity.getResumeSnapshot().isEmpty()) {
+                try {
+                    ResumeInfo resumeInfo = objectMapper.readValue(entity.getResumeSnapshot(), ResumeInfo.class);
+                    if (resumeInfo != null) {
+                        vo.setResumeTitle(resumeInfo.getResumeName());
+                        vo.setUserId(resumeInfo.getUserId());
+                        // 设置快照内容
+                        vo.setResumeSnapshot(entity.getResumeSnapshot());
+                    }
+                } catch (Exception e) {
+                    // 如果解析快照失败，则尝试直接查询
+                    ResumeInfo resumeInfo = resumeInfoRepository.selectById(entity.getResumeId());
+                    if (resumeInfo != null) {
+                        vo.setResumeTitle(resumeInfo.getResumeName());
+                        vo.setUserId(resumeInfo.getUserId());
+                    }
+                }
+            } else {
+                // 如果没有快照，则回退到直接查询
+                ResumeInfo resumeInfo = resumeInfoRepository.selectById(entity.getResumeId());
+                if (resumeInfo != null) {
+                    vo.setResumeTitle(resumeInfo.getResumeName());
+                    vo.setUserId(resumeInfo.getUserId());
+                }
             }
             return vo;
         }).collect(Collectors.toList());

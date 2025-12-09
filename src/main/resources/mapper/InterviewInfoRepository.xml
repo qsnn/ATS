@@ -6,7 +6,7 @@
     <select id="selectScheduleByUserId" resultType="com.platform.ats.entity.interview.vo.InterviewScheduleVO">
         SELECT
             ii.arrange_id           AS arrangeId,
-            ii.delivery_id          AS deliveryId,
+            ii.application_id       AS applicationId,
             ja.job_id               AS jobId,
             ji.company_id           AS companyId,
             ji.job_name             AS jobName,
@@ -19,7 +19,7 @@
             ii.status               AS status,
             ji.publish_status       AS publishStatus
         FROM interview_info ii
-            JOIN job_application ja ON ii.delivery_id = ja.application_id
+            JOIN job_application ja ON ii.application_id = ja.application_id
             LEFT JOIN job_info ji ON ja.job_id = ji.job_id
             LEFT JOIN company_info ci ON ji.company_id = ci.company_id
         WHERE

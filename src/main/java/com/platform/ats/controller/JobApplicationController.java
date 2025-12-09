@@ -60,6 +60,14 @@ public class JobApplicationController {
         return Result.success(list);
     }
 
+    // Employer 视角：通过申请ID获取申请详情
+    @GetMapping("/company/application/{applicationId}")
+    @Operation(summary = "通过申请ID获取申请详情（企业端）")
+    public Result<JobApplicationEmployerVO> getApplicationById(@PathVariable Long applicationId) {
+        JobApplicationEmployerVO application = jobApplicationService.getApplicationById(applicationId);
+        return Result.success(application);
+    }
+
     @PutMapping("/{applicationId}/status")
     @Operation(summary = "更新申请状态（如：拒绝、面试中等）")
     public Result<Boolean> updateStatus(@PathVariable Long applicationId,

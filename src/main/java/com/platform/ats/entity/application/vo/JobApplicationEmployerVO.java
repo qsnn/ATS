@@ -24,5 +24,9 @@ public class JobApplicationEmployerVO {
 
     private String status;
     private LocalDateTime applyTime;
+    
+    /**
+     * 简历快照（包含所有简历信息）
+     */
+    private String resumeSnapshot;
 }
-

@@ -10,7 +10,7 @@ public class InterviewInfoVO {
 
     private Long arrangeId;
 
-    private Long deliveryId;
+    private Long applicationId;
 
     private Long interviewerId;
 

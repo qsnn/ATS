@@ -17,8 +17,8 @@ public class InterviewInfo {
     @TableId(type = IdType.AUTO)
     private Long arrangeId;
 
-    @TableField("delivery_id")
-    private Long deliveryId;
+    @TableField("application_id")
+    private Long applicationId;
 
     @TableField("interviewer_id")
     private Long interviewerId;

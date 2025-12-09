@@ -4,10 +4,14 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.platform.ats.common.BizException;
 import com.platform.ats.common.ErrorCode;
+import com.platform.ats.entity.application.JobApplication;
 import com.platform.ats.entity.interview.InterviewInfo;
 import com.platform.ats.entity.interview.vo.InterviewInfoVO;
 import com.platform.ats.entity.interview.vo.InterviewScheduleVO;
+import com.platform.ats.entity.resume.ResumeInfo;
 import com.platform.ats.repository.InterviewInfoRepository;
+import com.platform.ats.repository.JobApplicationRepository;
+import com.platform.ats.repository.ResumeInfoRepository;
 import com.platform.ats.service.InterviewInfoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -22,6 +26,8 @@ import java.util.List;
 public class InterviewInfoServiceImpl extends ServiceImpl<InterviewInfoRepository, InterviewInfo> implements InterviewInfoService {
 
     private final InterviewInfoRepository interviewInfoRepository;
+    private final JobApplicationRepository jobApplicationRepository;
+    private final ResumeInfoRepository resumeInfoRepository;
 
     @Override
     public InterviewInfoVO create(InterviewInfo interviewInfo) {
@@ -31,9 +37,24 @@ public class InterviewInfoServiceImpl extends ServiceImpl<InterviewInfoRepositor
         if (interviewInfo.getInterviewerId() == null) {
             throw new BizException(ErrorCode.PARAM_MISSING, "面试官ID不能为空");
         }
-        if (interviewInfo.getDeliveryId() == null) {
-            throw new BizException(ErrorCode.PARAM_MISSING, "投递ID不能为空");
+        if (interviewInfo.getApplicationId() == null) {
+            throw new BizException(ErrorCode.PARAM_MISSING, "申请ID不能为空");
         }
+
+        // 通过applicationId获取申请信息，进而获取简历信息和用户ID
+        JobApplication application = jobApplicationRepository.selectById(interviewInfo.getApplicationId());
+        if (application == null) {
+            throw new BizException(ErrorCode.INTERVIEW_APPLICATION_NOT_FOUND, "面试关联的投递记录不存在");
+        }
+
+        // 获取简历信息以填充面试者姓名
+        ResumeInfo resume = resumeInfoRepository.selectById(application.getResumeId());
+        if (resume != null) {
+            interviewInfo.setIntervieweeName(resume.getName());
+        }
+
+        // 设置面试者ID
+        interviewInfo.setIntervieweeId(application.getUserId());
 
         interviewInfo.setCreate_time(LocalDateTime.now());
         interviewInfo.setUpdate_time(LocalDateTime.now());

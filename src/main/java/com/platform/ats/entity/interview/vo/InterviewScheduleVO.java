@@ -13,7 +13,7 @@ public class InterviewScheduleVO {
 
     private Long arrangeId;
 
-    private Long deliveryId;
+    private Long applicationId;
 
     private Long jobId;
 
