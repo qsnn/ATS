@@ -134,15 +134,10 @@ function bindEmployerProfileSave(user) {
                 return;
             }
             alert('基本信息已保存');
+            
             // 同步更新本地 Auth 信息
-            if (window.Auth && typeof Auth.getCurrentUser === 'function' && typeof Auth.setCurrentUser === 'function') {
-                const current = Auth.getCurrentUser() || {};
-                Auth.setCurrentUser({
-                    ...current,
-                    username: username,
-                    email,
-                    phone
-                });
+            if (window.Auth && typeof Auth.getCurrentUser === 'function' && typeof Auth.updateCurrentUser === 'function') {
+                Auth.updateCurrentUser({ username, email, phone });
             }
             
             // 更新界面右上角的欢迎信息

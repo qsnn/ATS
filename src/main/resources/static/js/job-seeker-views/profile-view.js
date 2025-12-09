@@ -108,21 +108,16 @@ function renderProfileView(container, currentUser) {
         const result = await updateUserProfileApi(payload);
         if (result.success) {
             alert('个人信息更新成功！');
-            const updatedUser = Auth.updateCurrentUser({ username, phone, email });
 
-            // 更新当前用户对象中的用户名
-            if (window.Auth && typeof Auth.getCurrentUser === 'function' && typeof Auth.setCurrentUser === 'function') {
-                const currentUser = Auth.getCurrentUser() || {};
-                Auth.setCurrentUser({
-                    ...currentUser,
-                    username: username
-                });
-            }
-            
             // 更新界面右上角的欢迎信息
             const greeting = document.getElementById('user-greeting');
             if (greeting) {
                 greeting.textContent = '欢迎，' + (username || '求职者');
+            }
+            
+            // 同步更新本地 Auth 信息
+            if (window.Auth && typeof Auth.getCurrentUser === 'function' && typeof Auth.updateCurrentUser === 'function') {
+                Auth.updateCurrentUser({ username, phone, email });
             }
         } else {
             alert('更新失败：' + result.message);
