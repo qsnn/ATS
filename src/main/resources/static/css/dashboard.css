@@ -1076,6 +1076,35 @@
     margin-bottom: 4px;
 }
 
+/* 人才详情 */
+.talent-detail {
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(15,23,42,0.06);
+}
+
+.talent-detail .detail-item {
+    display: flex;
+    margin-bottom: 10px;
+}
+
+.talent-detail .detail-item label {
+    font-weight: bold;
+    width: 100px;
+    min-width: 100px;
+}
+
+.talent-detail .detail-item span {
+    flex: 1;
+}
+
+.resume-details {
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+    margin-top: 15px;
+}
+
 /* 添加人才模态框 */
 .talent-modal {
     display: none;

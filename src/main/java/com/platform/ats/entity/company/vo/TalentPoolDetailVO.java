@@ -21,7 +21,7 @@ public class TalentPoolDetailVO {
 
     private Long operatorId;
 
-    /** 候选人姓名（来自 resume_info.real_name） */
+    /** 候选人姓名（来自 resume_info.name） */
     private String candidateName;
 
     /** 求职意向/目标职位（来自 resume_info.job_intention） */

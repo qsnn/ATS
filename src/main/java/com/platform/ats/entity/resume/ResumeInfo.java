@@ -18,8 +18,8 @@ public class ResumeInfo {
     @TableField("resume_name")
     private String resumeName;
 
-    @TableField("real_name")
-    private String realName;
+    @TableField("name")
+    private String name;
 
     @TableField("gender")
     // 1-男 2-女

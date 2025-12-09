@@ -38,14 +38,7 @@ function renderTalentView(container, currentUser) {
             <div class="flex items-center justify-between mb-4">
                 <h2>人才库管理</h2>
                 <div class="flex gap-2">
-                    <select id="talent-filter" onchange="filterTalent()">
-                        <option value="">全部人才</option>
-                        <option value="web">Web开发</option>
-                        <option value="java">Java开发</option>
-                        <option value="ui">UI设计</option>
-                        <option value="product">产品经理</option>
-                    </select>
-                    <input type="text" placeholder="搜索人才..." oninput="searchTalent()">
+                    <input type="text" id="talent-search" placeholder="按姓名搜索人才..." oninput="searchTalentByName()">
                 </div>
             </div>
 
@@ -122,7 +115,7 @@ async function loadTalentPool(user) {
                     <div>
                         <h3 class="talent-name">${talent.candidateName || ''}</h3>
                         <div style="font-size: 14px; color: #666; margin-top: 4px;">
-                            ${talent.position || ''}
+                            ${talent.tag || ''}
                         </div>
                     </div>
                 </div>
@@ -152,7 +145,6 @@ async function loadTalentPool(user) {
     }
 }
 
-// 其他函数保持原样（inviteTalent等）
 async function viewTalentDetail(talentId, resumeId) {
     if (!talentId) {
         alert('找不到该人才信息');
@@ -175,8 +167,69 @@ async function viewTalentDetail(talentId, resumeId) {
             return;
         }
 
-        const name = (resume && (resume.realName || resume.username)) || (talent && talent.candidateName) || '';
+        const name = (resume && resume.name) || (talent && talent.candidateName) || '';
+        const tag = (talent && talent.tag) || '';
+        const phone = (talent && talent.phone) || '';
+        const email = (talent && talent.email) || '';
         const position = (resume && resume.jobIntention) || (talent && talent.position) || '';
+
+        // 构建简历详细信息HTML
+        let resumeDetails = '';
+        if (resume) {
+            resumeDetails = `
+                <div class="resume-details">
+                    <h4>简历信息</h4>
+                    <div class="detail-item">
+                        <label>姓名:</label>
+                        <span>${resume.name || ''}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>简历名称:</label>
+                        <span>${resume.resumeName || ''}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>求职意向:</label>
+                        <span>${resume.jobIntention || ''}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>工作经验:</label>
+                        <span>${resume.workExperience || ''}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>教育背景:</label>
+                        <span>${resume.education || ''}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>专业技能:</label>
+                        <span>${resume.skill || ''}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>性别:</label>
+                        <span>${resume.gender === 1 ? '男' : resume.gender === 2 ? '女' : ''}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>年龄:</label>
+                        <span>${resume.age || ''}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>电话:</label>
+                        <span>${resume.phone || ''}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>邮箱:</label>
+                        <span>${resume.email || ''}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>创建时间:</label>
+                        <span>${resume.createTime || ''}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>更新时间:</label>
+                        <span>${resume.updateTime || ''}</span>
+                    </div>
+                </div>
+            `;
+        }
 
         const modalHTML = `
         <div class="talent-modal" id="talent-detail-modal">
@@ -188,8 +241,26 @@ async function viewTalentDetail(talentId, resumeId) {
 
                 <div class="talent-detail">
                     <div style="margin-bottom: 20px;">
-                        <h4 style="margin-bottom: 10px;">${name} - ${position}</h4>
+                        <h4 style="margin-bottom: 10px;">${name}</h4>
+                        <div class="detail-item">
+                            <label>标签:</label>
+                            <span>${tag}</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>职位意向:</label>
+                            <span>${position}</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>电话:</label>
+                            <span>${phone}</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>邮箱:</label>
+                            <span>${email}</span>
+                        </div>
                     </div>
+                    
+                    ${resumeDetails}
                 </div>
 
                 <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
@@ -260,16 +331,20 @@ async function removeTalent(talentId) {
     }
 }
 
-function filterTalent() {
-    const filterValue = document.getElementById('talent-filter').value;
-    alert(`筛选人才：${filterValue || '全部'}（模拟操作）`);
-}
-
-function searchTalent() {
-    const searchTerm = document.querySelector('input[placeholder*="搜索人才"]').value;
-    if (searchTerm) {
-        alert(`搜索人才：${searchTerm}（模拟操作）`);
-    }
+function searchTalentByName() {
+    const searchTerm = document.getElementById('talent-search').value.toLowerCase().trim();
+    const talentCards = document.querySelectorAll('.talent-card');
+    
+    talentCards.forEach(card => {
+        const nameElement = card.querySelector('.talent-name');
+        const name = nameElement ? nameElement.textContent.toLowerCase() : '';
+        
+        if (!searchTerm || name.includes(searchTerm)) {
+            card.style.display = '';
+        } else {
+            card.style.display = 'none';
+        }
+    });
 }
 
 function exportTalent() {
@@ -286,17 +361,15 @@ function exportTalent() {
                 return;
             }
 
-            const headers = ['人才ID', '姓名', '职位', '电话', '邮箱', '来源', '来源职位', '备注', '加入时间'];
+            // 根据后端实际传递的字段更新导出功能
+            const headers = ['人才ID', '姓名', '标签', '电话', '邮箱', '入库时间'];
             const rows = list.map(t => [
                 t.talentId || '',
                 t.candidateName || '',
-                t.position || '',
+                t.tag || '',
                 t.phone || '',
                 t.email || '',
-                t.source || '',
-                t.sourceJob || '',
-                (t.note || '').replace(/\n/g, ' '),
-                t.addedDate || ''
+                t.putInTime || ''
             ]);
 
             const csvContent = [headers, ...rows]

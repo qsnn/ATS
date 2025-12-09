@@ -12,7 +12,7 @@
             tp.operator_id          AS operatorId,
             tp.put_in_time          AS putInTime,
             tp.update_time          AS updateTime,
-            r.real_name             AS candidateName,
+            r.name             AS candidateName,
             r.job_intention         AS position,
             u.phone                 AS phone,
             u.email                 AS email

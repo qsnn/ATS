@@ -14,7 +14,7 @@ public class ResumeInfoVo {
     private Long resumeId;
     private Long userId;
     private String resumeName;
-    private String realName;
+    private String name;
     private Integer gender; // 1-男 2-女
     private Integer age;
     private String education;

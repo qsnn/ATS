@@ -50,7 +50,7 @@ async function loadApplicants(user) {
                 </div>
                 <div class="applicant-actions">
                     <button class="btn btn-primary" onclick="viewResume(${app.resumeId})">查看简历</button>
-                    <button class="btn btn-success" onclick="scheduleInterview(${app.applicationId}, ${app.userId}, '${app.userName || ''}')">安排面试</button>
+                    <button class="btn btn-success" onclick="scheduleInterview(${app.applicationId}, ${app.userId}, '${(app.userName || '').replace(/'/g, "\\'")}')">安排面试</button>
                     <button class="btn" onclick="addToTalentPool(${app.applicationId})">加入人才库</button>
                     <button class="btn btn-danger" onclick="rejectApplicant(${app.applicationId})">拒绝</button>
                 </div>
@@ -146,10 +146,10 @@ async function confirmScheduleInterview(applicationId, userId, userName, intervi
         const payload = {
             deliveryId: applicationId,
             interviewerId: currentUser.userId,
-            intervieweeId: userId,  // 添加面试者ID
+            intervieweeId: userId,
             interviewTime: formattedTime,
             interviewPlace: interviewPlace,
-            intervieweeName: userName
+            intervieweeName: userName  // 确保面试者姓名正确传递
         };
 
         await ApiService.request('/interview', {
@@ -176,10 +176,10 @@ async function viewResume(resumeId) {
             return;
         }
 
-        // 当前后端返回字段：realName, age, education, jobIntention, workExperience, workHistory, skill, createTime, updateTime 等
+        // 当前后端返回字段：name, age, education, jobIntention, workExperience, workHistory, skill, createTime, updateTime 等
         // 先用现有字段对齐展示，后续如后端补充 phone/email/projectExperience/selfEvaluation 再扩展
         const detailLines = [];
-        detailLines.push(`姓名：${data.username || ''}`);
+        detailLines.push(`姓名：${data.name || ''}`);
         if (data.age != null) {
             detailLines.push(`年龄：${data.age}`);
         }
