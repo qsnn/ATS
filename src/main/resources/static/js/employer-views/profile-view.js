@@ -79,13 +79,35 @@ function bindEmployerProfileSave(user) {
     if (!btn) return;
 
     btn.onclick = async () => {
-        const username = document.getElementById('emp-username-input').value.trim();
-        const email = document.getElementById('emp-email-input').value.trim();
-        const phone = document.getElementById('emp-phone-input').value.trim();
+        const usernameInput = document.getElementById('emp-username-input');
+        const emailInput = document.getElementById('emp-email-input');
+        const phoneInput = document.getElementById('emp-phone-input');
+        
+        const username = usernameInput.value.trim();
+        const email = emailInput.value.trim();
+        const phone = phoneInput.value.trim();
 
         if (!username) {
             alert('用户名不能为空');
             return;
+        }
+
+        // 检查用户名是否已存在（如果不是当前用户名）
+        if (username !== user.username) {
+            try {
+                const checkResp = await fetch(`/api/user/check/username?username=${encodeURIComponent(username)}`);
+                const checkResult = await checkResp.json();
+                
+                if (checkResult.code === 200 && checkResult.data === true) {
+                    alert('用户名已存在，请选择其他用户名');
+                    usernameInput.focus();
+                    return;
+                }
+            } catch (error) {
+                console.error('检查用户名失败:', error);
+                alert('检查用户名时发生错误，请稍后重试');
+                return;
+            }
         }
 
         const payload = {

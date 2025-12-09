@@ -13,7 +13,7 @@ function renderProfileView(container, currentUser) {
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="profile-username">用户名</label>
-                                    <input type="text" id="profile-username" name="username" readonly>
+                                    <input type="text" id="profile-username" name="username">
                                 </div>
                                 <div class="form-group">
                                     <label for="profile-phone">手机号</label>
@@ -77,11 +77,30 @@ function renderProfileView(container, currentUser) {
             return;
         }
 
+        const username = document.getElementById('profile-username').value.trim();
         const phone = document.getElementById('profile-phone').value;
         const email = document.getElementById('profile-email').value;
 
+        // 检查用户名是否已存在
+        if (username !== user.username) {
+            try {
+                const checkResp = await fetch(`/api/user/check/username?username=${encodeURIComponent(username)}`);
+                const checkResult = await checkResp.json();
+                
+                if (checkResult.code === 200 && checkResult.data === true) {
+                    alert('用户名已存在，请选择其他用户名');
+                    return;
+                }
+            } catch (error) {
+                console.error('检查用户名失败:', error);
+                alert('检查用户名时发生错误，请稍后重试');
+                return;
+            }
+        }
+
         const payload = {
             userId: user.userId,
+            username,
             phone,
             email
         };
@@ -89,7 +108,7 @@ function renderProfileView(container, currentUser) {
         const result = await updateUserProfileApi(payload);
         if (result.success) {
             alert('个人信息更新成功！');
-            const updatedUser = Auth.updateCurrentUser({ phone, email });
+            const updatedUser = Auth.updateCurrentUser({ username, phone, email });
 
             const greeting = document.getElementById('user-greeting');
             if (greeting && updatedUser) {
