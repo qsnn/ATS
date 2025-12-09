@@ -253,7 +253,7 @@ function createNewResume(currentUser) {
     document.getElementById('resume-modal-title').textContent = '新建简历';
     document.getElementById('resume-id').value = '';
     document.getElementById('resume-title').value = '';
-    document.getElementById('resume-name').value = currentUser.realName || currentUser.username || '';
+    document.getElementById('resume-name').value = currentUser.username || '';
     document.getElementById('resume-gender').value = '';
     document.getElementById('resume-age').value = '';
     document.getElementById('resume-phone').value = '';
@@ -272,7 +272,7 @@ function editResume(resume) {
     document.getElementById('resume-modal-title').textContent = '编辑简历';
     document.getElementById('resume-id').value = resume.resumeId || '';
     document.getElementById('resume-title').value = resume.resumeName || '';
-    document.getElementById('resume-name').value = resume.realName || '';
+    document.getElementById('resume-name').value = resume.username || '';
     document.getElementById('resume-gender').value = resume.gender || '';
     document.getElementById('resume-age').value = resume.age || '';
     document.getElementById('resume-phone').value = resume.phone || '';
@@ -288,7 +288,7 @@ function editResume(resume) {
 function viewResumeDetail(resume) {
     const msg = `
 标题：${resume.resumeName || ''}
-姓名：${resume.realName || ''}
+姓名：${resume.username || ''}
 性别：${resume.gender == 1 ? '男' : resume.gender == 2 ? '女' : ''}
 年龄：${resume.age || ''}
 电话：${resume.phone || ''}
@@ -323,7 +323,7 @@ async function saveResume(currentUser, mode, resumeId) {
         userId: currentUser.userId,
         // 映射到后端 ResumeInfoDTO 字段
         resumeName: title,
-        realName: name,
+        username: name,
         gender: gender ? parseInt(gender) : null,
         age: age ? parseInt(age) : null,
         phone,

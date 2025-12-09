@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 更新欢迎语
     const greeting = document.getElementById('user-greeting');
     if (greeting) {
-        greeting.textContent = '欢迎，' + (currentUser.realName || currentUser.username || '平台管理员');
+        greeting.textContent = '欢迎，' + (currentUser.username || '平台管理员');
     }
 
     // 标签页事件绑定

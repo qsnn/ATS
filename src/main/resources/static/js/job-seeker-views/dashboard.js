@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const greeting = document.getElementById('user-greeting');
     if (greeting) {
-        greeting.textContent = '欢迎，' + (currentUser.realName || currentUser.username || '求职者');
+        greeting.textContent = '欢迎，' + (currentUser.username || '求职者');
     }
 
     // 侧边栏事件委托

@@ -13,7 +13,6 @@ public class UserProfileVO {
 
     private Long userId;
     private String username;
-    private String realName;
     private String phone;
     private String email;
     private Integer userType;

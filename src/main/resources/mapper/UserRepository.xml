@@ -6,7 +6,6 @@
     <resultMap id="UserVOResultMap" type="com.platform.ats.entity.user.vo.UserVO">
         <id column="user_id" property="userId"/>
         <result column="username" property="username"/>
-        <result column="real_name" property="realName"/>
         <result column="phone" property="phone"/>
         <result column="email" property="email"/>
         <result column="user_type" property="userType"/>
@@ -42,9 +41,6 @@
         WHERE u.delete_flag = 0
         <if test="query.username != null and query.username != ''">
             AND u.username LIKE CONCAT('%', #{query.username}, '%')
-        </if>
-        <if test="query.realName != null and query.realName != ''">
-            AND u.real_name LIKE CONCAT('%', #{query.realName}, '%')
         </if>
         <if test="query.userType != null">
             AND u.user_type = #{query.userType}

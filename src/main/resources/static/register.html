@@ -46,16 +46,6 @@
                        placeholder="请输入用户名">
             </div>
 
-            <!-- 真实姓名 -->
-            <div class="form-group">
-                <label for="realname">真实姓名</label>
-                <input type="text"
-                       id="realname"
-                       name="realname"
-                       required
-                       placeholder="请输入真实姓名">
-            </div>
-
             <!-- 密码 -->
             <div class="form-group">
                 <label for="password">密码</label>
@@ -133,7 +123,6 @@
             const email = document.getElementById('email').value.trim();
             const phone = document.getElementById('phone').value.trim();
             const username = document.getElementById('username').value.trim();
-            const realname = document.getElementById('realname').value.trim();
             const pwd = pwdInput.value.trim();
             const confirmPwd = confirmInput.value.trim();
 
@@ -156,7 +145,6 @@
                 password: pwd,
                 phone: phone || null,
                 email: email || null,
-                realName: realname,   // 新增：把“真实姓名”传给后端
                 userType: 4
             };
 

@@ -175,7 +175,7 @@ async function viewTalentDetail(talentId, resumeId) {
             return;
         }
 
-        const name = (resume && resume.realName) || (talent && talent.candidateName) || '';
+        const name = (resume && (resume.realName || resume.username)) || (talent && talent.candidateName) || '';
         const position = (resume && resume.jobIntention) || (talent && talent.position) || '';
 
         const modalHTML = `

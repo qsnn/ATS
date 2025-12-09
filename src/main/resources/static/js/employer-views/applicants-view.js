@@ -78,7 +78,7 @@ async function viewResume(resumeId) {
         // 当前后端返回字段：realName, age, education, jobIntention, workExperience, workHistory, skill, createTime, updateTime 等
         // 先用现有字段对齐展示，后续如后端补充 phone/email/projectExperience/selfEvaluation 再扩展
         const detailLines = [];
-        detailLines.push(`姓名：${data.realName || ''}`);
+        detailLines.push(`姓名：${data.username || ''}`);
         if (data.age != null) {
             detailLines.push(`年龄：${data.age}`);
         }
@@ -144,7 +144,7 @@ async function scheduleInterview(applicationId) {
             return;
         }
 
-        const intervieweeName = app.userName || app.realName || '';
+        const intervieweeName = app.userName || app.username || '';
 
         const payload = {
             deliveryId: applicationId,

@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 更新欢迎语
     const greeting = document.getElementById('user-greeting');
     if (greeting) {
-        greeting.textContent = '欢迎，' + (currentUser.realName || currentUser.username || '招聘专员');
+        greeting.textContent = '欢迎，' + (currentUser.username || '招聘专员');
     }
 
     // 侧边栏点击切换

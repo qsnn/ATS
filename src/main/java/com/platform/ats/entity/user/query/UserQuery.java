@@ -8,7 +8,6 @@ import lombok.Data;
 @Data
 public class UserQuery {
     private String username;
-    private String realName;
     private Integer userType;
     private Integer status;
     private Long companyId;

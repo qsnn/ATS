@@ -37,12 +37,6 @@ public class SysUser implements Serializable {
     private String password;
 
     /**
-     * 真实姓名
-     */
-    @TableField("real_name")
-    private String realName;
-
-    /**
      * 手机号
      */
     @TableField("phone")

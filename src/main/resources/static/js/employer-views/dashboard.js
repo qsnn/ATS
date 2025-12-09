@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const greeting = document.getElementById('user-greeting');
     if (greeting) {
-        greeting.textContent = '欢迎，' + (currentUser.realName || currentUser.username || '企业管理员');
+        greeting.textContent = '欢迎，' + (currentUser.username || '企业管理员');
     }
 
     // 侧边栏点击切换

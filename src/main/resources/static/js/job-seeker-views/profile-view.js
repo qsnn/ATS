@@ -93,7 +93,7 @@ function renderProfileView(container, currentUser) {
 
             const greeting = document.getElementById('user-greeting');
             if (greeting && updatedUser) {
-                greeting.textContent = '欢迎，' + (updatedUser.realName || updatedUser.username || '求职者');
+                greeting.textContent = '欢迎，' + (updatedUser.username || '求职者');
             }
         } else {
             alert('更新失败：' + result.message);
