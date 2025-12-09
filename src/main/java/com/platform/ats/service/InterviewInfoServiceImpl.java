@@ -72,6 +72,9 @@ public class InterviewInfoServiceImpl extends ServiceImpl<InterviewInfoRepositor
         if (interviewInfo.getIntervieweeName() != null) {
             dbInterviewInfo.setIntervieweeName(interviewInfo.getIntervieweeName());
         }
+        if (interviewInfo.getIntervieweeId() != null) {
+            dbInterviewInfo.setIntervieweeId(interviewInfo.getIntervieweeId());
+        }
 
         dbInterviewInfo.setUpdate_time(LocalDateTime.now());
 

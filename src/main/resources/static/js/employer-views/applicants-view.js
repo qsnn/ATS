@@ -50,7 +50,7 @@ async function loadApplicants(user) {
                 </div>
                 <div class="applicant-actions">
                     <button class="btn btn-primary" onclick="viewResume(${app.resumeId})">查看简历</button>
-                    <button class="btn btn-success" onclick="scheduleInterview(${app.applicationId})">安排面试</button>
+                    <button class="btn btn-success" onclick="scheduleInterview(${app.applicationId}, ${app.userId}, '${app.userName || ''}')">安排面试</button>
                     <button class="btn" onclick="addToTalentPool(${app.applicationId})">加入人才库</button>
                     <button class="btn btn-danger" onclick="rejectApplicant(${app.applicationId})">拒绝</button>
                 </div>
@@ -59,6 +59,107 @@ async function loadApplicants(user) {
     } catch (e) {
         console.error('加载申请人失败:', e);
         list.innerHTML = '<p>加载失败</p>';
+    }
+}
+
+async function scheduleInterview(applicationId, userId, userName) {
+    if (!applicationId) {
+        alert('无法安排面试：缺少申请ID');
+        return;
+    }
+
+    // 创建模态框用于输入面试时间和地点
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+    `;
+    
+    const now = new Date();
+    const minDate = now.toISOString().slice(0, 16); // 获取当前时间作为最小可选时间
+    
+    modal.innerHTML = `
+        <div style="background:white;padding:20px;border-radius:8px;width:400px;max-width:90%;">
+            <h3>安排面试</h3>
+            <div style="margin:15px 0;">
+                <label>面试时间：</label><br/>
+                <input type="datetime-local" id="interview-time" min="${minDate}" style="width:100%;padding:8px;margin-top:5px;" required>
+            </div>
+            <div style="margin:15px 0;">
+                <label>面试地点：</label><br/>
+                <input type="text" id="interview-place" placeholder="请输入面试地点" style="width:100%;padding:8px;margin-top:5px;" required>
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
+                <button id="cancel-interview" class="btn" style="background:#ccc;">取消</button>
+                <button id="confirm-interview" class="btn btn-primary">确认</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    const confirmBtn = modal.querySelector('#confirm-interview');
+    const cancelBtn = modal.querySelector('#cancel-interview');
+    
+    // 取消按钮事件
+    cancelBtn.onclick = () => {
+        document.body.removeChild(modal);
+    };
+    
+    // 确认按钮事件
+    confirmBtn.onclick = () => {
+        const interviewTime = modal.querySelector('#interview-time').value;
+        const interviewPlace = modal.querySelector('#interview-place').value;
+        
+        if (!interviewTime || !interviewPlace) {
+            alert('请填写完整的面试信息');
+            return;
+        }
+        
+        // 关闭模态框
+        document.body.removeChild(modal);
+        
+        // 执行原逻辑
+        confirmScheduleInterview(applicationId, userId, userName, interviewTime, interviewPlace);
+    };
+}
+
+async function confirmScheduleInterview(applicationId, userId, userName, interviewTime, interviewPlace) {
+    const currentUser = Auth.getCurrentUser && Auth.getCurrentUser();
+    if (!currentUser || !currentUser.userId || !currentUser.companyId) {
+        alert('未登录或用户信息缺失，无法安排面试');
+        return;
+    }
+
+    try {
+        // 转换日期格式为后端需要的格式
+        const formattedTime = interviewTime.replace('T', ' ') + ':00';
+        
+        const payload = {
+            deliveryId: applicationId,
+            interviewerId: currentUser.userId,
+            intervieweeId: userId,  // 添加面试者ID
+            interviewTime: formattedTime,
+            interviewPlace: interviewPlace,
+            intervieweeName: userName
+        };
+
+        await ApiService.request('/interview', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+        alert('面试安排已创建');
+        loadApplicants(currentUser);
+    } catch (e) {
+        console.error('安排面试失败:', e);
     }
 }
 
@@ -113,61 +214,6 @@ async function viewResume(resumeId) {
     } catch (e) {
         console.error('查看简历失败:', e);
         // ApiService 已经弹出错误提示
-    }
-}
-
-async function scheduleInterview(applicationId) {
-    if (!applicationId) {
-        alert('无法安排面试：缺少申请ID');
-        return;
-    }
-
-    // 修改为分别输入面试时间和地点
-    const interviewTime = prompt('请输入面试时间（格式：YYYY-MM-DD HH:mm）：', '2024-01-25 14:00');
-    if (interviewTime === null) {
-        return;
-    }
-
-    const interviewPlace = prompt('请输入面试地点：', '公司会议室');
-    if (interviewPlace === null) {
-        return;
-    }
-
-    const currentUser = Auth.getCurrentUser && Auth.getCurrentUser();
-    if (!currentUser || !currentUser.userId || !currentUser.companyId) {
-        alert('未登录或用户信息缺失，无法安排面试');
-        return;
-    }
-
-    try {
-        // 通过公司申请列表找到当前申请记录，以获取求职者姓名
-        const params = new URLSearchParams({ current: 1, size: 100 });
-        const data = await ApiService.request(`/applications/company/${encodeURIComponent(currentUser.companyId)}?${params.toString()}`);
-        const applicants = data && data.records ? data.records : [];
-        const app = applicants.find(a => a.applicationId === applicationId);
-        if (!app) {
-            alert('未找到对应的申请记录，无法安排面试');
-            return;
-        }
-
-        const intervieweeName = app.userName || app.username || '';
-
-        const payload = {
-            deliveryId: applicationId,
-            interviewerId: currentUser.userId,
-            interviewTime: interviewTime,
-            interviewPlace: interviewPlace,
-            intervieweeName: intervieweeName
-        };
-
-        await ApiService.request('/interview', {
-            method: 'POST',
-            body: JSON.stringify(payload)
-        });
-        alert('面试安排已创建');
-        loadApplicants(currentUser);
-    } catch (e) {
-        console.error('安排面试失败:', e);
     }
 }
 
