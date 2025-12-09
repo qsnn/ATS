@@ -139,7 +139,7 @@ function renderJobManageView(container, currentUser) {
             // 重置分页到第一页
             window.jobsPagination = {
                 current: 1,
-                size: 50,
+                size: 20,
                 total: 0,
                 pages: 0
             };
@@ -150,7 +150,7 @@ function renderJobManageView(container, currentUser) {
     // 初始化分页状态
     window.jobsPagination = {
         current: 1,
-        size: 50,
+        size: 20,
         total: 0,
         pages: 0
     };

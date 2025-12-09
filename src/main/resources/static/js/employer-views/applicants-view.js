@@ -53,7 +53,7 @@ function renderApplicantsView(container, currentUser) {
             // 重置分页到第一页
             window.applicantsPagination = {
                 current: 1,
-                size: 50,
+                size: 20,
                 total: 0,
                 pages: 0
             };
@@ -64,7 +64,7 @@ function renderApplicantsView(container, currentUser) {
     // 初始化分页状态
     window.applicantsPagination = {
         current: 1,
-        size: 50,
+        size: 20,
         total: 0,
         pages: 0
     };
@@ -517,13 +517,9 @@ async function addToTalentPool(applicationId) {
     }
 
     try {
-        const params = new URLSearchParams({
-            current: 1,
-            size: 100
-        });
-        const data = await ApiService.request(`/applications/company/${encodeURIComponent(currentUser.companyId)}?${params.toString()}`);
-        const applicants = data && data.records ? data.records : [];
-        const app = applicants.find(a => a.applicationId === applicationId);
+        // 直接通过申请ID获取申请详情
+        const app = await ApiService.request(`/applications/company/application/${encodeURIComponent(applicationId)}`);
+
         if (!app) {
             alert('未找到对应的申请记录，无法加入人才库');
             return;
@@ -551,6 +547,12 @@ async function addToTalentPool(applicationId) {
         loadApplicants(currentUser, currentStatus);
     } catch (e) {
         console.error('加入人才库失败:', e);
+        // 添加更友好的错误提示
+        if (e.message && e.message.includes('404')) {
+            alert('申请记录不存在或已被删除');
+        } else {
+            alert('加入人才库失败，请稍后重试');
+        }
     }
 }
 
