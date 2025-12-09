@@ -222,6 +222,8 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
                     if (resumeInfo != null) {
                         vo.setResumeTitle(resumeInfo.getResumeName());
                         vo.setUserId(resumeInfo.getUserId());
+                        // 设置申请人姓名为简历中的姓名
+                        vo.setUserName(resumeInfo.getName());
                         // 设置快照内容
                         vo.setResumeSnapshot(entity.getResumeSnapshot());
                     }
@@ -231,6 +233,8 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
                     if (resumeInfo != null) {
                         vo.setResumeTitle(resumeInfo.getResumeName());
                         vo.setUserId(resumeInfo.getUserId());
+                        // 设置申请人姓名为简历中的姓名
+                        vo.setUserName(resumeInfo.getName());
                     }
                 }
             } else {
@@ -239,6 +243,8 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
                 if (resumeInfo != null) {
                     vo.setResumeTitle(resumeInfo.getResumeName());
                     vo.setUserId(resumeInfo.getUserId());
+                    // 设置申请人姓名为简历中的姓名
+                    vo.setUserName(resumeInfo.getName());
                 }
             }
             return vo;

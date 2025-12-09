@@ -4,24 +4,26 @@ function renderApplicantsView(container, currentUser) {
             <h2>职位申请人</h2>
             <!-- 添加状态筛选标签 -->
             <div class="status-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">
-                <button class="tab-btn active" data-status="">全部</button>
-                <button class="tab-btn" data-status="APPLIED">待处理</button>
-                <button class="tab-btn" data-status="ACCEPTED">已通过</button>
-                <button class="tab-btn" data-status="REJECTED">已拒绝</button>
+                <button class="tab-btn active" data-status="" style="padding: 8px 16px; border: none; background-color: #f3f4f6; cursor: pointer; border-radius: 4px;">全部</button>
+                <button class="tab-btn" data-status="APPLIED" style="padding: 8px 16px; border: none; background-color: #f3f4f6; cursor: pointer; border-radius: 4px;">待处理</button>
+                <button class="tab-btn" data-status="ACCEPTED" style="padding: 8px 16px; border: none; background-color: #f3f4f6; cursor: pointer; border-radius: 4px;">已通过</button>
+                <button class="tab-btn" data-status="REJECTED" style="padding: 8px 16px; border: none; background-color: #f3f4f6; cursor: pointer; border-radius: 4px;">已拒绝</button>
             </div>
             <div id="applicants-status" style="margin-bottom:8px;color:#666;">正在加载申请人记录...</div>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>申请人</th>
-                        <th>申请职位</th>
-                        <th>申请时间</th>
-                        <th>状态</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody id="applicants-tbody"></tbody>
-            </table>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 10%; text-align: center; vertical-align: middle;">申请人</th>
+                            <th style="width: 20%; text-align: center; vertical-align: middle;">申请职位</th>
+                            <th style="width: 25%; text-align: center; vertical-align: middle;">申请时间</th>
+                            <th style="width: 10%; text-align: center; vertical-align: middle;">状态</th>
+                            <th style="width: 35%; text-align: center; vertical-align: middle;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="applicants-tbody"></tbody>
+                </table>
+            </div>
             <div class="pagination" id="applicants-pagination" style="justify-content: center; align-items: center; gap: 10px; margin-top: 20px;">
                 <button class="btn pagination-btn" id="applicants-prev-page">上一页</button>
                 <span class="pagination-info" id="applicants-pagination-info"></span>
@@ -38,12 +40,20 @@ function renderApplicantsView(container, currentUser) {
             tabButtons.forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
             
+            // 更新按钮样式
+            tabButtons.forEach(btn => {
+                btn.style.backgroundColor = '#f3f4f6';
+                btn.style.color = '#000';
+            });
+            button.style.backgroundColor = '#4f46e5';
+            button.style.color = '#fff';
+            
             // 加载对应状态的数据
             const status = button.getAttribute('data-status');
             // 重置分页到第一页
             window.applicantsPagination = {
                 current: 1,
-                size: 20,
+                size: 50,
                 total: 0,
                 pages: 0
             };
@@ -54,7 +64,7 @@ function renderApplicantsView(container, currentUser) {
     // 初始化分页状态
     window.applicantsPagination = {
         current: 1,
-        size: 10,
+        size: 50,
         total: 0,
         pages: 0
     };
@@ -141,24 +151,49 @@ async function loadApplicants(currentUser, status = '') {
             };
         }
 
-        // 渲染申请人列表
-        tbody.innerHTML = records.map(app => {
+        // 渲染申请人列表，保持与求职者端一致的实现方式
+        tbody.innerHTML = '';
+        records.forEach(app => {
             const tr = document.createElement('tr');
 
             const userTd = document.createElement('td');
             userTd.textContent = app.userName || '';
+            userTd.style.overflow = 'hidden';
+            userTd.style.textOverflow = 'ellipsis';
+            userTd.style.whiteSpace = 'nowrap';
+            userTd.style.textAlign = 'center';
+            userTd.style.verticalAlign = 'middle';
 
             const jobTd = document.createElement('td');
             jobTd.textContent = app.jobTitle || '';
+            jobTd.style.overflow = 'hidden';
+            jobTd.style.textOverflow = 'ellipsis';
+            jobTd.style.whiteSpace = 'nowrap';
+            jobTd.style.textAlign = 'center';
+            jobTd.style.verticalAlign = 'middle';
 
             const dateTd = document.createElement('td');
             const applyTime = app.applyTime || '';
             dateTd.textContent = applyTime ? applyTime.replace('T', ' ') : '';
+            dateTd.style.overflow = 'hidden';
+            dateTd.style.textOverflow = 'ellipsis';
+            dateTd.style.whiteSpace = 'nowrap';
+            dateTd.style.textAlign = 'center';
+            dateTd.style.verticalAlign = 'middle';
 
             const statusTd = document.createElement('td');
             statusTd.textContent = mapApplicationStatus(app.status);
+            statusTd.style.overflow = 'hidden';
+            statusTd.style.textOverflow = 'ellipsis';
+            statusTd.style.whiteSpace = 'nowrap';
+            statusTd.style.textAlign = 'center';
+            statusTd.style.verticalAlign = 'middle';
 
             const actionTd = document.createElement('td');
+            actionTd.style.whiteSpace = 'nowrap';
+            actionTd.style.textAlign = 'center';
+            actionTd.style.verticalAlign = 'middle';
+            
             // 根据不同状态显示不同的操作按钮
             const currentStatus = status || ''; // 当前标签页状态
             
@@ -242,8 +277,8 @@ async function loadApplicants(currentUser, status = '') {
             tr.appendChild(statusTd);
             tr.appendChild(actionTd);
 
-            return tr.outerHTML;
-        }).join('');
+            tbody.appendChild(tr);
+        });
     } catch (e) {
         console.error('加载申请人记录异常:', e);
         if (statusEl) statusEl.textContent = '请求异常，请稍后重试';
@@ -266,7 +301,7 @@ function mapApplicationStatus(status) {
     }
 }
 
-async function scheduleInterview(applicationId, userId, userName) {
+async function scheduleInterview(applicationId, userId) {
     if (!applicationId) {
         alert('无法安排面试：缺少申请ID');
         return;
@@ -331,12 +366,12 @@ async function scheduleInterview(applicationId, userId, userName) {
         // 关闭模态框
         document.body.removeChild(modal);
         
-        // 执行原逻辑
-        confirmScheduleInterview(applicationId, userId, userName, interviewTime, interviewPlace);
+        // 执行原逻辑，不再传递userName参数
+        confirmScheduleInterview(applicationId, userId, interviewTime, interviewPlace);
     };
 }
 
-async function confirmScheduleInterview(applicationId, userId, userName, interviewTime, interviewPlace) {
+async function confirmScheduleInterview(applicationId, userId, interviewTime, interviewPlace) {
     const currentUser = Auth.getCurrentUser && Auth.getCurrentUser();
     if (!currentUser || !currentUser.userId || !currentUser.companyId) {
         alert('未登录或用户信息缺失，无法安排面试');
