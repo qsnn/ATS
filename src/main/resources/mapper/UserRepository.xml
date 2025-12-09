@@ -81,4 +81,10 @@
         WHERE company_id = #{companyId} AND user_type = 3 AND delete_flag = 0
         ORDER BY create_time DESC
     </select>
+    
+    <select id="selectHrPageByCompanyId" resultType="com.platform.ats.entity.user.SysUser">
+        SELECT * FROM sys_user
+        WHERE company_id = #{companyId} AND user_type = 3 AND delete_flag = 0
+        ORDER BY create_time DESC
+    </select>
 </mapper>

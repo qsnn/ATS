@@ -10,10 +10,14 @@ import com.platform.ats.entity.user.dto.UserRegisterDTO;
 import com.platform.ats.entity.user.dto.UserUpdateDTO;
 import com.platform.ats.entity.user.dto.UserPasswordDTO;
 import com.platform.ats.entity.user.query.UserQuery;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.platform.ats.entity.user.vo.HrVO;
 import com.platform.ats.entity.user.vo.Result;
 import com.platform.ats.entity.user.vo.UserProfileVO;
 import com.platform.ats.entity.user.vo.UserVO;
+import java.util.List;
+import com.platform.ats.common.BizException;
+import com.platform.ats.common.ErrorCode;
 import com.platform.ats.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
@@ -136,10 +140,24 @@ public class UserController {
         return Result.success(userId, "HR账户创建成功");
     }
 
+    @PostMapping("/hr/batch")
+    @Operation(summary = "批量创建HR账户")
+    public Result<List<Long>> createHrAccounts(@Valid @RequestBody HrCreateDTO hrCreateDTO) {
+        int count = hrCreateDTO.getCount() != null ? hrCreateDTO.getCount() : 1;
+        if (count < 1 || count > 20) {
+            throw new BizException(ErrorCode.PARAM_INVALID, "账户数量必须在1-20之间");
+        }
+        List<Long> userIds = userService.createHrAccounts(hrCreateDTO, count);
+        return Result.success(userIds, "HR账户批量创建成功");
+    }
+
     @GetMapping("/hr/{companyId}")
     @Operation(summary = "获取企业下的所有HR账户")
-    public Result<java.util.List<HrVO>> getHrAccountsByCompanyId(@PathVariable Long companyId) {
-        java.util.List<HrVO> hrList = userService.getHrAccountsByCompanyId(companyId);
-        return Result.success(hrList);
+    public Result<Object> getHrAccountsByCompanyId(
+            @PathVariable Long companyId,
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+        IPage<HrVO> hrPage = userService.getHrAccountsByCompanyId(companyId, pageNum, pageSize);
+        return Result.success(hrPage);
     }
 }

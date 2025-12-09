@@ -2,7 +2,28 @@ function renderHrManageView(container, currentUser) {
     container.innerHTML = `
         <div class="view hr-manage-view active">
             <h2>HR账户管理</h2>
-            <button class="btn btn-primary" id="create-hr-btn" style="margin: 15px 0;">创建HR账户</button>
+            <div style="display: flex; gap: 10px; margin: 15px 0;">
+                <button class="btn btn-primary" id="create-hr-btn">创建HR账户</button>
+                <button class="btn btn-secondary" id="batch-create-hr-btn">批量创建</button>
+            </div>
+            
+            <!-- 批量创建弹窗 -->
+            <div id="batch-create-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:9999;">
+                <div style="background:#fff; width:500px; max-height:90vh; overflow:auto; margin:40px auto; padding:20px; border-radius:6px; position:relative;">
+                    <h3>批量创建HR账户</h3>
+                    <button id="batch-create-modal-close" style="position:absolute; right:16px; top:10px; border:none; background:none; font-size:18px; cursor:pointer;">×</button>
+                    <form id="batch-create-form">
+                        <div class="form-group">
+                            <label>创建数量 (1-20):</label>
+                            <input type="number" id="batch-count" class="form-control" min="1" max="20" value="5" required>
+                        </div>
+                        <div style="margin-top:12px; text-align:right;">
+                            <button type="button" class="btn" id="batch-create-cancel-btn">取消</button>
+                            <button type="submit" class="btn btn-primary" style="margin-left:8px;">创建</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
             
             <div id="hr-status" style="margin-bottom:8px;color:#666;">正在加载HR账户信息...</div>
             <table class="table" style="width: 100%; table-layout: fixed;">
@@ -16,31 +37,63 @@ function renderHrManageView(container, currentUser) {
                 </thead>
                 <tbody id="hr-manage-tbody"></tbody>
             </table>
-        </div>
-        
-        <!-- HR账户详情弹窗 -->
-        <div id="hr-detail-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:9999;">
-            <div style="background:#fff; width:500px; max-height:90vh; overflow:auto; margin:40px auto; padding:20px; border-radius:6px; position:relative;">
-                <h3>HR账户详情</h3>
-                <button id="hr-detail-modal-close" style="position:absolute; right:16px; top:10px; border:none; background:none; font-size:18px; cursor:pointer;">×</button>
-                <div id="hr-detail-content"></div>
+            <div class="pagination" id="hr-pagination" style="justify-content: center; align-items: center; gap: 10px; margin-top: 20px;">
+                <button class="btn pagination-btn" id="hr-prev-page">上一页</button>
+                <span class="pagination-info" id="hr-pagination-info"></span>
+                <button class="btn pagination-btn" id="hr-next-page">下一页</button>
             </div>
         </div>
     `;
+
+    // 初始化分页状态
+    window.hrPagination = {
+        current: 1,
+        size: 10,
+        total: 0,
+        pages: 0
+    };
 
     // 绑定创建HR账户按钮事件
     document.getElementById('create-hr-btn').addEventListener('click', () => {
         createHrAccount(currentUser);
     });
 
-    // 绑定模态框关闭事件
-    const modal = document.getElementById('hr-detail-modal');
-    const closeBtn = document.getElementById('hr-detail-modal-close');
+    // 绑定批量创建HR账户按钮事件
+    document.getElementById('batch-create-hr-btn').addEventListener('click', () => {
+        document.getElementById('batch-create-modal').style.display = 'block';
+    });
 
-    const hideModal = () => { modal.style.display = 'none'; };
-    closeBtn.addEventListener('click', hideModal);
-    modal.addEventListener('click', e => {
-        if (e.target === modal) hideModal();
+    // 绑定批量创建表单提交事件
+    document.getElementById('batch-create-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await batchCreateHrAccounts(currentUser);
+    });
+
+    // 绑定批量创建模态框关闭事件
+    const batchModal = document.getElementById('batch-create-modal');
+    const batchCloseBtn = document.getElementById('batch-create-modal-close');
+    const batchCancelBtn = document.getElementById('batch-create-cancel-btn');
+
+    const hideBatchModal = () => { batchModal.style.display = 'none'; };
+    batchCloseBtn.addEventListener('click', hideBatchModal);
+    batchCancelBtn.addEventListener('click', hideBatchModal);
+    batchModal.addEventListener('click', e => {
+        if (e.target === batchModal) hideBatchModal();
+    });
+
+    // 绑定分页按钮事件
+    document.getElementById('hr-prev-page').addEventListener('click', () => {
+        if (window.hrPagination.current > 1) {
+            window.hrPagination.current--;
+            loadHrList(currentUser);
+        }
+    });
+
+    document.getElementById('hr-next-page').addEventListener('click', () => {
+        if (window.hrPagination.current < window.hrPagination.pages) {
+            window.hrPagination.current++;
+            loadHrList(currentUser);
+        }
     });
 
     // 加载HR账户列表
@@ -52,12 +105,20 @@ function renderHrManageView(container, currentUser) {
 async function loadHrList(user) {
     const statusEl = document.getElementById('hr-status');
     const tbody = document.getElementById('hr-manage-tbody');
+    const paginationInfo = document.getElementById('hr-pagination-info');
+    const prevBtn = document.getElementById('hr-prev-page');
+    const nextBtn = document.getElementById('hr-next-page');
     
     try {
         statusEl.textContent = '正在加载HR账户信息...';
         tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;">加载中...</td></tr>';
         
-        const resp = await fetch(`${USER_API_BASE}/hr/${user.companyId}`, {
+        const params = new URLSearchParams({
+            pageNum: window.hrPagination.current,
+            pageSize: window.hrPagination.size
+        });
+        
+        const resp = await fetch(`${USER_API_BASE}/hr/${user.companyId}?${params}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
         });
@@ -67,8 +128,17 @@ async function loadHrList(user) {
             throw new Error(json.message || '加载失败');
         }
         
-        const hrList = json.data || [];
-        statusEl.textContent = `共找到 ${hrList.length} 个HR账户`;
+        const pageData = json.data || {};
+        const hrList = pageData.records || [];
+        window.hrPagination.total = pageData.total || 0;
+        window.hrPagination.pages = pageData.pages || 0;
+        
+        statusEl.textContent = `共找到 ${window.hrPagination.total} 个HR账户`;
+        
+        // 更新分页信息
+        paginationInfo.textContent = `第 ${window.hrPagination.current} 页，共 ${window.hrPagination.pages} 页`;
+        prevBtn.disabled = window.hrPagination.current <= 1;
+        nextBtn.disabled = window.hrPagination.current >= window.hrPagination.pages;
         
         if (hrList.length === 0) {
             tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;">暂无HR账户</td></tr>';
@@ -95,11 +165,26 @@ async function loadHrList(user) {
 
 async function createHrAccount(currentUser) {
     try {
+        // 先获取公司信息以获取联系方式
+        const companyResp = await fetch(`${COMPANY_API_BASE}/${currentUser.companyId}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        const companyJson = await companyResp.json();
+        if (companyJson.code !== 200) {
+            throw new Error(companyJson.message || '获取公司信息失败');
+        }
+        
+        const companyInfo = companyJson.data || {};
+        
         const resp = await fetch(`${USER_API_BASE}/hr`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                companyId: currentUser.companyId
+                companyId: currentUser.companyId,
+                contactPhone: companyInfo.contactPhone,
+                contactEmail: companyInfo.contactEmail
             })
         });
         
@@ -162,5 +247,54 @@ async function deleteHrAccount(userId) {
     } catch (e) {
         console.error('删除HR账户失败:', e);
         alert(`删除HR账户失败: ${e.message}`);
+    }
+}
+
+async function batchCreateHrAccounts(currentUser) {
+    try {
+        const count = parseInt(document.getElementById('batch-count').value);
+        
+        if (isNaN(count) || count < 1 || count > 20) {
+            alert('创建数量必须在1-20之间');
+            return;
+        }
+        
+        // 先获取公司信息以获取联系方式
+        const companyResp = await fetch(`${COMPANY_API_BASE}/${currentUser.companyId}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        const companyJson = await companyResp.json();
+        if (companyJson.code !== 200) {
+            throw new Error(companyJson.message || '获取公司信息失败');
+        }
+        
+        const companyInfo = companyJson.data || {};
+        
+        const resp = await fetch(`${USER_API_BASE}/hr/batch`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                companyId: currentUser.companyId,
+                contactPhone: companyInfo.contactPhone,
+                contactEmail: companyInfo.contactEmail,
+                count: count
+            })
+        });
+        
+        const json = await resp.json();
+        if (json.code !== 200) {
+            throw new Error(json.message || '批量创建失败');
+        }
+        
+        alert(`成功创建 ${count} 个HR账户`);
+        // 关闭模态框
+        document.getElementById('batch-create-modal').style.display = 'none';
+        // 重新加载列表
+        loadHrList(currentUser);
+    } catch (e) {
+        console.error('批量创建HR账户失败:', e);
+        alert(`批量创建HR账户失败: ${e.message}`);
     }
 }

@@ -11,4 +11,9 @@ public class HrCreateDTO {
 
     @NotNull(message = "企业ID不能为空")
     private Long companyId;
+    
+    private String contactPhone;
+    private String contactEmail;
+    
+    private Integer count = 1; // 批量创建数量，默认为1
 }

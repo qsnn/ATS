@@ -59,4 +59,9 @@ public interface UserRepository extends BaseMapper<SysUser> {
      * 根据企业ID查询HR用户列表
      */
     List<SysUser> selectHrByCompanyId(@Param("companyId") Long companyId);
+    
+    /**
+     * 根据企业ID分页查询HR用户列表
+     */
+    Page<SysUser> selectHrPageByCompanyId(Page<SysUser> page, @Param("companyId") Long companyId);
 }

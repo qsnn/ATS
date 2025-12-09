@@ -113,4 +113,14 @@ public interface UserService {
      * 根据企业ID获取HR账户列表
      */
     List<HrVO> getHrAccountsByCompanyId(Long companyId);
+    
+    /**
+     * 根据企业ID分页获取HR账户列表
+     */
+    IPage<HrVO> getHrAccountsByCompanyId(Long companyId, Integer pageNum, Integer pageSize);
+
+    /**
+     * 批量创建HR账户
+     */
+    List<Long> createHrAccounts(HrCreateDTO hrCreateDTO, int count);
 }

@@ -18,6 +18,7 @@ import com.platform.ats.entity.user.vo.HrVO;
 import com.platform.ats.entity.user.vo.UserProfileVO;
 import com.platform.ats.entity.user.vo.UserVO;
 import com.platform.ats.repository.UserRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -267,6 +268,8 @@ public class UserServiceImpl extends ServiceImpl<UserRepository, SysUser> implem
         sysUser.setUserType(UserType.HR.getCode()); // HR类型
         sysUser.setCompanyId(hrCreateDTO.getCompanyId());
         sysUser.setStatus(UserStatus.NORMAL.getCode()); // 默认状态为正常
+        sysUser.setPhone(hrCreateDTO.getContactPhone()); // 设置联系人电话
+        sysUser.setEmail(hrCreateDTO.getContactEmail()); // 设置联系人邮箱
         
         this.baseMapper.insert(sysUser);
         log.info("HR账户创建成功: username={}, userId={}", sysUser.getUsername(), sysUser.getUserId());
@@ -282,6 +285,56 @@ public class UserServiceImpl extends ServiceImpl<UserRepository, SysUser> implem
             BeanUtils.copyProperties(sysUser, hrVO);
             return hrVO;
         }).collect(java.util.stream.Collectors.toList());
+    }
+    
+    @Override
+    public IPage<HrVO> getHrAccountsByCompanyId(Long companyId, Integer pageNum, Integer pageSize) {
+        // 创建分页对象
+        Page<SysUser> page = new Page<>(pageNum, pageSize);
+        // 执行查询
+        Page<SysUser> hrPage = this.baseMapper.selectHrPageByCompanyId(page, companyId);
+        
+        // 转换为HrVO分页对象
+        Page<HrVO> hrVoPage = new Page<>(hrPage.getCurrent(), hrPage.getSize(), hrPage.getTotal());
+        List<HrVO> hrVoList = hrPage.getRecords().stream().map(sysUser -> {
+            HrVO hrVO = new HrVO();
+            BeanUtils.copyProperties(sysUser, hrVO);
+            return hrVO;
+        }).collect(java.util.stream.Collectors.toList());
+        
+        hrVoPage.setRecords(hrVoList);
+        return hrVoPage;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public List<Long> createHrAccounts(HrCreateDTO hrCreateDTO, int count) {
+        List<Long> userIds = new java.util.ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            SysUser sysUser = new SysUser();
+            
+            // 生成6位随机用户名
+            String username = generateRandomUsername();
+            
+            // 检查生成的用户名是否已存在，如果存在则重新生成
+            while (checkUsernameExists(username)) {
+                username = generateRandomUsername();
+            }
+            
+            sysUser.setUsername(username);
+            sysUser.setPassword(passwordEncoder.encode("123456")); // 默认密码
+            sysUser.setUserType(UserType.HR.getCode()); // HR类型
+            sysUser.setCompanyId(hrCreateDTO.getCompanyId());
+            sysUser.setStatus(UserStatus.NORMAL.getCode()); // 默认状态为正常
+            sysUser.setPhone(hrCreateDTO.getContactPhone()); // 设置联系人电话
+            sysUser.setEmail(hrCreateDTO.getContactEmail()); // 设置联系人邮箱
+            
+            this.baseMapper.insert(sysUser);
+            userIds.add(sysUser.getUserId());
+            log.info("HR账户创建成功: username={}, userId={}", sysUser.getUsername(), sysUser.getUserId());
+        }
+        
+        return userIds;
     }
 
     /**
