@@ -9,7 +9,8 @@ function renderInterviewsView(container, currentUser) {
                     <tr>
                         <th>职位名称</th>
                         <th>公司</th>
-                        <th>面试安排</th>
+                        <th>面试时间</th>
+                        <th>面试地点</th>
                         <th>状态</th>
                     </tr>
                 </thead>
@@ -143,7 +144,10 @@ async function loadInterviews(currentUser) {
             companyTd.textContent = companyText;
 
             const timeTd = document.createElement('td');
-            timeTd.textContent = item.interviewIntro || '';
+            timeTd.textContent = item.interviewTime || '';
+
+            const placeTd = document.createElement('td');
+            placeTd.textContent = item.interviewPlace || '';
 
             const statusTd = document.createElement('td');
             statusTd.textContent = mapInterviewStatus(item.status);
@@ -151,6 +155,7 @@ async function loadInterviews(currentUser) {
             tr.appendChild(jobTd);
             tr.appendChild(companyTd);
             tr.appendChild(timeTd);
+            tr.appendChild(placeTd);
             tr.appendChild(statusTd);
 
             tbody.appendChild(tr);

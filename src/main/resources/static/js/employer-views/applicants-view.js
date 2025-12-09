@@ -122,8 +122,14 @@ async function scheduleInterview(applicationId) {
         return;
     }
 
-    const interviewIntro = prompt('请输入面试安排说明（时间、地点等）：', '请于 2024-01-25 14:00 到公司现场参加面试');
-    if (interviewIntro === null || interviewIntro.trim() === '') {
+    // 修改为分别输入面试时间和地点
+    const interviewTime = prompt('请输入面试时间（格式：YYYY-MM-DD HH:mm）：', '2024-01-25 14:00');
+    if (interviewTime === null) {
+        return;
+    }
+
+    const interviewPlace = prompt('请输入面试地点：', '公司会议室');
+    if (interviewPlace === null) {
         return;
     }
 
@@ -149,7 +155,8 @@ async function scheduleInterview(applicationId) {
         const payload = {
             deliveryId: applicationId,
             interviewerId: currentUser.userId,
-            interviewIntro: interviewIntro.trim(),
+            interviewTime: interviewTime,
+            interviewPlace: interviewPlace,
             intervieweeName: intervieweeName
         };
 

@@ -13,7 +13,8 @@
             ci.company_name         AS companyName,
             ii.interviewer_id       AS interviewerId,
             ii.interviewee_id       AS intervieweeId,
-            ii.interview_intro      AS interviewIntro,
+            ii.interview_place      AS interviewPlace,
+            ii.interview_time       AS interviewTime,
             ii.interviewee_name     AS intervieweeName,
             ii.status               AS status,
             ji.publish_status       AS publishStatus

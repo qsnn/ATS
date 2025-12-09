@@ -31,8 +31,12 @@ public class InterviewScheduleVO {
     /** 面试者ID */
     private Long intervieweeId;
 
-    /** 面试详情 */
-    private String interviewIntro;
+    /** 面试地点 */
+    private String interviewPlace;
+
+    /** 面试时间 */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime interviewTime;
 
     /** 面试者姓名 */
     private String intervieweeName;

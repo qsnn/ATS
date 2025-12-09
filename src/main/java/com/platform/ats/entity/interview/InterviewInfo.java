@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -38,12 +37,15 @@ public class InterviewInfo {
     @TableField("delete_flag")
     private Integer deleteFlag;
 
-    @TableField("interview_intro")
-    @NotNull(message = "面试介绍不能为空")
-    private String interviewIntro;
-
     @TableField("interviewee_name")
     private String intervieweeName;
+
+    @TableField("interview_place")
+    private String interviewPlace;
+
+    @TableField("interview_time")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime interviewTime;
 
     /**
      * 面试状态：PREPARING_INTERVIEW-准备面试, INTERVIEW_ENDED-面试结束, ACCEPTED-录取, REJECTED-未录取

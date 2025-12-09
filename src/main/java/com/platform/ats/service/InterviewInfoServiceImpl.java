@@ -1,94 +1,101 @@
 package com.platform.ats.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.platform.ats.common.BizException;
 import com.platform.ats.common.ErrorCode;
-import com.platform.ats.entity.application.JobApplication;
 import com.platform.ats.entity.interview.InterviewInfo;
 import com.platform.ats.entity.interview.vo.InterviewInfoVO;
 import com.platform.ats.entity.interview.vo.InterviewScheduleVO;
 import com.platform.ats.repository.InterviewInfoRepository;
-import com.platform.ats.repository.JobApplicationRepository;
+import com.platform.ats.service.InterviewInfoService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class InterviewInfoServiceImpl implements InterviewInfoService {
+@RequiredArgsConstructor
+public class InterviewInfoServiceImpl extends ServiceImpl<InterviewInfoRepository, InterviewInfo> implements InterviewInfoService {
 
     private final InterviewInfoRepository interviewInfoRepository;
-    private final JobApplicationRepository jobApplicationRepository;
-
-    public InterviewInfoServiceImpl(InterviewInfoRepository interviewInfoRepository,
-                                     JobApplicationRepository jobApplicationRepository) {
-        this.interviewInfoRepository = interviewInfoRepository;
-        this.jobApplicationRepository = jobApplicationRepository;
-    }
 
     @Override
     public InterviewInfoVO create(InterviewInfo interviewInfo) {
-        // 参数校验
         if (interviewInfo == null) {
             throw new BizException(ErrorCode.PARAM_MISSING, "面试信息不能为空");
         }
-
-        // 通过 deliveryId 反查投递记录，填充面试者ID
+        if (interviewInfo.getInterviewerId() == null) {
+            throw new BizException(ErrorCode.PARAM_MISSING, "面试官ID不能为空");
+        }
         if (interviewInfo.getDeliveryId() == null) {
-            throw new BizException(ErrorCode.PARAM_MISSING, "投递记录ID不能为空");
+            throw new BizException(ErrorCode.PARAM_MISSING, "投递ID不能为空");
         }
-        JobApplication application = jobApplicationRepository.selectById(interviewInfo.getDeliveryId());
-        if (application == null) {
-            throw new BizException(ErrorCode.APPLICATION_NOT_FOUND, "对应的投递记录不存在");
-        }
-        interviewInfo.setIntervieweeId(application.getUserId());
 
-        interviewInfo.setArrangeId(null);
+        interviewInfo.setCreate_time(LocalDateTime.now());
+        interviewInfo.setUpdate_time(LocalDateTime.now());
         interviewInfo.setDeleteFlag(0);
+        interviewInfo.setStatus("PREPARING_INTERVIEW");
 
         interviewInfoRepository.insert(interviewInfo);
 
-        InterviewInfoVO interviewInfoVO = new InterviewInfoVO();
-        BeanUtils.copyProperties(interviewInfo, interviewInfoVO);
-        return interviewInfoVO;
+        return toVO(interviewInfo);
     }
 
     @Override
     public InterviewInfoVO update(InterviewInfo interviewInfo) {
-        // 参数校验
         if (interviewInfo == null || interviewInfo.getArrangeId() == null) {
-            throw new BizException(ErrorCode.INTERVIEW_NOT_FOUND, "面试信息或安排ID不能为空");
+            throw new BizException(ErrorCode.PARAM_MISSING, "面试信息或ID不能为空");
         }
 
-        int rows = interviewInfoRepository.updateById(interviewInfo);
-        if (rows == 0) {
-            throw new BizException(ErrorCode.INTERVIEW_NOT_FOUND, "面试安排不存在或更新失败");
+        InterviewInfo dbInterviewInfo = interviewInfoRepository.selectById(interviewInfo.getArrangeId());
+        if (dbInterviewInfo == null) {
+            throw new BizException(ErrorCode.INTERVIEW_NOT_FOUND, "未找到对应面试信息");
         }
 
-        InterviewInfo updatedInterviewInfo = interviewInfoRepository.selectById(interviewInfo.getArrangeId());
-        InterviewInfoVO interviewInfoVO = new InterviewInfoVO();
-        BeanUtils.copyProperties(updatedInterviewInfo, interviewInfoVO);
-        return interviewInfoVO;
+        // 只更新允许更新的字段
+        if (interviewInfo.getInterviewerId() != null) {
+            dbInterviewInfo.setInterviewerId(interviewInfo.getInterviewerId());
+        }
+        if (interviewInfo.getInterviewTime() != null) {
+            dbInterviewInfo.setInterviewTime(interviewInfo.getInterviewTime());
+        }
+        if (interviewInfo.getInterviewPlace() != null) {
+            dbInterviewInfo.setInterviewPlace(interviewInfo.getInterviewPlace());
+        }
+        if (interviewInfo.getStatus() != null) {
+            dbInterviewInfo.setStatus(interviewInfo.getStatus());
+        }
+        if (interviewInfo.getIntervieweeName() != null) {
+            dbInterviewInfo.setIntervieweeName(interviewInfo.getIntervieweeName());
+        }
+
+        dbInterviewInfo.setUpdate_time(LocalDateTime.now());
+
+        interviewInfoRepository.updateById(dbInterviewInfo);
+
+        return toVO(dbInterviewInfo);
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public boolean delete(Long arrangeId) {
         if (arrangeId == null) {
-            throw new BizException(ErrorCode.PARAM_MISSING, "安排ID不能为空");
+            throw new BizException(ErrorCode.PARAM_MISSING, "面试安排ID不能为空");
         }
 
-        UpdateWrapper<InterviewInfo> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.eq("arrange_id", arrangeId)
-                .set("delete_flag", 1);
-
-        int result = interviewInfoRepository.update(null, updateWrapper);
-        if (result == 0) {
-            throw new BizException(ErrorCode.INTERVIEW_NOT_FOUND, "面试安排不存在或删除失败");
+        InterviewInfo dbInterviewInfo = interviewInfoRepository.selectById(arrangeId);
+        if (dbInterviewInfo == null) {
+            throw new BizException(ErrorCode.INTERVIEW_NOT_FOUND, "未找到对应面试信息");
         }
+
+        // 软删除
+        dbInterviewInfo.setDeleteFlag(1);
+        dbInterviewInfo.setUpdate_time(LocalDateTime.now());
+
+        interviewInfoRepository.updateById(dbInterviewInfo);
 
         return true;
     }
