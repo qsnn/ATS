@@ -48,7 +48,7 @@ public class ResumeInfoServiceImpl implements ResumeInfoService {
 
         ResumeInfo resumeInfo = resumeInfoRepository.selectById(resumeInfoDTO.getResumeId());
         if (resumeInfo == null) {
-            throw new BizException(ErrorCode.RESUME_NOT_FOUND, "简历不存在");
+            throw new BizException(ErrorCode.NOT_FOUND, "简历不存在");
         }
 
         BeanUtils.copyProperties(resumeInfoDTO, resumeInfo);
@@ -78,7 +78,7 @@ public class ResumeInfoServiceImpl implements ResumeInfoService {
         System.out.println("UpdateWrapper 更新结果: " + result);
 
         if (result == 0) {
-            throw new BizException(ErrorCode.RESUME_NOT_FOUND, "简历不存在或更新失败");
+            throw new BizException(ErrorCode.NOT_FOUND, "简历不存在或更新失败");
         }
 
         return true;
@@ -88,7 +88,7 @@ public class ResumeInfoServiceImpl implements ResumeInfoService {
     public ResumeInfoDTO getById(Long resumeId) {
         ResumeInfo resumeInfo = resumeInfoRepository.selectById(resumeId);
         if (resumeInfo == null) {
-            throw new BizException(ErrorCode.RESUME_NOT_FOUND, "简历不存在");
+            throw new BizException(ErrorCode.NOT_FOUND, "简历不存在");
         }
 
         ResumeInfoDTO resumeInfoDTO = new ResumeInfoDTO();

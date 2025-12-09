@@ -42,5 +42,6 @@ public class TalentPool {
     private LocalDateTime updateTime;
 
     @TableField("delete_flag")
+    @TableLogic // 标记为逻辑删除字段
     private Integer deleteFlag;
 }

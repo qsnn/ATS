@@ -16,6 +16,8 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
         strictInsertFill(metaObject, "updateTime", LocalDateTime.class, LocalDateTime.now());
         // 为TalentPool实体添加putInTime字段的自动填充
         strictInsertFill(metaObject, "putInTime", LocalDateTime.class, LocalDateTime.now());
+        // 设置默认的deleteFlag为0（未删除）
+        strictInsertFill(metaObject, "deleteFlag", Integer.class, 0);
     }
 
     @Override

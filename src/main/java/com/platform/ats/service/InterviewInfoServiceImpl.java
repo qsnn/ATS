@@ -44,7 +44,7 @@ public class InterviewInfoServiceImpl extends ServiceImpl<InterviewInfoRepositor
         // 通过applicationId获取申请信息，进而获取简历信息和用户ID
         JobApplication application = jobApplicationRepository.selectById(interviewInfo.getApplicationId());
         if (application == null) {
-            throw new BizException(ErrorCode.INTERVIEW_APPLICATION_NOT_FOUND, "面试关联的投递记录不存在");
+            throw new BizException(ErrorCode.NOT_FOUND, "面试关联的投递记录不存在");
         }
 
         // 获取简历信息以填充面试者姓名
@@ -80,7 +80,7 @@ public class InterviewInfoServiceImpl extends ServiceImpl<InterviewInfoRepositor
 
         InterviewInfo dbInterviewInfo = interviewInfoRepository.selectById(interviewInfo.getArrangeId());
         if (dbInterviewInfo == null) {
-            throw new BizException(ErrorCode.INTERVIEW_NOT_FOUND, "未找到对应面试信息");
+            throw new BizException(ErrorCode.NOT_FOUND, "未找到对应面试信息");
         }
 
         // 只更新允许更新的字段
@@ -118,7 +118,7 @@ public class InterviewInfoServiceImpl extends ServiceImpl<InterviewInfoRepositor
 
         InterviewInfo dbInterviewInfo = interviewInfoRepository.selectById(arrangeId);
         if (dbInterviewInfo == null) {
-            throw new BizException(ErrorCode.INTERVIEW_NOT_FOUND, "未找到对应面试信息");
+            throw new BizException(ErrorCode.NOT_FOUND, "未找到对应面试信息");
         }
 
         // 软删除

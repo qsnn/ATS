@@ -71,42 +71,12 @@ public enum ErrorCode {
     APPLICATION_RESUME_NOT_FOUND(4006, "申请使用的简历不存在"),
     APPLICATION_OWNER_MISMATCH(4007, "申请记录不属于当前用户"),
 
-    // 面试 Interview 模块 5000 - 5099
-    INTERVIEW_NOT_FOUND(5000, "面试记录不存在"),
-    INTERVIEW_STATUS_INVALID(5001, "面试状态不合法"),
-    INTERVIEW_STATUS_TRANSITION_INVALID(5002, "面试状态流转不合法"),
-    INTERVIEW_TIME_CONFLICT(5003, "面试时间冲突"),
-    INTERVIEW_TIME_INVALID(5004, "面试时间不合法"),
-    INTERVIEW_LOCATION_INVALID(5005, "面试地点不合法"),
-    INTERVIEW_OWNER_MISMATCH(5006, "面试安排不属于当前用户"),
-    INTERVIEW_APPLICATION_NOT_FOUND(5007, "面试关联的投递记录不存在"),
-
-    // 人才库 / 简历 模块 6000 - 6099
-    TALENT_NOT_FOUND(6000, "人才记录不存在"),
-    TALENT_ALREADY_EXISTS(6001, "人才已存在于当前人才库"),
-    TALENT_OWNER_MISMATCH(6002, "人才记录不属于当前公司"),
-    TALENT_TAG_INVALID(6003, "人才标签不合法"),
-    RESUME_NOT_FOUND(6004, "简历不存在"),
-    RESUME_ALREADY_EXISTS(6005, "简历已存在"),
-    RESUME_STATUS_INVALID(6006, "简历状态不合法"),
-    RESUME_FORMAT_INVALID(6007, "简历格式不合法"),
-    RESUME_PARSE_FAILED(6008, "简历解析失败"),
-    RESUME_OWNER_MISMATCH(6009, "简历不属于当前用户"),
-
-    // 公司 / 雇主 模块 7000 - 7099
-    COMPANY_NOT_FOUND(7000, "公司信息不存在"),
-    COMPANY_ALREADY_EXISTS(7001, "公司信息已存在"),
-    COMPANY_STATUS_INVALID(7002, "公司状态不合法"),
-    COMPANY_VERIFICATION_FAILED(7003, "公司认证未通过"),
-    COMPANY_PERMISSION_DENIED(7004, "公司无权限执行该操作"),
-
-    // 通用业务规则 9000 - 9099
-    OPERATION_NOT_ALLOWED(9000, "当前状态不允许执行此操作"),
-    DUPLICATE_OPERATION(9001, "请勿重复操作"),
-    RATE_LIMIT_EXCEEDED(9002, "操作过于频繁，请稍后再试"),
-    UPLOAD_FILE_INVALID(9003, "上传文件不合法"),
-    UPLOAD_FILE_TOO_LARGE(9004, "上传文件过大"),
-    EXPORT_LIMIT_EXCEEDED(9005, "导出数据量超出限制");
+    // 人才库相关错误码
+    TALENT_NOT_FOUND(40001, "人才库记录不存在"),
+    TALENT_ALREADY_EXISTS(40002, "该简历已在人才库中"),
+    
+    // 公司信息相关错误码
+    COMPANY_NOT_FOUND(50001, "公司信息不存在");
 
     private final int code;
     private final String message;

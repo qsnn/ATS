@@ -26,6 +26,11 @@
             AND u.delete_flag = 0
         ORDER BY tp.put_in_time DESC
     </select>
+    
+    <update id="updateDeletedTalentToActive">
+        UPDATE talent_pool 
+        SET delete_flag = 0, update_time = NOW()
+        WHERE resume_id = #{resumeId} AND company_id = #{companyId} AND delete_flag = 1
+    </update>
 
 </mapper>
-

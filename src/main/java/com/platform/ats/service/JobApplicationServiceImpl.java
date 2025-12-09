@@ -67,10 +67,10 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
 
         ResumeInfo resumeInfo = resumeInfoRepository.selectById(dto.getResumeId());
         if (resumeInfo == null) {
-            throw new BizException(ErrorCode.RESUME_NOT_FOUND, "简历不存在");
+            throw new BizException(ErrorCode.NOT_FOUND, "简历不存在");
         }
         if (!dto.getUserId().equals(resumeInfo.getUserId())) {
-            throw new BizException(ErrorCode.RESUME_OWNER_MISMATCH, "无法使用该简历申请");
+            throw new BizException(ErrorCode.PARAM_INVALID, "无法使用该简历申请");
         }
 
         Long count = jobApplicationRepository.selectCount(new LambdaQueryWrapper<JobApplication>()
