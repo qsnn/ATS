@@ -3,26 +3,31 @@ function renderJobManageView(container, currentUser) {
         <div class="view job-manage-view active">
             <h2>职位管理</h2>
             <button class="btn btn-primary" id="create-job-btn" style="margin: 15px 0;">新建职位</button>
-            <div class="tabs">
-                <button class="tab-button active" data-status="0">草稿箱</button>
-                <button class="tab-button" data-status="1">已发布</button>
-                <button class="tab-button" data-status="2">已下架</button>
+            
+            <!-- 添加状态筛选标签 -->
+            <div class="status-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">
+                <button class="tab-btn active" data-status="0" style="padding: 8px 16px; border: none; background-color: #f3f4f6; cursor: pointer; border-radius: 4px;">草稿箱</button>
+                <button class="tab-btn" data-status="1" style="padding: 8px 16px; border: none; background-color: #f3f4f6; cursor: pointer; border-radius: 4px;">已发布</button>
+                <button class="tab-btn" data-status="2" style="padding: 8px 16px; border: none; background-color: #f3f4f6; cursor: pointer; border-radius: 4px;">已下架</button>
             </div>
-            <div class="tab-content">
-                <div class="card">
-                    <table class="data-table">
-                        <thead>
-                        <tr>
-                            <th>职位名称</th>
-                            <th>薪资范围</th>
-                            <th>工作地点</th>
-                            <th>更新时间</th>
-                            <th>操作</th>
-                        </tr>
-                        </thead>
-                        <tbody id="job-manage-tbody"></tbody>
-                    </table>
-                </div>
+            
+            <div id="jobs-status" style="margin-bottom:8px;color:#666;">正在加载职位信息...</div>
+            <table class="table" style="width: 100%; table-layout: fixed;">
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">职位名称</th>
+                        <th style="width: 20%;">薪资范围</th>
+                        <th style="width: 20%;">工作地点</th>
+                        <th style="width: 20%;">更新时间</th>
+                        <th style="width: 20%;">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="job-manage-tbody"></tbody>
+            </table>
+            <div class="pagination" id="jobs-pagination" style="justify-content: center; align-items: center; gap: 10px; margin-top: 20px;">
+                <button class="btn pagination-btn" id="jobs-prev-page">上一页</button>
+                <span class="pagination-info" id="jobs-pagination-info"></span>
+                <button class="btn pagination-btn" id="jobs-next-page">下一页</button>
             </div>
         </div>
         
@@ -113,17 +118,42 @@ function renderJobManageView(container, currentUser) {
         </div>
     `;
 
-    // 绑定标签页切换事件
-    document.querySelectorAll('.tab-button').forEach(button => {
+    // 添加标签页点击事件监听
+    const tabButtons = container.querySelectorAll('.tab-btn');
+    tabButtons.forEach(button => {
         button.addEventListener('click', () => {
             // 更新激活状态
-            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            tabButtons.forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
             
-            // 加载对应状态的职位列表
-            loadJobList(currentUser, button.dataset.status);
+            // 更新按钮样式
+            tabButtons.forEach(btn => {
+                btn.style.backgroundColor = '#f3f4f6';
+                btn.style.color = '#000';
+            });
+            button.style.backgroundColor = '#4f46e5';
+            button.style.color = '#fff';
+            
+            // 加载对应状态的数据
+            const status = button.getAttribute('data-status');
+            // 重置分页到第一页
+            window.jobsPagination = {
+                current: 1,
+                size: 50,
+                total: 0,
+                pages: 0
+            };
+            loadJobList(currentUser, status);
         });
     });
+
+    // 初始化分页状态
+    window.jobsPagination = {
+        current: 1,
+        size: 50,
+        total: 0,
+        pages: 0
+    };
 
     // 绑定新建职位按钮事件
     document.getElementById('create-job-btn').addEventListener('click', () => {
@@ -167,22 +197,29 @@ function renderJobManageView(container, currentUser) {
 }
 
 async function loadJobList(user, status) {
+    const statusEl = document.getElementById('jobs-status');
     const tbody = document.getElementById('job-manage-tbody');
+    const paginationContainer = document.getElementById('jobs-pagination');
+    const paginationInfo = document.getElementById('jobs-pagination-info');
+    const prevBtn = document.getElementById('jobs-prev-page');
+    const nextBtn = document.getElementById('jobs-next-page');
+
     if (!tbody) return;
 
-    tbody.innerHTML = '<tr><td colspan="5">正在加载...</td></tr>';
+    if (statusEl) statusEl.textContent = '正在加载职位信息...';
+    tbody.innerHTML = '';
 
     try {
         const params = new URLSearchParams({
-            current: 1,
-            size: 50,
+            current: window.jobsPagination.current,
+            size: window.jobsPagination.size,
             publishStatus: status
         });
         
         const resp = await fetch(`${JOB_API_BASE}/list?${params.toString()}`);
         if (!resp.ok) {
             const text = await resp.text();
-            tbody.innerHTML = `<tr><td colspan="5">网络错误: ${resp.status} ${text}</td></tr>`;
+            if (statusEl) statusEl.textContent = `网络错误: ${resp.status} ${text}`;
             return;
         }
         const json = await resp.json();
@@ -199,22 +236,49 @@ async function loadJobList(user, status) {
         const jobs = (page && Array.isArray(page.records)) ? page.records : 
                      (page && Array.isArray(page)) ? page : [];
 
+        if (jobs.length === 0) {
+            if (statusEl) statusEl.textContent = '暂无职位信息';
+            if (paginationContainer) paginationContainer.style.display = 'none';
+            return;
+        }
+
+        // 更新分页信息
+        window.jobsPagination.total = page.total || 0;
+        window.jobsPagination.pages = page.pages || Math.ceil((page.total || 0) / window.jobsPagination.size) || 0;
+        
+        if (statusEl) statusEl.textContent = `共 ${window.jobsPagination.total} 条职位信息`;
+
+        if (paginationInfo) {
+            paginationInfo.textContent = `第 ${window.jobsPagination.current} 页，共 ${window.jobsPagination.pages} 页`;
+        }
+
+        if (paginationContainer) {
+            paginationContainer.style.display = 'flex';
+        }
+
+        if (prevBtn) {
+            prevBtn.disabled = window.jobsPagination.current <= 1;
+            prevBtn.onclick = () => {
+                if (window.jobsPagination.current > 1) {
+                    window.jobsPagination.current--;
+                    loadJobList(user, status);
+                }
+            };
+        }
+
+        if (nextBtn) {
+            nextBtn.disabled = window.jobsPagination.current >= window.jobsPagination.pages;
+            nextBtn.onclick = () => {
+                if (window.jobsPagination.current < window.jobsPagination.pages) {
+                    window.jobsPagination.current++;
+                    loadJobList(user, status);
+                }
+            };
+        }
+
         // 清空现有内容
         while (tbody.firstChild) {
             tbody.removeChild(tbody.firstChild);
-        }
-        
-        // 检查数据是否有效
-        if (!Array.isArray(jobs) || jobs.length === 0) {
-            const noDataRow = document.createElement('tr');
-            const noDataCell = document.createElement('td');
-            noDataCell.colSpan = 5;
-            noDataCell.textContent = '暂无职位信息';
-            noDataCell.style.textAlign = 'center';
-            noDataCell.style.padding = '20px';
-            noDataRow.appendChild(noDataCell);
-            tbody.appendChild(noDataRow);
-            return;
         }
         
         // 逐条添加职位信息
@@ -238,14 +302,14 @@ async function loadJobList(user, status) {
             const statusNum = Number(status);
             if (statusNum === 0) { // 草稿箱
                 actions = `
-                    <button class="btn btn-sm" onclick="viewJob(${job.jobId})">查看</button>
-                    <button class="btn btn-sm" onclick="editJob(${job.jobId})" style="margin-left: 5px;">修改</button>
-                    <button class="btn btn-primary btn-sm" onclick="publishJob(${job.jobId})" style="margin-left: 5px;">发布</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteJob(${job.jobId})" style="margin-left: 5px;">删除</button>
+                    <button class="btn btn-sm" onclick="viewJob(${job.jobId})" style="margin-right: 5px;">查看</button>
+                    <button class="btn btn-sm" onclick="editJob(${job.jobId})" style="margin-right: 5px; background-color: #f3f4f6; border-color: #d1d5db;">修改</button>
+                    <button class="btn btn-primary btn-sm" onclick="publishJob(${job.jobId})" style="margin-right: 5px;">发布</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteJob(${job.jobId})">删除</button>
                 `;
             } else if (statusNum === 1) { // 已发布
                 actions = `
-                    <button class="btn btn-warning btn-sm" onclick="unpublishJob(${job.jobId})">下架</button>
+                    <button class="btn btn-warning btn-sm" onclick="unpublishJob(${job.jobId})" style="background-color: #f59e0b; border-color: #f59e0b; color: white;">下架</button>
                 `;
             } else if (statusNum === 2) { // 已下架
                 actions = `
@@ -287,7 +351,7 @@ async function loadJobList(user, status) {
         });
     } catch (e) {
         console.error('加载职位失败:', e);
-        tbody.innerHTML = '<tr><td colspan="5">加载失败，请稍后重试</td></tr>';
+        if (statusEl) statusEl.textContent = '请求异常，请稍后重试';
     }
 }
 
@@ -321,7 +385,10 @@ async function togglePublish(jobId, isPublished) {
             return;
         }
         alert(isPublished ? '职位已下架' : '职位已发布');
-        loadJobList(Auth.getCurrentUser());
+        // 获取当前激活的标签页状态
+        const activeTab = document.querySelector('.tab-btn.active');
+        const currentStatus = activeTab ? activeTab.getAttribute('data-status') : '0';
+        loadJobList(Auth.getCurrentUser(), currentStatus);
     } catch (e) {
         console.error('更新发布状态失败:', e);
         alert('操作失败，请稍后重试');
@@ -343,7 +410,10 @@ async function deleteJob(jobId) {
             return;
         }
         alert('职位已删除');
-        loadJobList(Auth.getCurrentUser());
+        // 获取当前激活的标签页状态
+        const activeTab = document.querySelector('.tab-btn.active');
+        const currentStatus = activeTab ? activeTab.getAttribute('data-status') : '0';
+        loadJobList(Auth.getCurrentUser(), currentStatus);
     } catch (e) {
         console.error('删除职位失败:', e);
         alert('删除失败，请稍后重试');
@@ -464,11 +534,10 @@ async function publishJob(jobId) {
             return;
         }
         alert('职位已发布');
-        // 重新加载草稿箱
-        const activeTab = document.querySelector('.tab-button.active');
-        if (activeTab) {
-            loadJobList(Auth.getCurrentUser(), activeTab.dataset.status);
-        }
+        // 获取当前激活的标签页状态
+        const activeTab = document.querySelector('.tab-btn.active');
+        const currentStatus = activeTab ? activeTab.getAttribute('data-status') : '0';
+        loadJobList(Auth.getCurrentUser(), currentStatus);
     } catch (e) {
         console.error('发布职位失败:', e);
         alert('发布失败，请稍后重试');
@@ -491,11 +560,10 @@ async function unpublishJob(jobId) {
             return;
         }
         alert('职位已下架');
-        // 重新加载已发布列表
-        const activeTab = document.querySelector('.tab-button.active');
-        if (activeTab) {
-            loadJobList(Auth.getCurrentUser(), activeTab.dataset.status);
-        }
+        // 获取当前激活的标签页状态
+        const activeTab = document.querySelector('.tab-btn.active');
+        const currentStatus = activeTab ? activeTab.getAttribute('data-status') : '0';
+        loadJobList(Auth.getCurrentUser(), currentStatus);
     } catch (e) {
         console.error('下架职位失败:', e);
         alert('下架失败，请稍后重试');
@@ -582,11 +650,10 @@ async function saveJob(user, action) {
         alert(action === 'publish' ? '职位发布成功！' : '职位保存成功！');
         document.getElementById('job-modal').style.display = 'none';
         
-        // 重新加载当前标签页
-        const activeTab = document.querySelector('.tab-button.active');
-        if (activeTab) {
-            loadJobList(user, activeTab.dataset.status);
-        }
+        // 获取当前激活的标签页状态
+        const activeTab = document.querySelector('.tab-btn.active');
+        const currentStatus = activeTab ? activeTab.getAttribute('data-status') : '0';
+        loadJobList(user, currentStatus);
     } catch (e) {
         console.error('保存职位失败:', e);
         alert('保存失败，请稍后重试');
