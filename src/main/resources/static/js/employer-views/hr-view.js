@@ -5,6 +5,7 @@ function renderHrManageView(container, currentUser) {
             <div style="display: flex; gap: 10px; margin: 15px 0;">
                 <button class="btn btn-primary" id="create-hr-btn">创建HR账户</button>
                 <button class="btn btn-secondary" id="batch-create-hr-btn">批量创建</button>
+                <button class="btn btn-success" id="export-hr-btn">导出CSV</button>
             </div>
             
             <!-- 批量创建弹窗 -->
@@ -61,6 +62,11 @@ function renderHrManageView(container, currentUser) {
     // 绑定批量创建HR账户按钮事件
     document.getElementById('batch-create-hr-btn').addEventListener('click', () => {
         document.getElementById('batch-create-modal').style.display = 'block';
+    });
+
+    // 绑定导出CSV按钮事件
+    document.getElementById('export-hr-btn').addEventListener('click', () => {
+        exportHrToCsv(currentUser);
     });
 
     // 绑定批量创建表单提交事件
@@ -296,5 +302,48 @@ async function batchCreateHrAccounts(currentUser) {
     } catch (e) {
         console.error('批量创建HR账户失败:', e);
         alert(`批量创建HR账户失败: ${e.message}`);
+    }
+}
+
+async function exportHrToCsv(currentUser) {
+    try {
+        // 获取所有HR账户数据
+        const resp = await fetch(`${USER_API_BASE}/hr/${currentUser.companyId}?pageNum=1&pageSize=10000`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        const json = await resp.json();
+        if (json.code !== 200) {
+            throw new Error(json.message || '导出失败');
+        }
+
+        const hrList = json.data.records || [];
+        
+        if (hrList.length === 0) {
+            alert('没有可导出的数据');
+            return;
+        }
+
+        // 创建CSV内容
+        let csvContent = '用户名\n'; // CSV头部只包含用户名列
+        hrList.forEach(hr => {
+            csvContent += `${hr.username}\n`;
+        });
+
+        // 创建下载链接
+        const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `hr_accounts_${timestamp}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } catch (e) {
+        console.error('导出HR账户失败:', e);
+        alert(`导出失败: ${e.message}`);
     }
 }
