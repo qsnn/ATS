@@ -5,23 +5,27 @@ function renderCompanyView(container, currentUser) {
             <form id="company-form">
                 <div class="form-group">
                     <label>公司名称</label>
-                    <input type="text" id="company-name" value="示例科技有限公司">
+                    <input type="text" id="company-name" class="form-control" placeholder="请输入公司名称">
                 </div>
                 <div class="form-group">
                     <label>公司简介</label>
-                    <textarea id="company-description" rows="4">这是一家优秀的科技公司...</textarea>
+                    <textarea id="company-description" class="form-control" rows="4" placeholder="请输入公司简介"></textarea>
                 </div>
                 <div class="form-group">
                     <label>公司地址</label>
-                    <input type="text" id="company-address" value="北京市海淀区">
+                    <input type="text" id="company-address" class="form-control" placeholder="请输入公司地址">
                 </div>
                 <div class="form-group">
                     <label>联系人</label>
-                    <input type="text" id="company-contact" value="李经理">
+                    <input type="text" id="company-contact" class="form-control" placeholder="请输入联系人姓名">
                 </div>
                 <div class="form-group">
                     <label>联系电话</label>
-                    <input type="text" id="company-phone" value="010-12345678">
+                    <input type="text" id="company-phone" class="form-control" placeholder="请输入联系电话">
+                </div>
+                <div class="form-group">
+                    <label>联系邮箱</label>
+                    <input type="email" id="company-email" class="form-control" placeholder="请输入联系邮箱">
                 </div>
                 <button type="submit" class="btn btn-primary">保存公司信息</button>
             </form>
@@ -49,10 +53,11 @@ async function loadCompanyInfo(user) {
         const c = json.data;
         document.getElementById('company-name').value = c.companyName || '';
         document.getElementById('company-description').value = c.companyDesc || '';
-        // 对齐后端 CompanyInfoVO 字段：companyAddress, contactPerson
+        // 对齐后端 CompanyInfoVO 字段：companyAddress, contactPerson, contactEmail
         document.getElementById('company-address').value = c.companyAddress || '';
         document.getElementById('company-contact').value = c.contactPerson || '';
         document.getElementById('company-phone').value = c.contactPhone || '';
+        document.getElementById('company-email').value = c.contactEmail || '';
     } catch (e) {
         console.error('加载公司信息失败:', e);
     }
@@ -66,7 +71,8 @@ async function saveCompanyInfo(user) {
         // 保存时同样按后端实体字段命名
         companyAddress: document.getElementById('company-address').value.trim(),
         contactPerson: document.getElementById('company-contact').value.trim(),
-        contactPhone: document.getElementById('company-phone').value.trim()
+        contactPhone: document.getElementById('company-phone').value.trim(),
+        contactEmail: document.getElementById('company-email').value.trim()
     };
 
     const hasId = !!companyData.companyId;
