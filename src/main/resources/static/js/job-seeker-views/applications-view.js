@@ -225,3 +225,41 @@ function mapApplicationStatus(status) {
             return status;
     }
 }
+
+async function withdrawApplication(applicationId, userId) {
+    if (!confirm('确定要取消此申请吗？')) {
+        return;
+    }
+    
+    try {
+        const base = window.API_BASE || '/api';
+        const resp = await fetch(`${base}/applications/${applicationId}/withdraw?userId=${userId}`, {
+            method: 'PUT'
+        });
+        
+        if (!resp.ok) {
+            const text = await resp.text();
+            alert(`网络错误: ${resp.status} ${text}`);
+            return;
+        }
+        
+        const json = await resp.json();
+        if (json.code !== 200 || !json.data) {
+            alert(json.message || '取消申请失败');
+            return;
+        }
+        
+        alert('申请已取消');
+        // 重新加载申请列表
+        const currentUser = window.Auth && Auth.getCurrentUser ? Auth.getCurrentUser() : null;
+        if (currentUser) {
+            // 获取当前激活的标签页状态
+            const activeTab = document.querySelector('.tab-btn.active');
+            const currentStatus = activeTab ? activeTab.getAttribute('data-status') : '';
+            loadApplications(currentUser, currentStatus);
+        }
+    } catch (e) {
+        console.error('取消申请异常:', e);
+        alert('请求异常，请稍后重试');
+    }
+}

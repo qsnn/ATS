@@ -169,8 +169,8 @@ async function loadApplicants(currentUser, status = '') {
             viewResumeButton.onclick = () => viewResume(app.resumeSnapshot, app.resumeId, app.applicationId);
             actionTd.appendChild(viewResumeButton);
 
-            // 根据当前标签页和状态显示额外操作按钮
-            if (currentStatus === 'APPLIED' || (currentStatus === '' && app.status === 'APPLIED')) {
+            // 根据当前标签页和状态显示额外操作按钮（严格按照规范）
+            if (currentStatus === 'APPLIED') {
                 // 待处理状态下的额外操作按钮
                 const scheduleInterviewButton = document.createElement('button');
                 scheduleInterviewButton.className = 'btn btn-success btn-sm';
@@ -192,9 +192,9 @@ async function loadApplicants(currentUser, status = '') {
                 rejectButton.style.marginLeft = '5px';
                 rejectButton.onclick = () => rejectApplicant(app.applicationId);
                 actionTd.appendChild(rejectButton);
-            } else if (currentStatus === 'ACCEPTED' || (currentStatus === '' && app.status === 'ACCEPTED')) {
+            } else if (currentStatus === 'ACCEPTED') {
                 // 已通过状态无需额外按钮，只保留查看简历
-            } else if (currentStatus === 'REJECTED' || (currentStatus === '' && app.status === 'REJECTED')) {
+            } else if (currentStatus === 'REJECTED') {
                 // 已拒绝状态下的额外操作按钮
                 const addToTalentPoolButton = document.createElement('button');
                 addToTalentPoolButton.className = 'btn btn-sm';
@@ -203,7 +203,7 @@ async function loadApplicants(currentUser, status = '') {
                 addToTalentPoolButton.onclick = () => addToTalentPool(app.applicationId);
                 actionTd.appendChild(addToTalentPoolButton);
             } else if (currentStatus === '') {
-                // 全部状态下的额外操作按钮（根据实际状态显示）
+                // 全部状态下的额外操作按钮（根据实际记录状态显示）
                 if (app.status === 'APPLIED') {
                     const scheduleInterviewButton = document.createElement('button');
                     scheduleInterviewButton.className = 'btn btn-success btn-sm';
@@ -233,6 +233,7 @@ async function loadApplicants(currentUser, status = '') {
                     addToTalentPoolButton.onclick = () => addToTalentPool(app.applicationId);
                     actionTd.appendChild(addToTalentPoolButton);
                 }
+                // ACCEPTED状态不显示额外按钮
             }
 
             tr.appendChild(userTd);
