@@ -313,6 +313,7 @@ async function loadJobList(user, status) {
                 `;
             } else if (statusNum === 2) { // 已下架
                 actions = `
+                    <button class="btn btn-sm btn-primary" onclick="publishJob(${job.jobId})" style="margin-right: 5px;">重新发布</button>
                     <button class="btn btn-danger btn-sm" onclick="deleteJob(${job.jobId})">删除</button>
                 `;
             }

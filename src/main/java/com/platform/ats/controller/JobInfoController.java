@@ -114,4 +114,22 @@ public class JobInfoController {
         boolean result = jobInfoService.removeById(id);
         return ResponseEntity.ok(result);
     }
+
+    /**
+     * 发布职位
+     */
+    @PutMapping("/publish/{id}")
+    public ResponseEntity<Boolean> publishJob(@PathVariable Long id) {
+        boolean result = jobInfoService.publishJob(id);
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * 下架职位
+     */
+    @PutMapping("/unpublish/{id}")
+    public ResponseEntity<Boolean> unpublishJob(@PathVariable Long id) {
+        boolean result = jobInfoService.unpublishJob(id);
+        return ResponseEntity.ok(result);
+    }
 }
