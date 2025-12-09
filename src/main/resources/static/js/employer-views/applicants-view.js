@@ -49,7 +49,7 @@ async function loadApplicants(user) {
                     <p>申请时间：${app.applyTime || ''}</p>
                 </div>
                 <div class="applicant-actions">
-                    <button class="btn btn-primary" onclick="viewResume(${app.applicationId})">查看简历</button>
+                    <button class="btn btn-primary" onclick="viewResume('${app.resumeSnapshot}', ${app.resumeId}, ${app.applicationId})">查看简历</button>
                     <button class="btn btn-success" onclick="scheduleInterview(${app.applicationId}, ${app.userId}, '${(app.userName || '').replace(/'/g, "\\'")}')">安排面试</button>
                     <button class="btn" onclick="addToTalentPool(${app.applicationId})">加入人才库</button>
                     <button class="btn btn-danger" onclick="rejectApplicant(${app.applicationId})">拒绝</button>
@@ -162,9 +162,9 @@ async function confirmScheduleInterview(applicationId, userId, userName, intervi
     }
 }
 
-async function viewResume(resumeSnapshot, resumeId) {
+async function viewResume(resumeSnapshot, resumeId, applicationId) {
     // 优先使用简历快照
-    if (resumeSnapshot) {
+    if (resumeSnapshot && resumeSnapshot !== 'null') {
         try {
             const data = JSON.parse(resumeSnapshot);
             showResumeDetails(data);
@@ -174,7 +174,25 @@ async function viewResume(resumeSnapshot, resumeId) {
         }
     }
     
-    // 如果没有快照或解析失败，回退到原来的查询方式
+    // 如果没有快照或解析失败，尝试通过applicationId获取申请详情
+    if (applicationId) {
+        try {
+            const appData = await ApiService.request(`/applications/company/application/${encodeURIComponent(applicationId)}`);
+            if (appData && appData.resumeSnapshot) {
+                try {
+                    const data = JSON.parse(appData.resumeSnapshot);
+                    showResumeDetails(data);
+                    return;
+                } catch (e) {
+                    console.error('解析简历快照失败:', e);
+                }
+            }
+        } catch (e) {
+            console.error('通过申请ID获取简历信息失败:', e);
+        }
+    }
+    
+    // 回退到原来的查询方式
     if (!resumeId) {
         alert('无法查看简历：缺少简历ID');
         return;
