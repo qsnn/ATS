@@ -195,7 +195,7 @@ async function viewResume(resumeSnapshot, resumeId) {
 }
 
 function showResumeDetails(data) {
-    // 当前后端返回字段：name, age, education, jobIntention, workExperience, workHistory, skill, createTime, updateTime 等
+    // 当前后端返回字段：name, age, education, jobIntention, workExperience, skill, createTime, updateTime 等
     // 先用现有字段对齐展示，后续如后端补充 phone/email/projectExperience/selfEvaluation 再扩展
     const detailLines = [];
     detailLines.push(`姓名：${data.name || ''}`);
@@ -209,11 +209,8 @@ function showResumeDetails(data) {
     if (data.jobIntention) {
         detailLines.push(`求职意向：${data.jobIntention}`);
     }
-    if (data.workHistory || data.workExperience) {
-        detailLines.push(`工作经历：${data.workHistory || data.workExperience}`);
-    }
-    if (data.educationHistory) {
-        detailLines.push(`教育经历：${data.educationHistory}`);
+    if (data.workExperience) {
+        detailLines.push(`工作经历：${data.workExperience}`);
     }
     if (data.skill) {
         detailLines.push(`技能：${data.skill}`);
