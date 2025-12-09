@@ -14,11 +14,11 @@ function renderApplicantsView(container, currentUser) {
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th style="width: 10%; text-align: center; vertical-align: middle;">申请人</th>
+                            <th style="width: 12%; text-align: center; vertical-align: middle;">申请人</th>
                             <th style="width: 20%; text-align: center; vertical-align: middle;">申请职位</th>
                             <th style="width: 25%; text-align: center; vertical-align: middle;">申请时间</th>
-                            <th style="width: 10%; text-align: center; vertical-align: middle;">状态</th>
-                            <th style="width: 35%; text-align: center; vertical-align: middle;">操作</th>
+                            <th style="width: 9%; text-align: center; vertical-align: middle;">状态</th>
+                            <th style="width: 34%; text-align: center; vertical-align: middle;">操作</th>
                         </tr>
                     </thead>
                     <tbody id="applicants-tbody"></tbody>
@@ -527,6 +527,10 @@ async function addToTalentPool(applicationId) {
 
         await ApiService.addTalent(talentPayload);
         alert('已加入人才库');
+        
+        // 重新加载申请人列表
+        const currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || '';
+        loadApplicants(currentUser, currentStatus);
     } catch (e) {
         console.error('加入人才库失败:', e);
     }
