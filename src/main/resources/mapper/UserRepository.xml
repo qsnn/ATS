@@ -14,8 +14,6 @@
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
         <result column="company_id" property="companyId"/>
-        <result column="department" property="department"/>
-        <result column="position" property="position"/>
         <result column="company_name" property="companyName"/>
     </resultMap>
 

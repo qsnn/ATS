@@ -17,6 +17,4 @@ public class UserUpdateDTO {
     private String email;
     private Integer status;
     private Long companyId;
-    private String department;
-    private String position;
 }

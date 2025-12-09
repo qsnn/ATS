@@ -29,8 +29,6 @@ public class UserVO {
 
     private Long companyId;
     private String companyName;
-    private String department;
-    private String position;
 
     // 权限相关信息
     private Boolean hasCompanyManagePermission;

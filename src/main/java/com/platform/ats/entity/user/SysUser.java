@@ -93,18 +93,6 @@ public class SysUser implements Serializable {
     @TableField("company_id")
     private Long companyId;
 
-    /**
-     * 所属部门
-     */
-    @TableField("department")
-    private String department;
-
-    /**
-     * 职位
-     */
-    @TableField("position")
-    private String position;
-
     // ========== 业务方法 ==========
     public boolean isDisabled() {
         return UserStatus.DISABLED.getCode().equals(status);

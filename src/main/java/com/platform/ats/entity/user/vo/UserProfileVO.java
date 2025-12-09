@@ -24,8 +24,6 @@ public class UserProfileVO {
 
     private Long companyId;
     private String companyName;
-    private String department;
-    private String position;
 
     // 统计信息
     private Integer jobApplyCount;      // 求职者：投递数量
