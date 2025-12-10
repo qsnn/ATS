@@ -162,11 +162,16 @@ public class InterviewInfoServiceImpl extends ServiceImpl<InterviewInfoRepositor
     
     @Override
     public IPage<InterviewScheduleVO> getByCompanyId(Page<InterviewScheduleVO> page, Long companyId, String status) {
+        return getByCompanyId(page, companyId, status, null);
+    }
+
+    @Override
+    public IPage<InterviewScheduleVO> getByCompanyId(Page<InterviewScheduleVO> page, Long companyId, String status, String interviewDate) {
         if (companyId == null) {
             throw new BizException(ErrorCode.PARAM_MISSING, "公司ID不能为空");
         }
         // 使用自定义 join 查询，返回带职位和面试者信息的面试安排
-        return interviewInfoRepository.selectScheduleByCompanyId(page, companyId, status);
+        return interviewInfoRepository.selectScheduleByCompanyId(page, companyId, status, interviewDate);
     }
 
     private InterviewInfoVO toVO(InterviewInfo entity) {

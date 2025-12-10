@@ -9,6 +9,14 @@ function renderInterviewsView(container, currentUser) {
                 <button class="tab-btn" data-status="ACCEPTED" style="padding: 8px 16px; border: none; background-color: #f3f4f6; cursor: pointer; border-radius: 4px;">录取</button>
                 <button class="tab-btn" data-status="REJECTED" style="padding: 8px 16px; border: none; background-color: #f3f4f6; cursor: pointer; border-radius: 4px;">未录取</button>
             </div>
+            
+            <!-- 日期筛选器，仅在待面试状态下显示 -->
+            <div id="date-filter-container" style="display: none; margin-bottom: 20px; padding: 10px; background-color: #f9f9f9; border-radius: 4px;">
+                <label for="interview-date-filter" style="margin-right: 10px;">筛选日期:</label>
+                <input type="date" id="interview-date-filter" style="padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                <button id="clear-date-filter" class="btn" style="margin-left: 10px;">清除筛选</button>
+            </div>
+            
             <div id="interviews-status" style="margin-bottom:8px;color:#666;">正在加载面试记录...</div>
             <div class="table-container">
                 <table class="data-table">
@@ -49,8 +57,19 @@ function renderInterviewsView(container, currentUser) {
             button.style.backgroundColor = '#4f46e5';
             button.style.color = '#fff';
             
-            // 加载对应状态的数据
+            // 获取当前状态
             const status = button.getAttribute('data-status');
+            
+            // 控制日期筛选器的显示（仅在待面试状态下显示）
+            const dateFilterContainer = document.getElementById('date-filter-container');
+            if (status === 'PREPARING_INTERVIEW') {
+                dateFilterContainer.style.display = 'block';
+            } else {
+                dateFilterContainer.style.display = 'none';
+                // 清除日期筛选
+                document.getElementById('interview-date-filter').value = '';
+            }
+            
             // 重置分页到第一页
             window.interviewsPagination = {
                 current: 1,
@@ -61,6 +80,33 @@ function renderInterviewsView(container, currentUser) {
             loadInterviews(currentUser, status);
         });
     });
+
+    // 添加日期筛选事件监听
+    const dateFilter = document.getElementById('interview-date-filter');
+    const clearDateFilter = document.getElementById('clear-date-filter');
+    
+    if (dateFilter) {
+        dateFilter.addEventListener('change', () => {
+            const activeTab = document.querySelector('.tab-btn.active');
+            const status = activeTab ? activeTab.getAttribute('data-status') : 'PREPARING_INTERVIEW';
+            // 重置分页到第一页
+            window.interviewsPagination.current = 1;
+            loadInterviews(currentUser, status);
+        });
+    }
+    
+    if (clearDateFilter) {
+        clearDateFilter.addEventListener('click', () => {
+            if (dateFilter) {
+                dateFilter.value = '';
+                const activeTab = document.querySelector('.tab-btn.active');
+                const status = activeTab ? activeTab.getAttribute('data-status') : 'PREPARING_INTERVIEW';
+                // 重置分页到第一页
+                window.interviewsPagination.current = 1;
+                loadInterviews(currentUser, status);
+            }
+        });
+    }
 
     // 初始化分页状态
     window.interviewsPagination = {
@@ -96,8 +142,16 @@ async function loadInterviews(currentUser, status) {
         if (status) {
             params.append('status', status);
         }
+        
+        // 如果是待面试状态且选择了日期，则添加日期参数
+        if (status === 'PREPARING_INTERVIEW') {
+            const dateFilter = document.getElementById('interview-date-filter');
+            if (dateFilter && dateFilter.value) {
+                params.append('interviewDate', dateFilter.value);
+            }
+        }
 
-        const resp = await fetch(`http://124.71.101.139:10085/api/interview/company/${encodeURIComponent(currentUser.companyId)}?${params.toString()}`);
+        const resp = await fetch(`${API_BASE_URL || 'http://124.71.101.139:10085/api'}/interview/company/${encodeURIComponent(currentUser.companyId)}?${params.toString()}`);
         if (!resp.ok) {
             const text = await resp.text();
             if (statusEl) statusEl.textContent = `网络错误: ${resp.status} ${text}`;

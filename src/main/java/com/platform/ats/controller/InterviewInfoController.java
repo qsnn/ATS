@@ -59,9 +59,10 @@ public class InterviewInfoController{
             @PathVariable("companyId") Long companyId,
             @RequestParam(defaultValue = "1") Long current,
             @RequestParam(defaultValue = "20") Long size,
-            @RequestParam(required = false) String status) {
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String interviewDate) {
         Page<InterviewScheduleVO> page = new Page<>(current, size);
-        IPage<InterviewScheduleVO> result = interviewInfoService.getByCompanyId(page, companyId, status);
+        IPage<InterviewScheduleVO> result = interviewInfoService.getByCompanyId(page, companyId, status, interviewDate);
         return Result.success(result);
     }
 }

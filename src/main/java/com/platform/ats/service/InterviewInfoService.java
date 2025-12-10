@@ -39,4 +39,9 @@ public interface InterviewInfoService {
      * 根据公司ID分页获取面试信息
      */
     IPage<InterviewScheduleVO> getByCompanyId(Page<InterviewScheduleVO> page, Long companyId, String status);
+
+    /**
+     * 根据公司ID分页获取面试信息（支持日期筛选）
+     */
+    IPage<InterviewScheduleVO> getByCompanyId(Page<InterviewScheduleVO> page, Long companyId, String status, String interviewDate);
 }

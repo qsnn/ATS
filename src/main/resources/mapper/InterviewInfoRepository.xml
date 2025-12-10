@@ -52,6 +52,9 @@
             <if test="status != null and status != ''">
                 AND ii.status = #{status}
             </if>
+            <if test="interviewDate != null and interviewDate != ''">
+                AND DATE(ii.interview_time) = #{interviewDate}
+            </if>
         ORDER BY ii.interview_time DESC
     </select>
 
