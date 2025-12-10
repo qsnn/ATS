@@ -6,7 +6,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * 求职者侧面试列表富VO，包含职位和公司等信息
+ * 企业侧和求职者侧面试列表富VO，包含职位和公司等信息
  */
 @Data
 public class InterviewScheduleVO {
@@ -52,7 +52,4 @@ public class InterviewScheduleVO {
     
     /** 简历快照 */
     private String resumeSnapshot;
-    
-    /** 职位标题(用于企业端) */
-    private String jobTitle;
 }
