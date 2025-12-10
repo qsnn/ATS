@@ -4,8 +4,7 @@ function renderApplicantsView(container, currentUser) {
             <h2>职位申请人</h2>
             <!-- 添加状态筛选标签 -->
             <div class="status-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">
-                <button class="tab-btn active" data-status="" style="padding: 8px 16px; border: none; background-color: #f3f4f6; cursor: pointer; border-radius: 4px;">全部</button>
-                <button class="tab-btn" data-status="APPLIED" style="padding: 8px 16px; border: none; background-color: #f3f4f6; cursor: pointer; border-radius: 4px;">待处理</button>
+                <button class="tab-btn active" data-status="APPLIED" style="padding: 8px 16px; border: none; background-color: #f3f4f6; cursor: pointer; border-radius: 4px;">待处理</button>
                 <button class="tab-btn" data-status="ACCEPTED" style="padding: 8px 16px; border: none; background-color: #f3f4f6; cursor: pointer; border-radius: 4px;">已通过</button>
                 <button class="tab-btn" data-status="REJECTED" style="padding: 8px 16px; border: none; background-color: #f3f4f6; cursor: pointer; border-radius: 4px;">已拒绝</button>
             </div>
@@ -69,7 +68,8 @@ function renderApplicantsView(container, currentUser) {
         pages: 0
     };
 
-    loadApplicants(currentUser);
+    // 默认加载待处理状态的数据
+    loadApplicants(currentUser, 'APPLIED');
 }
 
 async function loadApplicants(currentUser, status = '') {
