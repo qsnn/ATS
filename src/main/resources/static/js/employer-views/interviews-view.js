@@ -14,6 +14,7 @@ function renderInterviewsView(container, currentUser) {
             <div id="date-filter-container" style="display: none; margin-bottom: 20px; padding: 10px; background-color: #f9f9f9; border-radius: 4px;">
                 <label for="interview-date-filter" style="margin-right: 10px;">筛选日期:</label>
                 <input type="date" id="interview-date-filter" style="padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                <button id="apply-date-filter" class="btn btn-primary" style="margin-left: 10px;">应用筛选</button>
                 <button id="clear-date-filter" class="btn" style="margin-left: 10px;">清除筛选</button>
             </div>
             
@@ -67,7 +68,10 @@ function renderInterviewsView(container, currentUser) {
             } else {
                 dateFilterContainer.style.display = 'none';
                 // 清除日期筛选
-                document.getElementById('interview-date-filter').value = '';
+                const dateFilter = document.getElementById('interview-date-filter');
+                if (dateFilter) {
+                    dateFilter.value = '';
+                }
             }
             
             // 重置分页到第一页
@@ -82,31 +86,34 @@ function renderInterviewsView(container, currentUser) {
     });
 
     // 添加日期筛选事件监听
-    const dateFilter = document.getElementById('interview-date-filter');
-    const clearDateFilter = document.getElementById('clear-date-filter');
-    
-    if (dateFilter) {
-        dateFilter.addEventListener('change', () => {
-            const activeTab = document.querySelector('.tab-btn.active');
-            const status = activeTab ? activeTab.getAttribute('data-status') : 'PREPARING_INTERVIEW';
-            // 重置分页到第一页
-            window.interviewsPagination.current = 1;
-            loadInterviews(currentUser, status);
-        });
-    }
-    
-    if (clearDateFilter) {
-        clearDateFilter.addEventListener('click', () => {
-            if (dateFilter) {
-                dateFilter.value = '';
-                const activeTab = document.querySelector('.tab-btn.active');
-                const status = activeTab ? activeTab.getAttribute('data-status') : 'PREPARING_INTERVIEW';
+    setTimeout(() => {
+        const applyDateFilter = document.getElementById('apply-date-filter');
+        const clearDateFilter = document.getElementById('clear-date-filter');
+        
+        if (applyDateFilter) {
+            applyDateFilter.addEventListener('click', () => {
+                // 日期筛选始终在 PREPARING_INTERVIEW 状态下使用
+                const status = 'PREPARING_INTERVIEW';
                 // 重置分页到第一页
                 window.interviewsPagination.current = 1;
                 loadInterviews(currentUser, status);
-            }
-        });
-    }
+            });
+        }
+        
+        if (clearDateFilter) {
+            clearDateFilter.addEventListener('click', () => {
+                const dateFilter = document.getElementById('interview-date-filter');
+                if (dateFilter) {
+                    dateFilter.value = '';
+                    const activeTab = document.querySelector('.tab-btn.active');
+                    const status = activeTab ? activeTab.getAttribute('data-status') : 'PREPARING_INTERVIEW';
+                    // 重置分页到第一页
+                    window.interviewsPagination.current = 1;
+                    loadInterviews(currentUser, status);
+                }
+            });
+        }
+    }, 0);
 
     // 初始化分页状态
     window.interviewsPagination = {
@@ -116,6 +123,29 @@ function renderInterviewsView(container, currentUser) {
         pages: 0
     };
 
+    // 默认显示待面试状态，并确保日期筛选框可见
+    const defaultTab = container.querySelector('.tab-btn[data-status="PREPARING_INTERVIEW"]');
+    if (defaultTab) {
+        // 更新激活状态
+        const tabButtons = container.querySelectorAll('.tab-btn');
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        defaultTab.classList.add('active');
+        
+        // 更新按钮样式
+        tabButtons.forEach(btn => {
+            btn.style.backgroundColor = '#f3f4f6';
+            btn.style.color = '#000';
+        });
+        defaultTab.style.backgroundColor = '#4f46e5';
+        defaultTab.style.color = '#fff';
+        
+        // 显示日期筛选框
+        const dateFilterContainer = document.getElementById('date-filter-container');
+        if (dateFilterContainer) {
+            dateFilterContainer.style.display = 'block';
+        }
+    }
+    
     loadInterviews(currentUser, 'PREPARING_INTERVIEW');
 }
 
@@ -138,9 +168,13 @@ async function loadInterviews(currentUser, status) {
             size: window.interviewsPagination.size
         });
         
-        // 如果指定了状态，则添加到参数中
+        // 如果指定了状态，则添加到参数中（确保是字符串）
         if (status) {
-            params.append('status', status);
+            // 强制转换为字符串并确保是有效的状态值之一
+            const statusStr = String(status);
+            if (['PREPARING_INTERVIEW', 'INTERVIEW_ENDED', 'ACCEPTED', 'REJECTED'].includes(statusStr)) {
+                params.append('status', statusStr);
+            }
         }
         
         // 如果是待面试状态且选择了日期，则添加日期参数
@@ -354,7 +388,13 @@ async function finishInterview(arrangeId) {
 
         // 重新加载面试列表
         const currentUser = Auth.getCurrentUser && Auth.getCurrentUser();
-        const currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || 'PREPARING_INTERVIEW';
+        // 确保状态值是字符串形式，防止被意外转换为数字
+        let currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || 'PREPARING_INTERVIEW';
+        // 强制转换为字符串并确保是有效的状态值之一
+        currentStatus = String(currentStatus);
+        if (!['PREPARING_INTERVIEW', 'INTERVIEW_ENDED', 'ACCEPTED', 'REJECTED'].includes(currentStatus)) {
+            currentStatus = 'PREPARING_INTERVIEW';
+        }
         loadInterviews(currentUser, currentStatus);
     } catch (e) {
         console.error('完成面试失败:', e);
@@ -383,7 +423,13 @@ async function updateInterviewStatus(arrangeId, status) {
 
         // 重新加载面试列表
         const currentUser = Auth.getCurrentUser && Auth.getCurrentUser();
-        const currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || 'INTERVIEW_ENDED';
+        // 确保状态值是字符串形式，防止被意外转换为数字
+        let currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || 'INTERVIEW_ENDED';
+        // 强制转换为字符串并确保是有效的状态值之一
+        currentStatus = String(currentStatus);
+        if (!['PREPARING_INTERVIEW', 'INTERVIEW_ENDED', 'ACCEPTED', 'REJECTED'].includes(currentStatus)) {
+            currentStatus = 'INTERVIEW_ENDED';
+        }
         loadInterviews(currentUser, currentStatus);
     } catch (e) {
         console.error('更新面试状态失败:', e);
@@ -481,7 +527,13 @@ async function confirmUpdateInterviewInfo(arrangeId, interviewTime, interviewPla
 
         // 重新加载面试列表
         const currentUser = Auth.getCurrentUser && Auth.getCurrentUser();
-        const currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || 'PREPARING_INTERVIEW';
+        // 确保状态值是字符串形式，防止被意外转换为数字
+        let currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || 'PREPARING_INTERVIEW';
+        // 强制转换为字符串并确保是有效的状态值之一
+        currentStatus = String(currentStatus);
+        if (!['PREPARING_INTERVIEW', 'INTERVIEW_ENDED', 'ACCEPTED', 'REJECTED'].includes(currentStatus)) {
+            currentStatus = 'PREPARING_INTERVIEW';
+        }
         loadInterviews(currentUser, currentStatus);
     } catch (e) {
         console.error('更新面试信息失败:', e);
