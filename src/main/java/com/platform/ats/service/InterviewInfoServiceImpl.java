@@ -1,6 +1,8 @@
 package com.platform.ats.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.platform.ats.common.BizException;
 import com.platform.ats.common.ErrorCode;
@@ -156,6 +158,15 @@ public class InterviewInfoServiceImpl extends ServiceImpl<InterviewInfoRepositor
         }
         // 使用自定义 join 查询，返回带职位和公司信息的面试安排
         return interviewInfoRepository.selectScheduleByUserId(userId);
+    }
+    
+    @Override
+    public IPage<InterviewScheduleVO> getByCompanyId(Page<InterviewScheduleVO> page, Long companyId, String status) {
+        if (companyId == null) {
+            throw new BizException(ErrorCode.PARAM_MISSING, "公司ID不能为空");
+        }
+        // 使用自定义 join 查询，返回带职位和面试者信息的面试安排
+        return interviewInfoRepository.selectScheduleByCompanyId(page, companyId, status);
     }
 
     private InterviewInfoVO toVO(InterviewInfo entity) {

@@ -26,5 +26,36 @@
             ii.interviewee_id = #{userId}
             AND ii.delete_flag = 0
     </select>
+    
+    <!-- 企业侧面试列表：根据 companyId 关联职位和面试者信息 -->
+    <select id="selectScheduleByCompanyId" resultType="com.platform.ats.entity.interview.vo.InterviewScheduleVO">
+        SELECT
+            ii.arrange_id           AS arrangeId,
+            ii.application_id       AS applicationId,
+            ja.job_id               AS jobId,
+            ji.company_id           AS companyId,
+            ji.job_name             AS jobTitle,
+            ci.company_name         AS companyName,
+            ii.interviewer_id       AS interviewerId,
+            ii.interviewee_id       AS intervieweeId,
+            ii.interview_place      AS interviewPlace,
+            ii.interview_time       AS interviewTime,
+            ii.interviewee_name     AS intervieweeName,
+            ii.status               AS status,
+            ra.resume_id            AS resumeId,
+            ra.resume_snapshot      AS resumeSnapshot
+        FROM interview_info ii
+            JOIN job_application ja ON ii.application_id = ja.application_id
+            LEFT JOIN job_info ji ON ja.job_id = ji.job_id
+            LEFT JOIN company_info ci ON ji.company_id = ci.company_id
+            LEFT JOIN resume_info ra ON ja.resume_id = ra.resume_id
+        WHERE
+            ji.company_id = #{companyId}
+            AND ii.delete_flag = 0
+            <if test="status != null and status != ''">
+                AND ii.status = #{status}
+            </if>
+        ORDER BY ii.interview_time DESC
+    </select>
 
 </mapper>

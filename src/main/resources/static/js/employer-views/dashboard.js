@@ -58,6 +58,7 @@ function switchTab(tabName, currentUser = Auth.getCurrentUser()) {
     const map = {
         manage: renderJobManageView,
         applicants: renderApplicantsView,
+        interviews: renderInterviewsView,
         talent: renderTalentView,
         hr: renderHrManageView,
         company: renderCompanyView,

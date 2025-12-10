@@ -46,4 +46,13 @@ public class InterviewScheduleVO {
     
     /** 职位发布状态 */
     private Integer publishStatus;
+    
+    /** 简历ID */
+    private Long resumeId;
+    
+    /** 简历快照 */
+    private String resumeSnapshot;
+    
+    /** 职位标题(用于企业端) */
+    private String jobTitle;
 }

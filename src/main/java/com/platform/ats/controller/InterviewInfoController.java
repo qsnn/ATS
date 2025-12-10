@@ -1,6 +1,8 @@
 package com.platform.ats.controller;
 
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.platform.ats.entity.interview.InterviewInfo;
 import com.platform.ats.entity.interview.vo.InterviewInfoVO;
 import com.platform.ats.entity.interview.vo.InterviewScheduleVO;
@@ -49,5 +51,17 @@ public class InterviewInfoController{
     @Operation(summary = "根据求职者用户ID获取面试信息")
     public Result<List<InterviewScheduleVO>> getInterviewInfoByUserId(@PathVariable("userId") Long userId){
         return Result.success(interviewInfoService.getByUserId(userId));
+    }
+    
+    @GetMapping("/company/{companyId}")
+    @Operation(summary = "根据公司ID分页获取面试信息")
+    public Result<IPage<InterviewScheduleVO>> getInterviewInfoByCompanyId(
+            @PathVariable("companyId") Long companyId,
+            @RequestParam(defaultValue = "1") Long current,
+            @RequestParam(defaultValue = "20") Long size,
+            @RequestParam(required = false) String status) {
+        Page<InterviewScheduleVO> page = new Page<>(current, size);
+        IPage<InterviewScheduleVO> result = interviewInfoService.getByCompanyId(page, companyId, status);
+        return Result.success(result);
     }
 }
