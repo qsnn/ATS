@@ -296,13 +296,37 @@ async function viewJobDetail(jobId) {
             return;
         }
         const job = await resp.json();
+        
+        // 生成完整的地址信息
+        let fullAddress = '';
+        if (job.province) fullAddress += job.province;
+        if (job.city) fullAddress += '-' + job.city;
+        if (job.district) fullAddress += '-' + job.district;
+        
+        // 通过公司ID获取公司联系方式
+        let contactInfo = '';
+        if (job.companyId) {
+            try {
+                const companyResp = await fetch(`${API_BASE_URL}/company/${encodeURIComponent(job.companyId)}`);
+                if (companyResp.ok) {
+                    const company = await companyResp.json();
+                    if (company && company.data) {
+                        if (company.data.contactPhone) contactInfo += `\n联系电话：${company.data.contactPhone}`;
+                        if (company.data.contactEmail) contactInfo += `\n联系邮箱：${company.data.contactEmail}`;
+                    }
+                }
+            } catch (companyError) {
+                console.warn('获取公司信息失败:', companyError);
+            }
+        }
+        
         const msg = `职位：${job.jobName || ''}
 公司：${job.companyName || ''}
 部门：${job.department || ''}
-地点：${job.city || ''}
+地点：${fullAddress || job.city || ''}
 经验要求：${job.workExperience || ''}
 学历要求：${job.education || ''}
-薪资范围：${(job.salaryMin || 0) / 1000}K - ${(job.salaryMax || 0) / 1000}K
+薪资范围：${(job.salaryMin || 0) / 1000}K - ${(job.salaryMax || 0) / 1000}K${contactInfo}
 
 职位描述：
 ${job.jobDesc || ''}`;

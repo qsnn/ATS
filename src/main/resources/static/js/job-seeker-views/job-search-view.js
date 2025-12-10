@@ -206,3 +206,53 @@ function initCityFilter() {
             // 如果获取失败，可以添加一些默认选项或提示
         });
 }
+
+async function viewJobDetail(jobId) {
+    try {
+        const resp = await fetch(`${API_BASE_URL}/job/info/${encodeURIComponent(jobId)}`);
+        if (!resp.ok) {
+            const text = await resp.text();
+            alert(`网络错误：${resp.status} ${text}`);
+            return;
+        }
+        const job = await resp.json();
+        
+        // 生成完整的地址信息
+        let fullAddress = '';
+        if (job.province) fullAddress += job.province;
+        if (job.city) fullAddress += '-' + job.city;
+        if (job.district) fullAddress += '-' + job.district;
+        
+        // 通过公司ID获取公司联系方式
+        let contactInfo = '';
+        if (job.companyId) {
+            try {
+                const companyResp = await fetch(`${API_BASE_URL}/company/${encodeURIComponent(job.companyId)}`);
+                if (companyResp.ok) {
+                    const company = await companyResp.json();
+                    if (company && company.data) {
+                        if (company.data.contactPhone) contactInfo += `\n联系电话：${company.data.contactPhone}`;
+                        if (company.data.contactEmail) contactInfo += `\n联系邮箱：${company.data.contactEmail}`;
+                    }
+                }
+            } catch (companyError) {
+                console.warn('获取公司信息失败:', companyError);
+            }
+        }
+        
+        const msg = `职位：${job.jobName || ''}
+公司：${job.companyName || ''}
+部门：${job.department || ''}
+地点：${fullAddress || job.city || ''}
+经验要求：${job.workExperience || ''}
+学历要求：${job.education || ''}
+薪资范围：${(job.salaryMin || 0) / 1000}K - ${(job.salaryMax || 0) / 1000}K${contactInfo}
+
+职位描述：
+${job.jobDesc || ''}`;
+        alert(msg);
+    } catch (e) {
+        console.error('查看职位详情异常:', e);
+        alert('请求异常，请稍后重试');
+    }
+}

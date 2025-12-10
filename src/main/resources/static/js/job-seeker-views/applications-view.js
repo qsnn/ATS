@@ -440,9 +440,22 @@ async function viewJobDetail(jobId) {
         if (job.city) fullAddress += '-' + job.city;
         if (job.district) fullAddress += '-' + job.district;
         
+        // 通过公司ID获取公司联系方式
         let contactInfo = '';
-        if (job.contactPhone) contactInfo += `\n联系电话：${job.contactPhone}`;
-        if (job.contactEmail) contactInfo += `\n联系邮箱：${job.contactEmail}`;
+        if (job.companyId) {
+            try {
+                const companyResp = await fetch(`${base}/company/${encodeURIComponent(job.companyId)}`);
+                if (companyResp.ok) {
+                    const company = await companyResp.json();
+                    if (company && company.data) {
+                        if (company.data.contactPhone) contactInfo += `\n联系电话：${company.data.contactPhone}`;
+                        if (company.data.contactEmail) contactInfo += `\n联系邮箱：${company.data.contactEmail}`;
+                    }
+                }
+            } catch (companyError) {
+                console.warn('获取公司信息失败:', companyError);
+            }
+        }
         
         const msg = `职位：${job.jobName || ''}
 公司：${job.companyName || ''}
