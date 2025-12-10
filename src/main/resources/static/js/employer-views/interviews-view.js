@@ -155,6 +155,15 @@ async function loadInterviews(currentUser, status) {
         tbody.innerHTML = '';
         records.forEach(interview => {
             const tr = document.createElement('tr');
+            
+            // 为整行添加点击事件以查看简历详情
+            tr.style.cursor = 'pointer';
+            tr.addEventListener('click', (event) => {
+                // 避免点击操作按钮时触发查看详情
+                if (!event.target.classList.contains('btn')) {
+                    viewResume(interview.resumeSnapshot, interview.resumeId, interview.applicationId);
+                }
+            });
 
             const userTd = document.createElement('td');
             userTd.textContent = interview.intervieweeName || '';
@@ -202,21 +211,7 @@ async function loadInterviews(currentUser, status) {
             actionTd.style.textAlign = 'center';
             actionTd.style.verticalAlign = 'middle';
 
-            // 查看简历按钮在所有状态下都显示
-            const viewResumeButton = document.createElement('button');
-            viewResumeButton.className = 'btn btn-sm';
-            viewResumeButton.textContent = '查看简历';
-            viewResumeButton.onclick = () => {
-                // 调用全局函数
-                if (typeof window.viewResume === 'function') {
-                    window.viewResume(interview.resumeSnapshot, interview.resumeId, interview.applicationId);
-                } else {
-                    alert('查看简历功能暂不可用');
-                }
-            };
-            actionTd.appendChild(viewResumeButton);
-
-            // 根据不同状态显示不同的操作按钮
+            // 根据不同状态显示不同的操作按钮（移除了查看简历按钮）
             if (status === 'PREPARING_INTERVIEW') {
                 // 待面试状态下的操作按钮
                 const finishInterviewButton = document.createElement('button');
@@ -491,10 +486,42 @@ async function viewResume(resumeSnapshot, resumeId, applicationId) {
 }
 
 function showResumeDetails(data) {
-    // 调用申请人管理页面中的通用函数
-    if (typeof window.showResumeDetails === 'function') {
-        window.showResumeDetails(data);
-    } else {
-        alert('查看简历功能暂不可用');
+    // 当前后端返回字段：name, age, education, jobIntention, workExperience, skill, createTime, updateTime 等
+    // 先用现有字段对齐展示，后续如后端补充 phone/email/projectExperience/selfEvaluation 再扩展
+    const detailLines = [];
+    detailLines.push(`姓名：${data.name || ''}`);
+    if (data.phone) {
+        detailLines.push(`电话：${data.phone}`);
     }
+    if (data.email) {
+        detailLines.push(`邮箱：${data.email}`);
+    }
+    if (data.age != null) {
+        detailLines.push(`年龄：${data.age}`);
+    }
+    if (data.genderDesc) {
+        detailLines.push(`性别：${data.genderDesc}`);
+    }
+    detailLines.push(`学历：${data.education || ''}`);
+    if (data.jobIntention) {
+        detailLines.push(`求职意向：${data.jobIntention}`);
+    }
+    if (data.workExperience) {
+        detailLines.push(`工作经历：${data.workExperience}`);
+    }
+    if (data.skill) {
+        detailLines.push(`技能：${data.skill}`);
+    }
+    if (data.resumeName) {
+        detailLines.push(`简历名称：${data.resumeName}`);
+    }
+    if (data.createTime) {
+        detailLines.push(`创建时间：${data.createTime}`);
+    }
+    if (data.updateTime) {
+        detailLines.push(`更新时间：${data.updateTime}`);
+    }
+
+    const detailHtml = '\n' + detailLines.join('\n');
+    alert(`简历详情：\n\n${detailHtml}`);
 }

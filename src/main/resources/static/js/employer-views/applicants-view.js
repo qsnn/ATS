@@ -155,6 +155,15 @@ async function loadApplicants(currentUser, status = '') {
         tbody.innerHTML = '';
         records.forEach(app => {
             const tr = document.createElement('tr');
+            
+            // 为整行添加点击事件以查看简历详情
+            tr.style.cursor = 'pointer';
+            tr.addEventListener('click', (event) => {
+                // 避免点击操作按钮时触发查看详情
+                if (!event.target.classList.contains('btn')) {
+                    viewResume(app.resumeSnapshot, app.resumeId, app.applicationId);
+                }
+            });
 
             const userTd = document.createElement('td');
             userTd.textContent = app.userName || '';
@@ -197,14 +206,7 @@ async function loadApplicants(currentUser, status = '') {
             // 根据不同状态显示不同的操作按钮
             const currentStatus = status || ''; // 当前标签页状态
 
-            // 查看简历按钮在所有状态下都显示
-            const viewResumeButton = document.createElement('button');
-            viewResumeButton.className = 'btn btn-sm';
-            viewResumeButton.textContent = '查看简历';
-            viewResumeButton.onclick = () => viewResume(app.resumeSnapshot, app.resumeId, app.applicationId);
-            actionTd.appendChild(viewResumeButton);
-
-            // 根据当前标签页和状态显示额外操作按钮（严格按照规范）
+            // 根据当前标签页和状态显示操作按钮（移除了查看简历按钮）
             if (currentStatus === 'APPLIED') {
                 // 待处理状态下的额外操作按钮
                 const scheduleInterviewButton = document.createElement('button');
@@ -228,7 +230,7 @@ async function loadApplicants(currentUser, status = '') {
                 rejectButton.onclick = () => rejectApplicant(app.applicationId);
                 actionTd.appendChild(rejectButton);
             } else if (currentStatus === 'ACCEPTED') {
-                // 已通过状态无需额外按钮，只保留查看简历
+                // 已通过状态无需额外按钮
             } else if (currentStatus === 'REJECTED') {
                 // 已拒绝状态下的额外操作按钮
                 const addToTalentPoolButton = document.createElement('button');
@@ -471,6 +473,12 @@ function showResumeDetails(data) {
     // 先用现有字段对齐展示，后续如后端补充 phone/email/projectExperience/selfEvaluation 再扩展
     const detailLines = [];
     detailLines.push(`姓名：${data.name || ''}`);
+    if (data.phone) {
+        detailLines.push(`电话：${data.phone}`);
+    }
+    if (data.email) {
+        detailLines.push(`邮箱：${data.email}`);
+    }
     if (data.age != null) {
         detailLines.push(`年龄：${data.age}`);
     }

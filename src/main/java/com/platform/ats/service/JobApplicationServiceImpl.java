@@ -217,7 +217,7 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
         applications = applications.stream()
                 .filter(app -> app.getDeleteFlag() == 0)
                 .collect(Collectors.toList());
-                
+            
         return applications.stream().map(entity -> {
             JobApplicationEmployerVO vo = new JobApplicationEmployerVO();
             BeanUtils.copyProperties(entity, vo);
@@ -236,6 +236,9 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
                         vo.setUserId(resumeInfo.getUserId());
                         // 设置申请人姓名为简历中的姓名
                         vo.setUserName(resumeInfo.getName());
+                        // 设置电话和邮箱
+                        vo.setPhone(resumeInfo.getPhone());
+                        vo.setEmail(resumeInfo.getEmail());
                         // 设置快照内容
                         vo.setResumeSnapshot(entity.getResumeSnapshot());
                     }
@@ -247,6 +250,9 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
                         vo.setUserId(resumeInfo.getUserId());
                         // 设置申请人姓名为简历中的姓名
                         vo.setUserName(resumeInfo.getName());
+                        // 设置电话和邮箱
+                        vo.setPhone(resumeInfo.getPhone());
+                        vo.setEmail(resumeInfo.getEmail());
                     }
                 }
             } else {
@@ -257,6 +263,9 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
                     vo.setUserId(resumeInfo.getUserId());
                     // 设置申请人姓名为简历中的姓名
                     vo.setUserName(resumeInfo.getName());
+                    // 设置电话和邮箱
+                    vo.setPhone(resumeInfo.getPhone());
+                    vo.setEmail(resumeInfo.getEmail());
                 }
             }
             return vo;
