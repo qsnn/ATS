@@ -27,5 +27,9 @@ public class JobApplicationVO {
      * 职位发布状态
      */
     private Integer publishStatus;
+    
+    /**
+     * 简历快照（包含所有简历信息）
+     */
+    private String resumeSnapshot;
 }
-

@@ -10,11 +10,18 @@
         <result property="status" column="status" />
         <result property="applyTime" column="apply_time" />
         <result property="updateTime" column="update_time" />
+        <result property="resumeSnapshot" column="resume_snapshot" />
+        <result property="deleteFlag" column="delete_flag" />
     </resultMap>
 
     <sql id="Base_Column_List">
-        application_id, user_id, job_id, resume_id, status, apply_time, update_time
+        application_id, user_id, job_id, resume_id, status, apply_time, update_time, resume_snapshot, delete_flag
     </sql>
+    
+    <update id="updateDeletedApplicationToActive">
+        UPDATE job_application 
+        SET delete_flag = 0, update_time = NOW()
+        WHERE user_id = #{userId} AND job_id = #{jobId} AND resume_id = #{resumeId} AND delete_flag = 1
+    </update>
 
 </mapper>
-

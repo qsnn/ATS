@@ -43,7 +43,8 @@ public class InterviewInfoServiceImpl extends ServiceImpl<InterviewInfoRepositor
 
         // 通过applicationId获取申请信息，进而获取简历信息和用户ID
         JobApplication application = jobApplicationRepository.selectById(interviewInfo.getApplicationId());
-        if (application == null) {
+        // 检查申请是否存在且未被删除
+        if (application == null || application.getDeleteFlag() == 1) {
             throw new BizException(ErrorCode.NOT_FOUND, "面试关联的投递记录不存在");
         }
 

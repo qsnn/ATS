@@ -6,7 +6,7 @@ function renderApplicationsView(container, currentUser) {
             <div class="status-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">
                 <button class="tab-btn active" data-status="">全部</button>
                 <button class="tab-btn" data-status="APPLIED">申请中</button>
-                <button class="tab-btn" data-status="ACCEPTED">申请成功</button>
+                <button class="tab-btn" data-status="ACCEPTED">已通过</button>
                 <button class="tab-btn" data-status="REJECTED">被驳回</button>
                 <button class="tab-btn" data-status="WITHDRAWN">已撤回</button>
             </div>
@@ -187,13 +187,45 @@ async function loadApplications(currentUser, status = '') {
             statusTd.textContent = mapApplicationStatus(app.status);
 
             const actionTd = document.createElement('td');
-            // 根据状态决定是否显示取消申请按钮
-            if (['APPLIED'].includes(app.status)) {
-                const cancelButton = document.createElement('button');
-                cancelButton.className = 'btn btn-danger btn-sm';
-                cancelButton.textContent = '取消申请';
-                cancelButton.onclick = () => withdrawApplication(app.applicationId, currentUser.userId);
-                actionTd.appendChild(cancelButton);
+            // 根据不同状态显示不同的操作按钮
+            switch (app.status) {
+                case 'APPLIED':
+                    // 申请中 - 撤回申请
+                    const withdrawButton = document.createElement('button');
+                    withdrawButton.className = 'btn btn-warning btn-sm';
+                    withdrawButton.textContent = '撤回申请';
+                    withdrawButton.onclick = () => withdrawApplication(app.applicationId, currentUser.userId);
+                    actionTd.appendChild(withdrawButton);
+                    break;
+                case 'ACCEPTED':
+                    // 已通过 - 无操作
+                    actionTd.textContent = '-';
+                    break;
+                case 'REJECTED':
+                    // 被驳回 - 删除记录
+                    const deleteRejectedButton = document.createElement('button');
+                    deleteRejectedButton.className = 'btn btn-danger btn-sm';
+                    deleteRejectedButton.textContent = '删除记录';
+                    deleteRejectedButton.onclick = () => deleteApplication(app.applicationId, currentUser.userId, app.jobId, app.resumeId);
+                    actionTd.appendChild(deleteRejectedButton);
+                    break;
+                case 'WITHDRAWN':
+                    // 已撤回 - 删除记录、重新申请
+                    const deleteWithdrawnButton = document.createElement('button');
+                    deleteWithdrawnButton.className = 'btn btn-danger btn-sm';
+                    deleteWithdrawnButton.textContent = '删除记录';
+                    deleteWithdrawnButton.onclick = () => deleteApplication(app.applicationId, currentUser.userId, app.jobId, app.resumeId);
+                    actionTd.appendChild(deleteWithdrawnButton);
+                    
+                    const reapplyButton = document.createElement('button');
+                    reapplyButton.className = 'btn btn-primary btn-sm';
+                    reapplyButton.textContent = '重新申请';
+                    reapplyButton.style.marginLeft = '5px';
+                    reapplyButton.onclick = () => reapplyApplication(app, currentUser.userId);
+                    actionTd.appendChild(reapplyButton);
+                    break;
+                default:
+                    actionTd.textContent = '-';
             }
 
             tr.appendChild(jobTd);
@@ -216,7 +248,7 @@ function mapApplicationStatus(status) {
         case 'APPLIED':
             return '申请中';
         case 'ACCEPTED':
-            return '申请成功';
+            return '已通过';
         case 'REJECTED':
             return '被驳回';
         case 'WITHDRAWN':
@@ -227,7 +259,7 @@ function mapApplicationStatus(status) {
 }
 
 async function withdrawApplication(applicationId, userId) {
-    if (!confirm('确定要取消此申请吗？')) {
+    if (!confirm('确定要撤回此申请吗？')) {
         return;
     }
     
@@ -245,11 +277,11 @@ async function withdrawApplication(applicationId, userId) {
         
         const json = await resp.json();
         if (json.code !== 200 || !json.data) {
-            alert(json.message || '取消申请失败');
+            alert(json.message || '撤回申请失败');
             return;
         }
         
-        alert('申请已取消');
+        alert('申请已撤回');
         // 重新加载申请列表
         const currentUser = window.Auth && Auth.getCurrentUser ? Auth.getCurrentUser() : null;
         if (currentUser) {
@@ -259,7 +291,134 @@ async function withdrawApplication(applicationId, userId) {
             loadApplications(currentUser, currentStatus);
         }
     } catch (e) {
-        console.error('取消申请异常:', e);
+        console.error('撤回申请异常:', e);
+        alert('请求异常，请稍后重试');
+    }
+}
+
+// 删除申请记录功能（对于被驳回和已撤回的申请）
+async function deleteApplication(applicationId, userId, jobId, resumeId) {
+    if (!confirm('确定要删除此申请记录吗？')) {
+        return;
+    }
+    
+    try {
+        const base = window.API_BASE || '/api';
+        // 使用新的删除接口，通过查询参数传递所需信息
+        const resp = await fetch(`${base}/applications?userId=${userId}&jobId=${jobId}&resumeId=${resumeId}`, {
+            method: 'DELETE'
+        });
+        
+        if (!resp.ok) {
+            const text = await resp.text();
+            alert(`网络错误: ${resp.status} ${text}`);
+            return;
+        }
+        
+        const json = await resp.json();
+        if (json.code !== 200 || !json.data) {
+            alert(json.message || '删除记录失败');
+            return;
+        }
+        
+        alert('记录已删除');
+        // 重新加载申请列表
+        const currentUser = window.Auth && Auth.getCurrentUser ? Auth.getCurrentUser() : null;
+        if (currentUser) {
+            // 获取当前激活的标签页状态
+            const activeTab = document.querySelector('.tab-btn.active');
+            const currentStatus = activeTab ? activeTab.getAttribute('data-status') : '';
+            loadApplications(currentUser, currentStatus);
+        }
+    } catch (e) {
+        console.error('删除记录异常:', e);
+        alert('请求异常，请稍后重试');
+    }
+}
+
+// 重新申请功能（对于已撤回的申请）
+async function reapplyApplication(application, userId) {
+    if (!confirm('确定要重新申请此职位吗？')) {
+        return;
+    }
+    
+    try {
+        // 获取用户的所有简历
+        const base = window.API_BASE || '/api';
+        const resumeResp = await fetch(`${base}/resume/list?userId=${userId}`);
+        if (!resumeResp.ok) {
+            alert('获取简历列表失败');
+            return;
+        }
+        
+        const resumeData = await resumeResp.json();
+        if (resumeData.code !== 200) {
+            alert(resumeData.message || '获取简历列表失败');
+            return;
+        }
+        
+        const resumes = resumeData.data || [];
+        if (resumes.length === 0) {
+            alert('您还没有创建简历，请先创建简历');
+            return;
+        }
+        
+        // 让用户选择简历
+        let resumeOptions = resumes.map((resume, index) => 
+            `${index + 1}. ${resume.resumeName || '未命名简历'}`
+        ).join('\n');
+        
+        let selectedIndex = prompt(`请选择要投递的简历:\n${resumeOptions}\n\n请输入序号(1-${resumes.length}):`);
+        if (!selectedIndex) {
+            return; // 用户取消选择
+        }
+        
+        selectedIndex = parseInt(selectedIndex) - 1;
+        if (isNaN(selectedIndex) || selectedIndex < 0 || selectedIndex >= resumes.length) {
+            alert('选择的简历序号无效');
+            return;
+        }
+        
+        const chosenResume = resumes[selectedIndex];
+        
+        // 使用选择的简历重新申请
+        const payload = {
+            userId: userId,
+            jobId: application.jobId,
+            resumeId: chosenResume.resumeId
+        };
+        
+        const resp = await fetch(`${base}/applications`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        if (!resp.ok) {
+            const text = await resp.text();
+            alert(`网络错误: ${resp.status} ${text}`);
+            return;
+        }
+        
+        const json = await resp.json();
+        if (json.code !== 200) {
+            alert(json.message || '重新申请失败');
+            return;
+        }
+        
+        alert('重新申请成功');
+        // 重新加载申请列表
+        const currentUser = window.Auth && Auth.getCurrentUser ? Auth.getCurrentUser() : null;
+        if (currentUser) {
+            // 获取当前激活的标签页状态
+            const activeTab = document.querySelector('.tab-btn.active');
+            const currentStatus = activeTab ? activeTab.getAttribute('data-status') : '';
+            loadApplications(currentUser, currentStatus);
+        }
+    } catch (e) {
+        console.error('重新申请异常:', e);
         alert('请求异常，请稍后重试');
     }
 }

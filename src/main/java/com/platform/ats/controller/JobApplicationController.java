@@ -84,6 +84,24 @@ public class JobApplicationController {
         boolean success = jobApplicationService.withdrawApplication(applicationId, userId);
         return Result.success(success);
     }
+    
+    @DeleteMapping
+    @Operation(summary = "删除申请记录")
+    public Result<Boolean> deleteApplication(@RequestParam Long userId,
+                                            @RequestParam Long jobId,
+                                            @RequestParam Long resumeId) {
+        boolean success = jobApplicationService.deleteApplication(userId, jobId, resumeId);
+        return Result.success(success);
+    }
+    
+    @PostMapping("/restore")
+    @Operation(summary = "恢复已删除的申请记录")
+    public Result<Long> restoreApplication(@RequestParam Long userId,
+                                          @RequestParam Long jobId,
+                                          @RequestParam Long resumeId) {
+        Long id = jobApplicationService.restoreApplication(userId, jobId, resumeId);
+        return Result.success(id);
+    }
 
     public static class JobStatusUpdateRequest {
         private String status;

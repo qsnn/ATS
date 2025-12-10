@@ -73,11 +73,14 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
             throw new BizException(ErrorCode.PARAM_INVALID, "无法使用该简历申请");
         }
 
-        Long count = jobApplicationRepository.selectCount(new LambdaQueryWrapper<JobApplication>()
+        // 修改检查逻辑：只有当存在相同简历和职位的申请且状态为APPLIED时才阻止提交
+        JobApplication existingApplication = jobApplicationRepository.selectOne(new LambdaQueryWrapper<JobApplication>()
                 .eq(JobApplication::getUserId, dto.getUserId())
                 .eq(JobApplication::getJobId, dto.getJobId())
-                .eq(JobApplication::getResumeId, dto.getResumeId()));
-        if (count != null && count > 0) {
+                .eq(JobApplication::getResumeId, dto.getResumeId())
+                .eq(JobApplication::getStatus, "APPLIED"));
+                
+        if (existingApplication != null) {
             throw new BizException(ErrorCode.APPLICATION_ALREADY_EXISTS, "已投递过该职位");
         }
 
@@ -88,6 +91,7 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
         entity.setStatus("APPLIED");
         entity.setApplyTime(LocalDateTime.now());
         entity.setUpdateTime(LocalDateTime.now());
+        entity.setDeleteFlag(0); // 添加逻辑删除标志，默认为0（未删除）
         
         // 添加简历快照
         try {
@@ -108,7 +112,8 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
         Page<JobApplication> entityPage = new Page<>(page.getCurrent(), page.getSize());
         
         LambdaQueryWrapper<JobApplication> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(JobApplication::getUserId, userId);
+        queryWrapper.eq(JobApplication::getUserId, userId)
+                   .eq(JobApplication::getDeleteFlag, 0); // 只查询未删除的记录
         
         if (status != null && !status.isEmpty()) {
             queryWrapper.in(JobApplication::getStatus, status);
@@ -143,6 +148,7 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
         Page<JobApplication> entityPage = new Page<>(page.getCurrent(), page.getSize());
         
         LambdaQueryWrapper<JobApplication> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(JobApplication::getDeleteFlag, 0); // 只查询未删除的记录
         
         if (status != null && !status.isEmpty()) {
             queryWrapper.in(JobApplication::getStatus, status);
@@ -185,14 +191,15 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
     @Override
     public java.util.List<JobApplicationEmployerVO> listJobApplications(Long jobId) {
         List<JobApplication> list = jobApplicationRepository.selectList(new LambdaQueryWrapper<JobApplication>()
-                .eq(JobApplication::getJobId, jobId));
+                .eq(JobApplication::getJobId, jobId)
+                .eq(JobApplication::getDeleteFlag, 0)); // 只查询未删除的记录
         return buildEmployerVOs(list);
     }
 
     @Override
     public JobApplicationEmployerVO getApplicationById(Long applicationId) {
         JobApplication application = jobApplicationRepository.selectById(applicationId);
-        if (application == null) {
+        if (application == null || application.getDeleteFlag() == 1) {
             return null;
         }
         
@@ -206,6 +213,11 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
         if (applications == null || applications.isEmpty()) {
             return java.util.Collections.emptyList();
         }
+        // 过滤掉已删除的申请
+        applications = applications.stream()
+                .filter(app -> app.getDeleteFlag() == 0)
+                .collect(Collectors.toList());
+                
         return applications.stream().map(entity -> {
             JobApplicationEmployerVO vo = new JobApplicationEmployerVO();
             BeanUtils.copyProperties(entity, vo);
@@ -287,5 +299,64 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
                 .set(JobApplication::getUpdateTime, LocalDateTime.now());
         int rows = jobApplicationRepository.update(null, wrapper);
         return rows > 0;
+    }
+    
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean deleteApplication(Long userId, Long jobId, Long resumeId) {
+        if (userId == null || jobId == null || resumeId == null) {
+            throw new BizException(ErrorCode.PARAM_MISSING, "删除申请参数不完整");
+        }
+        
+        // 使用 LambdaUpdateWrapper 直接更新，绕过 MyBatis Plus 逻辑删除拦截
+        LambdaUpdateWrapper<JobApplication> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.set(JobApplication::getDeleteFlag, 1)
+                .eq(JobApplication::getUserId, userId)
+                .eq(JobApplication::getJobId, jobId)
+                .eq(JobApplication::getResumeId, resumeId)
+                .eq(JobApplication::getDeleteFlag, 0);
+        jobApplicationRepository.update(null, updateWrapper);
+        // 无论是否有记录被更新，都认为删除操作成功（幂等）
+        return true;
+    }
+    
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Long restoreApplication(Long userId, Long jobId, Long resumeId) {
+        if (userId == null || jobId == null || resumeId == null) {
+            throw new BizException(ErrorCode.PARAM_MISSING, "恢复申请参数不完整");
+        }
+
+        // 先尝试恢复已逻辑删除的申请记录
+        // 使用原生SQL更新，因为MyBatis Plus的逻辑删除机制会干扰对deleteFlag=1的记录的查询
+        int recovered = jobApplicationRepository.updateDeletedApplicationToActive(userId, jobId, resumeId);
+        if (recovered > 0) {
+            // 恢复成功，直接返回任意一条记录的 ID（这里简单重新查一遍）
+            JobApplication exist = jobApplicationRepository.selectOne(new LambdaQueryWrapper<JobApplication>()
+                    .eq(JobApplication::getUserId, userId)
+                    .eq(JobApplication::getJobId, jobId)
+                    .eq(JobApplication::getResumeId, resumeId)
+                    .eq(JobApplication::getDeleteFlag, 0));
+            return exist != null ? exist.getApplicationId() : null;
+        }
+
+        // 判断是否已存在有效申请
+        Long count = jobApplicationRepository.selectCount(new LambdaQueryWrapper<JobApplication>()
+                .eq(JobApplication::getUserId, userId)
+                .eq(JobApplication::getJobId, jobId)
+                .eq(JobApplication::getResumeId, resumeId)
+                .eq(JobApplication::getDeleteFlag, 0));
+        if (count != null && count > 0) {
+            // 已有有效申请，直接返回其中一条的 ID
+            JobApplication exist = jobApplicationRepository.selectOne(new LambdaQueryWrapper<JobApplication>()
+                    .eq(JobApplication::getUserId, userId)
+                    .eq(JobApplication::getJobId, jobId)
+                    .eq(JobApplication::getResumeId, resumeId)
+                    .eq(JobApplication::getDeleteFlag, 0));
+            return exist != null ? exist.getApplicationId() : null;
+        }
+
+        // 如果没有找到任何记录（包括已删除的），则返回null
+        return null;
     }
 }

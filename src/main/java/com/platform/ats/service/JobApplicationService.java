@@ -28,4 +28,10 @@ public interface JobApplicationService {
     
     // 求职者取消申请
     boolean withdrawApplication(Long applicationId, Long userId);
+    
+    // 求职者删除申请记录（逻辑删除）
+    boolean deleteApplication(Long userId, Long jobId, Long resumeId);
+    
+    // 求职者恢复已删除的申请记录
+    Long restoreApplication(Long userId, Long jobId, Long resumeId);
 }

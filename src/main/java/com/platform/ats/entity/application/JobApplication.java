@@ -3,6 +3,8 @@ package com.platform.ats.entity.application;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.TableLogic;
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -36,4 +38,11 @@ public class JobApplication {
      * 简历快照（包含所有简历信息）
      */
     private String resumeSnapshot;
+    
+    /**
+     * 删除标记：0-未删 1-已删
+     */
+    @TableLogic
+    @TableField("delete_flag")
+    private Integer deleteFlag;
 }
