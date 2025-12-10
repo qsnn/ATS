@@ -262,7 +262,7 @@ async function loadInterviews(currentUser, status) {
             userTd.style.verticalAlign = 'middle';
 
             const jobTd = document.createElement('td');
-            jobTd.textContent = interview.jobTitle || '';
+            jobTd.textContent = interview.jobName || '';
             jobTd.style.overflow = 'hidden';
             jobTd.style.textOverflow = 'ellipsis';
             jobTd.style.whiteSpace = 'nowrap';
