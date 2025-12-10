@@ -263,6 +263,10 @@ async function removeTalent(talentId) {
         loadTalentPool(Auth.getCurrentUser());
     } catch (e) {
         console.error('移除人才失败:', e);
+        // 避免重复提示，只显示一次错误信息
+        if (!(e.message && (e.message.includes('404') || e.message.includes('NOT_FOUND')))) {
+            alert('移除人才失败，请稍后重试');
+        }
     }
 }
 

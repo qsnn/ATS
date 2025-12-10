@@ -558,8 +558,15 @@ async function addToTalentPool(applicationId) {
         // 添加更友好的错误提示
         if (e.message && e.message.includes('404')) {
             alert('申请记录不存在或已被删除');
+        } else if (e.message && e.message.includes('TALENT_ALREADY_EXISTS')) {
+            // 避免重复提示，只显示一次错误信息
+            alert('该简历已在人才库中');
         } else {
-            alert('加入人才库失败，请稍后重试');
+            // 避免在其他错误情况下重复提示
+            // 只有在没有明确处理过的错误才显示通用错误提示
+            if (!(e.message && (e.message.includes('404') || e.message.includes('TALENT_ALREADY_EXISTS')))) {
+                alert('加入人才库失败，请稍后重试: ' + e.message);
+            }
         }
     }
 }

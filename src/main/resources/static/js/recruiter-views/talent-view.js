@@ -150,7 +150,10 @@ async function removeTalent(talentId) {
             loadTalentPool(); // 刷新列表
         } catch (error) {
             console.error('移除人才失败:', error);
-            alert('移除人才失败: ' + error.message);
+            // 避免重复提示，只显示一次错误信息
+            if (!(error.message && (error.message.includes('NOT_FOUND') || error.message.includes('404')))) {
+                alert('移除人才失败: ' + error.message);
+            }
         }
     }
 }
@@ -242,7 +245,10 @@ function addNewTalent() {
             loadTalentPool(); // 刷新列表
         } catch (error) {
             console.error('添加人才失败:', error);
-            alert('添加人才失败: ' + error.message);
+            // 避免重复提示，只显示一次错误信息
+            if (!(error.message && (error.message.includes('ALREADY_EXISTS') || error.message.includes('DUPLICATE')))) {
+                alert('添加人才失败: ' + error.message);
+            }
         }
     });
 }

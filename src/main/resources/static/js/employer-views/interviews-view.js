@@ -398,7 +398,10 @@ async function finishInterview(arrangeId) {
         loadInterviews(currentUser, currentStatus);
     } catch (e) {
         console.error('完成面试失败:', e);
-        alert('完成面试失败，请稍后重试');
+        // 避免重复提示，只显示一次错误信息
+        if (!(e.message && (e.message.includes('404') || e.message.includes('NOT_FOUND')))) {
+            alert('完成面试失败，请稍后重试');
+        }
     }
 }
 
@@ -433,7 +436,10 @@ async function updateInterviewStatus(arrangeId, status) {
         loadInterviews(currentUser, currentStatus);
     } catch (e) {
         console.error('更新面试状态失败:', e);
-        alert('更新面试状态失败，请稍后重试');
+        // 避免重复提示，只显示一次错误信息
+        if (!(e.message && (e.message.includes('404') || e.message.includes('NOT_FOUND')))) {
+            alert('更新面试状态失败，请稍后重试');
+        }
     }
 }
 
@@ -537,7 +543,10 @@ async function confirmUpdateInterviewInfo(arrangeId, interviewTime, interviewPla
         loadInterviews(currentUser, currentStatus);
     } catch (e) {
         console.error('更新面试信息失败:', e);
-        alert('更新面试信息失败，请稍后重试');
+        // 避免重复提示，只显示一次错误信息
+        if (!(e.message && (e.message.includes('404') || e.message.includes('NOT_FOUND')))) {
+            alert('更新面试信息失败，请稍后重试');
+        }
     }
 }
 

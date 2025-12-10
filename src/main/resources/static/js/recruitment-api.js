@@ -49,9 +49,8 @@ const ApiService = (function () {
             return text;
         } catch (error) {
             console.error(`API Error: ${error.message}`, { url, config });
-            // 仅在交互界面层次使用 alert 是可以的，但保留抛出以便调用者决定如何呈现错误
-            try { alert(`操作失败: ${error.message}`); } catch (e) { /* ignore in non-DOM env */ }
-            throw error; // 抛出错误，让调用方可以捕获并显示更友好的 UI 提示
+            // 抛出错误让调用者处理，但不直接显示 alert
+            throw error;
         }
     }
 
