@@ -222,27 +222,36 @@ async function loadJobList(user, status) {
     tbody.innerHTML = '';
 
     try {
+        // 修改这里以使用正确的API端点
         const params = new URLSearchParams({
             current: window.jobsPagination.current,
             size: window.jobsPagination.size,
-            publishStatus: status
+            publishStatus: status,
+            companyId: user.companyId  // 添加公司ID参数
         });
 
-        const resp = await fetch(`${JOB_API_BASE}/company/${encodeURIComponent(user.companyId)}?${params.toString()}`);
+        // 使用与employer相同的API端点，但添加companyId参数
+        const resp = await fetch(`${JOB_API_BASE}/list?${params.toString()}`);
         if (!resp.ok) {
             const text = await resp.text();
             if (statusEl) statusEl.textContent = `网络错误: ${resp.status} ${text}`;
             return;
         }
         const json = await resp.json();
-        if (json.code !== 200) {
-            if (statusEl) statusEl.textContent = json.message || '加载失败';
-            return;
+        
+        // 处理统一的API响应格式 {code: 200, message: "", data: {...}}
+        let page;
+        if (json && typeof json === 'object' && 'data' in json) {
+            page = json.data;
+        } else {
+            page = json;
         }
-        const page = json.data || {};
-        const records = page.records || [];
+        
+        // 确保正确提取records数组
+        const jobs = (page && Array.isArray(page.records)) ? page.records : 
+                     (page && Array.isArray(page)) ? page : [];
 
-        if (records.length === 0) {
+        if (jobs.length === 0) {
             if (statusEl) statusEl.textContent = '暂无职位信息。';
             if (paginationContainer) paginationContainer.style.display = 'none';
             return;
@@ -251,7 +260,7 @@ async function loadJobList(user, status) {
         // 更新分页信息
         window.jobsPagination.total = page.total || 0;
         window.jobsPagination.pages = page.pages || Math.ceil((page.total || 0) / window.jobsPagination.size) || 0;
-
+        
         if (statusEl) statusEl.textContent = `共 ${window.jobsPagination.total} 条职位信息`;
 
         if (paginationInfo) {
@@ -284,7 +293,7 @@ async function loadJobList(user, status) {
 
         // 渲染职位列表
         tbody.innerHTML = '';
-        records.forEach(job => {
+        jobs.forEach(job => {
             const tr = document.createElement('tr');
 
             const titleTd = document.createElement('td');
@@ -296,7 +305,13 @@ async function loadJobList(user, status) {
             titleTd.style.verticalAlign = 'middle';
 
             const salaryTd = document.createElement('td');
-            salaryTd.textContent = `${job.salaryMin || 0}-${job.salaryMax || 0}K`;
+            const min = job.salaryMin || 0;
+            const max = job.salaryMax || 0;
+            let salary = '-';
+            if (min > 0 && max > 0) {
+                salary = `${(min / 1000).toFixed(0)}K-${(max / 1000).toFixed(0)}K`;
+            }
+            salaryTd.textContent = salary;
             salaryTd.style.overflow = 'hidden';
             salaryTd.style.textOverflow = 'ellipsis';
             salaryTd.style.whiteSpace = 'nowrap';
@@ -304,7 +319,12 @@ async function loadJobList(user, status) {
             salaryTd.style.verticalAlign = 'middle';
 
             const locationTd = document.createElement('td');
-            locationTd.textContent = `${job.province || ''}${job.city || ''}${job.district || ''}`;
+            // 构造完整地址显示
+            let location = '';
+            if (job.province) location += job.province;
+            if (job.city) location += job.city;
+            if (job.district) location += job.district;
+            locationTd.textContent = location;
             locationTd.style.overflow = 'hidden';
             locationTd.style.textOverflow = 'ellipsis';
             locationTd.style.whiteSpace = 'nowrap';
@@ -312,8 +332,8 @@ async function loadJobList(user, status) {
             locationTd.style.verticalAlign = 'middle';
 
             const updateTimeTd = document.createElement('td');
-            const updateTime = job.updateTime || job.createTime || '';
-            updateTimeTd.textContent = updateTime ? updateTime.replace('T', ' ').substring(0, 16) : '';
+            const updateTime = job.updateTime ? String(job.updateTime).replace('T', ' ') : '';
+            updateTimeTd.textContent = updateTime.substring(0, 16);
             updateTimeTd.style.overflow = 'hidden';
             updateTimeTd.style.textOverflow = 'ellipsis';
             updateTimeTd.style.whiteSpace = 'nowrap';
