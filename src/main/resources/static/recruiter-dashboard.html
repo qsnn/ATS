@@ -125,6 +125,15 @@
                 padding: 16px;
             }
         }
+        
+        /* 只读字段样式 */
+        .readonly-field {
+            background-color: #f9fafb;
+            cursor: copy;
+        }
+        .readonly-field:hover {
+            background-color: #f3f4f6;
+        }
     </style>
 </head>
 <body>
@@ -146,31 +155,35 @@
         <aside class="sidebar">
             <h3>管理中心</h3>
             <nav class="sidebar-nav">
-                <a href="#" class="active" data-tab="schedule">面试日程</a>
-                <a href="#" data-tab="candidates">候选人管理</a>
-                <a href="#" data-tab="talent">人才库管理</a>
-                <a href="#" data-tab="evaluation">面试评价</a>
-                <a href="#" data-tab="reports">招聘报表</a>
+                <!-- 根据要求修改导航菜单 -->
+                <a href="#" data-tab="manage">职位管理</a>
+                <a href="#" data-tab="applicants">申请人管理</a>
+                <a href="#" data-tab="interviews">面试管理</a>
+                <a href="#" data-tab="talent">人才库</a>
+                <a href="#" data-tab="company">公司信息</a>
+                <a href="#" data-tab="profile">账号与安全</a>
             </nav>
         </aside>
         <main class="main-content main-content-area">
-            <div id="schedule-tab" class="tab-content active"></div>
-            <div id="candidates-tab" class="tab-content"></div>
+            <!-- 更新tab内容区 -->
+            <div id="manage-tab" class="tab-content"></div>
+            <div id="applicants-tab" class="tab-content"></div>
+            <div id="interviews-tab" class="tab-content"></div>
             <div id="talent-tab" class="tab-content"></div>
-            <div id="evaluation-tab" class="tab-content"></div>
-            <div id="reports-tab" class="tab-content"></div>
+            <div id="company-tab" class="tab-content"></div>
+            <div id="profile-tab" class="tab-content"></div>
         </main>
     </div>
 </div>
 
 <script src="js/auth.js"></script>
 <script src="js/recruitment-api.js"></script>
+<!-- 使用更新后的dashboard文件 -->
 <script src="js/recruiter-views/dashboard.js"></script>
-<script src="js/recruiter-views/schedule-view.js"></script>
-<script src="js/recruiter-views/candidates-view.js"></script>
-<script src="js/recruiter-views/talent-view.js"></script>
-<script src="js/recruiter-views/evaluation-view.js"></script>
-<script src="js/recruiter-views/reports-view.js"></script>
+<!-- 添加employer视图脚本以便动态加载 -->
+<script src="js/employer-views/applicants-view.js"></script>
+<script src="js/employer-views/interviews-view.js"></script>
+<script src="js/employer-views/talent-view.js"></script>
 
 </body>
 </html>

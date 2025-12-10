@@ -1,4 +1,8 @@
-const USER_API_BASE = '/api/user';
+const USER_API_BASE = 'http://124.71.101.139:10085/api/user';
+const JOB_API_BASE = 'http://124.71.101.139:10085/api/job/info';
+const TALENT_API_BASE = 'http://124.71.101.139:10085/api/talent';
+const COMPANY_API_BASE = 'http://124.71.101.139:10085/api/company';
+const USER_PASSWORD_API_BASE = userId => (`http://124.71.101.139:10085/api/user/${encodeURIComponent(userId)}/password`);
 
 document.addEventListener('DOMContentLoaded', () => {
     const currentUser = Auth.getCurrentUser();
@@ -33,8 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // 默认进入面试日程
-    switchTab('schedule', currentUser);
+    // 默认进入面试管理
+    switchTab('interviews', currentUser);
 });
 
 function handleLogout() {
@@ -61,12 +65,19 @@ function switchTab(tabName, currentUser = Auth.getCurrentUser()) {
     const container = document.getElementById(`${tabName}-tab`);
     if (!container) return;
 
+    // 根据tabName调用对应的渲染函数
     const map = {
-        'schedule': renderScheduleView,
-        'candidates': renderCandidatesView,
+        // recruiter职位管理界面只显示已发布和已下架两栏
+        'manage': renderRecruiterJobManageView,
+        // recruiter的申请人管理和面试管理、人才库三个栏目所有UI、内容、功能保持和employer完全一致
+        'applicants': renderApplicantsView,
+        'interviews': renderInterviewsView,
         'talent': renderTalentView,
-        'evaluation': renderEvaluationView,
-        'reports': renderReportsView
+        // recruiter没有HR管理栏目
+        // recruiter的公司信息栏目为卡片形式，只读，允许复制，没有任何按钮
+        'company': renderRecruiterCompanyView,
+        // recruiter的账号与安全内容与employer一致，角色显示为HR，基本信息栏目不允许修改，只允许修改密码
+        'profile': renderRecruiterProfileView
     };
 
     const renderFn = map[tabName];
@@ -83,4 +94,446 @@ function switchTab(tabName, currentUser = Auth.getCurrentUser()) {
     }
 
     container.classList.add('active');
+}
+
+// 导入employer的视图函数
+function renderApplicantsView(container, currentUser) {
+    // 动态导入employer的applicant-view.js
+    const script = document.createElement('script');
+    script.src = '../employer-views/applicants-view.js';
+    script.onload = () => {
+        // 调用实际的渲染函数
+        window.renderApplicantsView(container, currentUser);
+    };
+    document.head.appendChild(script);
+}
+
+function renderInterviewsView(container, currentUser) {
+    // 动态导入employer的interviews-view.js
+    const script = document.createElement('script');
+    script.src = '../employer-views/interviews-view.js';
+    script.onload = () => {
+        // 调用实际的渲染函数
+        window.renderInterviewsView(container, currentUser);
+    };
+    document.head.appendChild(script);
+}
+
+function renderTalentView(container, currentUser) {
+    // 动态导入employer的talent-view.js
+    const script = document.createElement('script');
+    script.src = '../employer-views/talent-view.js';
+    script.onload = () => {
+        // 调用实际的渲染函数
+        window.renderTalentView(container, currentUser);
+    };
+    document.head.appendChild(script);
+}
+
+/**
+ * recruiter职位管理界面只显示已发布和已下架两栏
+ */
+function renderRecruiterJobManageView(container, currentUser) {
+    container.innerHTML = `
+        <div class="view job-manage-view active">
+            <h2>职位管理</h2>
+            
+            <!-- 添加状态筛选标签 -->
+            <div class="status-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">
+                <button class="tab-btn active" data-status="1" style="padding: 8px 16px; border: none; background-color: #f3f4f6; cursor: pointer; border-radius: 4px;">已发布</button>
+                <button class="tab-btn" data-status="2" style="padding: 8px 16px; border: none; background-color: #f3f4f6; cursor: pointer; border-radius: 4px;">已下架</button>
+            </div>
+            
+            <div id="jobs-status" style="margin-bottom:8px;color:#666;">正在加载职位信息...</div>
+            <table class="table" style="width: 100%; table-layout: fixed;">
+                <thead>
+                    <tr>
+                        <th style="width: 25%; text-align: center;">职位名称</th>
+                        <th style="width: 25%; text-align: center;">薪资范围</th>
+                        <th style="width: 25%; text-align: center;">工作地点</th>
+                        <th style="width: 25%; text-align: center;">更新时间</th>
+                        <!-- 没有操作这一子栏目 -->
+                    </tr>
+                </thead>
+                <tbody id="job-manage-tbody"></tbody>
+            </table>
+            <div class="pagination" id="jobs-pagination" style="justify-content: center; align-items: center; gap: 10px; margin-top: 20px;">
+                <button class="btn pagination-btn" id="jobs-prev-page">上一页</button>
+                <span class="pagination-info" id="jobs-pagination-info"></span>
+                <button class="btn pagination-btn" id="jobs-next-page">下一页</button>
+            </div>
+        </div>
+    `;
+
+    // 添加标签页点击事件监听
+    const tabButtons = container.querySelectorAll('.tab-btn');
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // 更新激活状态
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            
+            // 更新按钮样式
+            tabButtons.forEach(btn => {
+                btn.style.backgroundColor = '#f3f4f6';
+                btn.style.color = '#000';
+            });
+            button.style.backgroundColor = '#4f46e5';
+            button.style.color = '#fff';
+            
+            // 加载对应状态的数据
+            const status = button.getAttribute('data-status');
+            // 重置分页到第一页
+            window.jobsPagination = {
+                current: 1,
+                size: 20,
+                total: 0,
+                pages: 0
+            };
+            loadJobList(currentUser, status);
+        });
+    });
+
+    // 初始化分页状态
+    window.jobsPagination = {
+        current: 1,
+        size: 20,
+        total: 0,
+        pages: 0
+    };
+
+    // 默认加载已发布职位
+    setTimeout(() => {
+        loadJobList(currentUser, 1);
+    }, 500);
+}
+
+async function loadJobList(user, status) {
+    const statusEl = document.getElementById('jobs-status');
+    const tbody = document.getElementById('job-manage-tbody');
+    const paginationContainer = document.getElementById('jobs-pagination');
+    const paginationInfo = document.getElementById('jobs-pagination-info');
+    const prevBtn = document.getElementById('jobs-prev-page');
+    const nextBtn = document.getElementById('jobs-next-page');
+
+    if (!tbody) return;
+
+    if (statusEl) statusEl.textContent = '正在加载职位信息...';
+    tbody.innerHTML = '';
+
+    try {
+        const params = new URLSearchParams({
+            current: window.jobsPagination.current,
+            size: window.jobsPagination.size,
+            publishStatus: status
+        });
+
+        const resp = await fetch(`${JOB_API_BASE}/company/${encodeURIComponent(user.companyId)}?${params.toString()}`);
+        if (!resp.ok) {
+            const text = await resp.text();
+            if (statusEl) statusEl.textContent = `网络错误: ${resp.status} ${text}`;
+            return;
+        }
+        const json = await resp.json();
+        if (json.code !== 200) {
+            if (statusEl) statusEl.textContent = json.message || '加载失败';
+            return;
+        }
+        const page = json.data || {};
+        const records = page.records || [];
+
+        if (records.length === 0) {
+            if (statusEl) statusEl.textContent = '暂无职位信息。';
+            if (paginationContainer) paginationContainer.style.display = 'none';
+            return;
+        }
+
+        // 更新分页信息
+        window.jobsPagination.total = page.total || 0;
+        window.jobsPagination.pages = page.pages || Math.ceil((page.total || 0) / window.jobsPagination.size) || 0;
+
+        if (statusEl) statusEl.textContent = `共 ${window.jobsPagination.total} 条职位信息`;
+
+        if (paginationInfo) {
+            paginationInfo.textContent = `第 ${window.jobsPagination.current} 页，共 ${window.jobsPagination.pages} 页`;
+        }
+
+        if (paginationContainer) {
+            paginationContainer.style.display = 'flex';
+        }
+
+        if (prevBtn) {
+            prevBtn.disabled = window.jobsPagination.current <= 1;
+            prevBtn.onclick = () => {
+                if (window.jobsPagination.current > 1) {
+                    window.jobsPagination.current--;
+                    loadJobList(user, status);
+                }
+            };
+        }
+
+        if (nextBtn) {
+            nextBtn.disabled = window.jobsPagination.current >= window.jobsPagination.pages;
+            nextBtn.onclick = () => {
+                if (window.jobsPagination.current < window.jobsPagination.pages) {
+                    window.jobsPagination.current++;
+                    loadJobList(user, status);
+                }
+            };
+        }
+
+        // 渲染职位列表
+        tbody.innerHTML = '';
+        records.forEach(job => {
+            const tr = document.createElement('tr');
+
+            const titleTd = document.createElement('td');
+            titleTd.textContent = job.jobName || '';
+            titleTd.style.overflow = 'hidden';
+            titleTd.style.textOverflow = 'ellipsis';
+            titleTd.style.whiteSpace = 'nowrap';
+            titleTd.style.textAlign = 'center';
+            titleTd.style.verticalAlign = 'middle';
+
+            const salaryTd = document.createElement('td');
+            salaryTd.textContent = `${job.salaryMin || 0}-${job.salaryMax || 0}K`;
+            salaryTd.style.overflow = 'hidden';
+            salaryTd.style.textOverflow = 'ellipsis';
+            salaryTd.style.whiteSpace = 'nowrap';
+            salaryTd.style.textAlign = 'center';
+            salaryTd.style.verticalAlign = 'middle';
+
+            const locationTd = document.createElement('td');
+            locationTd.textContent = `${job.province || ''}${job.city || ''}${job.district || ''}`;
+            locationTd.style.overflow = 'hidden';
+            locationTd.style.textOverflow = 'ellipsis';
+            locationTd.style.whiteSpace = 'nowrap';
+            locationTd.style.textAlign = 'center';
+            locationTd.style.verticalAlign = 'middle';
+
+            const updateTimeTd = document.createElement('td');
+            const updateTime = job.updateTime || job.createTime || '';
+            updateTimeTd.textContent = updateTime ? updateTime.replace('T', ' ').substring(0, 16) : '';
+            updateTimeTd.style.overflow = 'hidden';
+            updateTimeTd.style.textOverflow = 'ellipsis';
+            updateTimeTd.style.whiteSpace = 'nowrap';
+            updateTimeTd.style.textAlign = 'center';
+            updateTimeTd.style.verticalAlign = 'middle';
+
+            tr.appendChild(titleTd);
+            tr.appendChild(salaryTd);
+            tr.appendChild(locationTd);
+            tr.appendChild(updateTimeTd);
+
+            tbody.appendChild(tr);
+        });
+    } catch (e) {
+        console.error('加载职位信息异常:', e);
+        if (statusEl) statusEl.textContent = '请求异常，请稍后重试';
+    }
+}
+
+/**
+ * recruiter的公司信息栏目为卡片形式，只读，允许复制，没有任何按钮
+ */
+function renderRecruiterCompanyView(container, currentUser) {
+    container.innerHTML = `
+        <h2>公司信息</h2>
+        <div class="card">
+            <div class="form-group">
+                <label>公司名称</label>
+                <div id="company-name" class="readonly-field" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;"></div>
+            </div>
+            <div class="form-group">
+                <label>公司简介</label>
+                <div id="company-description" class="readonly-field" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; min-height: 80px;"></div>
+            </div>
+            <div class="form-group">
+                <label>公司地址</label>
+                <div id="company-address" class="readonly-field" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;"></div>
+            </div>
+            <div class="form-group">
+                <label>联系人</label>
+                <div id="company-contact" class="readonly-field" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;"></div>
+            </div>
+            <div class="form-group">
+                <label>联系电话</label>
+                <div id="company-phone" class="readonly-field" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;"></div>
+            </div>
+            <div class="form-group">
+                <label>联系邮箱</label>
+                <div id="company-email" class="readonly-field" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;"></div>
+            </div>
+        </div>
+    `;
+
+    loadCompanyInfo(currentUser);
+}
+
+async function loadCompanyInfo(user) {
+    const companyId = user.companyId;
+    if (!companyId) {
+        return;
+    }
+    try {
+        const resp = await fetch(`${COMPANY_API_BASE}/${companyId}`);
+        if (!resp.ok) return;
+        const json = await resp.json();
+        if (!json || json.code !== 200 || !json.data) return;
+        const c = json.data;
+        
+        const fields = {
+            'company-name': c.companyName || '',
+            'company-description': c.companyDesc || '',
+            'company-address': c.companyAddress || '',
+            'company-contact': c.contactPerson || '',
+            'company-phone': c.contactPhone || '',
+            'company-email': c.contactEmail || ''
+        };
+        
+        Object.entries(fields).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = value;
+                
+                // 添加点击复制功能
+                element.style.cursor = 'copy';
+                element.title = '点击复制';
+                element.addEventListener('click', () => {
+                    navigator.clipboard.writeText(value).then(() => {
+                        alert('已复制到剪贴板');
+                    }).catch(err => {
+                        console.error('复制失败:', err);
+                        // 创建临时文本框进行复制
+                        const textArea = document.createElement('textarea');
+                        textArea.value = value;
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        alert('已复制到剪贴板');
+                    });
+                });
+            }
+        });
+    } catch (e) {
+        console.error('加载公司信息失败:', e);
+    }
+}
+
+/**
+ * recruiter的账号与安全内容与employer一致，角色显示为HR，基本信息栏目不允许修改，只允许修改密码
+ */
+function renderRecruiterProfileView(container, currentUser) {
+    container.innerHTML = `
+        <h2>账号与安全</h2>
+        <div class="dashboard-card">
+            <h3>基本信息</h3>
+            <div class="form-row">
+                <div>
+                    <label>用户名</label>
+                    <div id="rec-username-display" class="readonly-field" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;"></div>
+                </div>
+                <div>
+                    <label>角色</label>
+                    <div id="rec-role-display" class="readonly-field" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">HR</div>
+                </div>
+            </div>
+            <div class="form-row" style="margin-top: 8px;">
+                <div>
+                    <label>邮箱</label>
+                    <div id="rec-email-display" class="readonly-field" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;"></div>
+                </div>
+                <div>
+                    <label>手机号</label>
+                    <div id="rec-phone-display" class="readonly-field" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;"></div>
+                </div>
+            </div>
+            <!-- 基本信息栏目不允许修改，只允许修改密码 -->
+        </div>
+
+        <div class="dashboard-card" style="margin-top: 16px;">
+            <h3>修改密码</h3>
+            <div class="form-row">
+                <div>
+                    <label>当前密码</label>
+                    <input type="password" id="rec-old-password" placeholder="请输入当前密码">
+                </div>
+                <div>
+                    <label>新密码</label>
+                    <input type="password" id="rec-new-password" placeholder="请输入新密码">
+                </div>
+                <div>
+                    <label>确认新密码</label>
+                    <input type="password" id="rec-confirm-password" placeholder="请再次输入新密码">
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="rec-change-password-btn">保存修改</button>
+            </div>
+        </div>
+    `;
+
+    loadRecruiterProfile(currentUser);
+    bindRecruiterPasswordChange(currentUser);
+}
+
+async function loadRecruiterProfile(user) {
+    try {
+        const resp = await fetch(`/api/user/${encodeURIComponent(user.userId)}`);
+        if (!resp.ok) return;
+        const json = await resp.json();
+        const data = (json && typeof json === 'object' && 'code' in json)
+            ? (json.code === 200 ? json.data : null)
+            : json;
+        if (!data) return;
+
+        document.getElementById('rec-username-display').textContent = data.username || '';
+        document.getElementById('rec-email-display').textContent = data.email || '';
+        document.getElementById('rec-phone-display').textContent = data.phone || '';
+    } catch (e) {
+        console.error('加载账号信息失败:', e);
+    }
+}
+
+function bindRecruiterPasswordChange(user) {
+    const btn = document.getElementById('rec-change-password-btn');
+    if (!btn) return;
+
+    btn.onclick = async () => {
+        const oldPwd = document.getElementById('rec-old-password').value.trim();
+        const newPwd = document.getElementById('rec-new-password').value.trim();
+        const confirmPwd = document.getElementById('rec-confirm-password').value.trim();
+
+        if (!oldPwd || !newPwd || !confirmPwd) {
+            alert('请完整填写所有密码字段');
+            return;
+        }
+        if (newPwd !== confirmPwd) {
+            alert('两次输入的新密码不一致');
+            return;
+        }
+
+        try {
+            const resp = await fetch(`/api/user/${encodeURIComponent(user.userId)}/password`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ oldPassword: oldPwd, newPassword: newPwd })
+            });
+            if (!resp.ok) {
+                const text = await resp.text();
+                alert(`网络错误: ${resp.status} ${text}`);
+                return;
+            }
+            const json = await resp.json();
+            if (!json || json.code !== 200) {
+                alert((json && json.message) || '修改密码失败');
+                return;
+            }
+            alert('密码修改成功，请使用新密码重新登录。');
+        } catch (e) {
+            console.error('修改密码失败:', e);
+            alert('修改密码失败，请稍后重试');
+        }
+    };
 }
