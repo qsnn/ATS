@@ -55,7 +55,9 @@
                 AND ji.publish_status = #{query.publishStatus}
             </if>
             <if test="query.jobName != null and query.jobName != ''">
-                AND ji.job_name LIKE CONCAT('%', #{query.jobName}, '%')
+                AND (ji.job_name LIKE CONCAT('%', #{query.jobName}, '%') 
+                     OR ci.company_name LIKE CONCAT('%', #{query.jobName}, '%') 
+                     OR CAST(ci.company_id AS CHAR) LIKE CONCAT('%', #{query.jobName}, '%'))
             </if>
             <if test="query.city != null and query.city != ''">
                 AND ji.city = #{query.city}
