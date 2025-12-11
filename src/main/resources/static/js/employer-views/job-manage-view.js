@@ -213,7 +213,8 @@ async function loadJobList(user, status) {
         const params = new URLSearchParams({
             current: window.jobsPagination.current,
             size: window.jobsPagination.size,
-            publishStatus: status
+            publishStatus: status,
+            companyId: user.companyId
         });
         
         const resp = await fetch(`${JOB_API_BASE}/list?${params.toString()}`);
