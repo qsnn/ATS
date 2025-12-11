@@ -78,6 +78,68 @@
     </div>
 </div>
 
+<!-- 备案信息部分 -->
+<footer class="icp-footer">
+  <div class="container">
+    <div class="icp-footer-content">
+      <div class="copyright">
+         2025 qsnn.cloud 版权所有 |
+        <a href="https://beian.miit.gov.cn" target="_blank" rel="noopener noreferrer" class="icp-number">
+          陕ICP备2025082765号-1
+        </a>
+      </div>
+      <div class="other-info">
+        代理域名注册服务机构：阿里云
+      </div>
+    </div>
+  </div>
+</footer>
+
+<style>
+body {
+  background: url('images/auth_bk.jpg') no-repeat center center fixed;
+  background-size: cover;
+}
+
+.login-container {
+  min-height: calc(100vh - 100px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.icp-footer {
+  background: #ffffff;
+  color: #000000;
+  padding: 50px 20px 18px;
+  margin-top: auto;
+  border-top: 1px solid #e2e8f0;
+}
+
+.icp-footer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #718096;
+  font-size: 0.86rem;
+}
+
+.icp-number {
+  color: #718096;
+  text-decoration: none;
+}
+
+.icp-number:hover {
+  color: #4c51bf;
+  text-decoration: underline;
+}
+
+.other-info {
+  text-align: center;
+}
+</style>
 <script src="js/auth.js"></script>
 <script>
     // 可选：前端简单校验密码强度和两次输入是否一致
