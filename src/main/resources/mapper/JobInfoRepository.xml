@@ -55,9 +55,11 @@
                 AND ji.publish_status = #{query.publishStatus}
             </if>
             <if test="query.jobName != null and query.jobName != ''">
-                AND (ji.job_name LIKE CONCAT('%', #{query.jobName}, '%') 
-                     OR ci.company_name LIKE CONCAT('%', #{query.jobName}, '%') 
-                     OR CAST(ci.company_id AS CHAR) LIKE CONCAT('%', #{query.jobName}, '%'))
+                AND (
+                ji.job_name LIKE CONCAT('%', #{query.jobName}, '%')
+                OR ci.company_name LIKE CONCAT('%', #{query.jobName}, '%')
+                OR ci.company_id LIKE CONCAT('%', #{query.jobName}, '%')
+                )
             </if>
             <if test="query.city != null and query.city != ''">
                 AND ji.city = #{query.city}
@@ -88,13 +90,6 @@
             </if>
             <if test="query.jobId != null">
                 AND ji.job_id = #{query.jobId}
-            </if>
-            <if test="ew != null and ew.sqlSegment != null and ew.sqlSegment != '' and !ew.sqlSegment.trim().isEmpty()">
-                <bind name="trimmedSegment" value="ew.sqlSegment.trim()"/>
-                <if test="!trimmedSegment.toUpperCase().startsWith('ORDER BY') and !trimmedSegment.toUpperCase().startsWith('AND')">
-                    AND
-                </if>
-                ${ew.sqlSegment}
             </if>
         </where>
     </select>

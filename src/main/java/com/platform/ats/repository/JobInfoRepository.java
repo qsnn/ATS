@@ -22,7 +22,7 @@ public interface JobInfoRepository extends BaseMapper<JobInfo> {
      * @param wrapper 查询条件包装器
      * @return 分页结果
      */
-    IPage<JobInfoDetailDto> findJobPage(Page<JobInfoDetailDto> page, 
-                                       @Param("query") JobInfoQueryDto query, 
-                                       @Param(Constants.WRAPPER) Wrapper<JobInfoDetailDto> wrapper);
+
+    IPage<JobInfoDetailDto> findJobPage(Page<JobInfoDetailDto> page,
+                                        @Param("query") JobInfoQueryDto query);
 }
