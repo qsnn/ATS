@@ -1,5 +1,5 @@
 const ApiService = (function () {
-    const API_BASE = 'http://124.71.101.139:10085/api';
+    const API_BASE = '/api';
 
     /**
      * 统一的请求处理器（更健壮的 JSON 解析与错误处理）

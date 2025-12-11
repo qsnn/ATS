@@ -1,4 +1,4 @@
-const API_BASE_URL = (typeof window !== 'undefined' && window.API_BASE) ? window.API_BASE : 'http://124.71.101.139:10085/api';
+const API_BASE_URL = '/api';
 
 // 简单防抖工具
 function debounce(fn, wait) {

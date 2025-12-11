@@ -1,7 +1,7 @@
 // js/auth.js
 // 认证与本地存储工具（接入后端接口）
 
-const API_BASE = 'http://124.71.101.139:10085/api/user';
+const API_BASE = '/api/user';
 const CURRENT_USER_KEY = 'currentUser';
 
 // 本地存储封装

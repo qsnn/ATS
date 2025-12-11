@@ -1,4 +1,4 @@
-const JOB_SEEKER_API_BASE = (typeof window !== 'undefined' && window.API_BASE) ? window.API_BASE : 'http://124.71.101.139:10085/api';
+const JOB_SEEKER_API_BASE = '/api';
 
 async function apiRequest(url, options = {}) {
     try {
@@ -33,7 +33,7 @@ async function fetchMyApplicationsApi(params) {
 
 // 收藏相关 API 改为直接调用后端 /api/favorites 路径，避免路径不匹配
 async function addFavoriteJobApi(payload) {
-    return apiRequest(`http://124.71.101.139:10085/api/favorites`, {
+    return apiRequest(`/api/favorites`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -42,19 +42,19 @@ async function addFavoriteJobApi(payload) {
 
 async function removeFavoriteJobApi(params) {
     const query = new URLSearchParams(params || {});
-    return apiRequest(`http://124.71.101.139:10085/api/favorites?${query.toString()}`, {
+    return apiRequest(`/api/favorites?${query.toString()}`, {
         method: 'DELETE'
     });
 }
 
 async function checkFavoriteJobApi(params) {
     const query = new URLSearchParams(params || {});
-    return apiRequest(`http://124.71.101.139:10085/api/favorites/check?${query.toString()}`);
+    return apiRequest(`/api/favorites/check?${query.toString()}`);
 }
 
 async function fetchMyFavoriteJobsApi(params) {
     const query = new URLSearchParams(params || {});
-    return apiRequest(`http://124.71.101.139:10085/api/favorites/my?${query.toString()}`);
+    return apiRequest(`/api/favorites/my?${query.toString()}`);
 }
 
 window.JobSeekerApi = {

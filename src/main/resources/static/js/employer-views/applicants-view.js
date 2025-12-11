@@ -97,7 +97,7 @@ async function loadApplicants(currentUser, status = '') {
             params.append('status', status);
         }
 
-        const resp = await fetch(`http://124.71.101.139:10085/api/applications/company/${encodeURIComponent(currentUser.companyId)}?${params.toString()}`);
+        const resp = await fetch(`/api/applications/company/${encodeURIComponent(currentUser.companyId)}?${params.toString()}`);
         if (!resp.ok) {
             const text = await resp.text();
             if (statusEl) statusEl.textContent = `网络错误: ${resp.status} ${text}`;

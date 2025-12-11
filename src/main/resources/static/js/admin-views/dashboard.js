@@ -1,4 +1,4 @@
-const USER_API_BASE = 'http://124.71.101.139:10085/api/user';
+const USER_API_BASE = '/api/user';
 
 document.addEventListener('DOMContentLoaded', () => {
     const currentUser = Auth.getCurrentUser();

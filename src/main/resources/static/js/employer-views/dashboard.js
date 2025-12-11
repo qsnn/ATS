@@ -1,8 +1,8 @@
-const USER_API_BASE = 'http://124.71.101.139:10085/api/user';
-const JOB_API_BASE = 'http://124.71.101.139:10085/api/job/info';
-const TALENT_API_BASE = 'http://124.71.101.139:10085/api/talent';
-const COMPANY_API_BASE = 'http://124.71.101.139:10085/api/company';
-const USER_PASSWORD_API_BASE = userId => (`http://124.71.101.139:10085/api/user/${encodeURIComponent(userId)}/password`);
+const USER_API_BASE = '/api/user';
+const JOB_API_BASE = '/api/job/info';
+const TALENT_API_BASE = '/api/talent';
+const COMPANY_API_BASE = '/api/company';
+const USER_PASSWORD_API_BASE = userId => (`/api/user/${encodeURIComponent(userId)}/password`);
 
 document.addEventListener('DOMContentLoaded', () => {
     const currentUser = Auth.getCurrentUser();
