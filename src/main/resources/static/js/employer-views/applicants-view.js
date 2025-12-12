@@ -302,6 +302,40 @@ function mapApplicationStatus(status) {
     }
 }
 
+function mapWorkExperienceText(expValue) {
+    if (expValue === 0 || expValue === '0') {
+        return '应届生';
+    }
+    
+    const numValue = parseInt(expValue);
+    if (isNaN(numValue) || numValue < 0) {
+        // 优先使用workExperienceDesc，如果没有则使用数字映射
+        if (typeof expValue === 'object' && expValue.workExperienceDesc) {
+            return expValue.workExperienceDesc;
+        }
+        return expValue;
+    }
+    
+    return numValue + '年';
+}
+
+function mapEducationText(eduValue) {
+    // 优先使用educationDesc，如果没有则使用数字映射
+    if (typeof eduValue === 'object' && eduValue.educationDesc) {
+        return eduValue.educationDesc;
+    }
+    
+    switch (parseInt(eduValue)) {
+        case 0: return '无学历要求';
+        case 1: return '高中';
+        case 2: return '大专';
+        case 3: return '本科';
+        case 4: return '硕士';
+        case 5: return '博士';
+        default: return eduValue;
+    }
+}
+
 async function scheduleInterview(applicationId, userId) {
     if (!applicationId) {
         alert('无法安排面试：缺少申请ID');
@@ -494,14 +528,27 @@ function showResumeDetails(data) {
         detailLines.push(`年龄：${data.age}`);
     }
     if (data.gender != null) {
-        const genderMap = {1: '男', 2: '女'};
-        detailLines.push(`性别：${genderMap[data.gender] || data.gender}`);
+        // 优先使用genderDesc，如果没有则使用gender数字映射
+        if (data.genderDesc) {
+            detailLines.push(`性别：${data.genderDesc}`);
+        } else {
+            const genderMap = {1: '男', 2: '女'};
+            detailLines.push(`性别：${genderMap[data.gender] || data.gender}`);
+        }
     }
-    detailLines.push(`学历：${mapEducationText(data.education) || ''}`);
+    // 优先使用educationDesc，如果没有则使用education数字映射
+    if (data.educationDesc) {
+        detailLines.push(`学历：${data.educationDesc}`);
+    } else {
+        detailLines.push(`学历：${mapEducationText(data.education) || ''}`);
+    }
     if (data.jobIntention) {
         detailLines.push(`求职意向：${data.jobIntention}`);
     }
-    if (data.workExperience != null) {
+    // 优先使用workExperienceDesc，如果没有则使用workExperience数字映射
+    if (data.workExperienceDesc) {
+        detailLines.push(`工作经历：${data.workExperienceDesc}`);
+    } else if (data.workExperience != null) {
         detailLines.push(`工作经历：${mapWorkExperienceText(data.workExperience)}`);
     }
     if (data.skill) {

@@ -248,17 +248,17 @@ async function loadApplications(currentUser, status = '') {
 
 function mapApplicationStatus(status) {
     if (!status) return '未知';
-    switch (status) {
-        case 1:
+    // 优先使用statusDesc，如果没有则使用status数字映射
+    if (typeof status === 'object' && status.statusDesc) {
+        return status.statusDesc;
+    }
+    switch (String(status)) {
         case '1':
             return '申请中';
-        case 2:
         case '2':
             return '已通过';
-        case 3:
         case '3':
             return '被驳回';
-        case 4:
         case '4':
             return '已撤回';
         default:
@@ -450,6 +450,10 @@ function mapWorkExperienceText(expValue) {
     
     const numValue = parseInt(expValue);
     if (isNaN(numValue) || numValue < 0) {
+        // 优先使用workExperienceDesc，如果没有则使用数字映射
+        if (typeof expValue === 'object' && expValue.workExperienceDesc) {
+            return expValue.workExperienceDesc;
+        }
         return expValue;
     }
     
@@ -457,6 +461,11 @@ function mapWorkExperienceText(expValue) {
 }
 
 function mapEducationText(eduValue) {
+    // 优先使用educationDesc，如果没有则使用数字映射
+    if (typeof eduValue === 'object' && eduValue.educationDesc) {
+        return eduValue.educationDesc;
+    }
+    
     switch (parseInt(eduValue)) {
         case 0: return '无学历要求';
         case 1: return '高中';
