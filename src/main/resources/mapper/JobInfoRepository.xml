@@ -25,6 +25,7 @@
     </resultMap>
 
     <select id="findJobPage" resultMap="JobInfoDetailDtoMap">
+        <![CDATA[
         SELECT
         ji.job_id,
         ji.company_id,
@@ -49,6 +50,7 @@
         job_info ji
         LEFT JOIN company_info ci ON ji.company_id = ci.company_id
         LEFT JOIN sys_user su ON ji.publisher_id = su.user_id
+        ]]>
         <where>
             ji.delete_flag = 0
             <if test="query.publishStatus != null">

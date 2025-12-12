@@ -108,6 +108,7 @@ function renderResumesView(container, currentUser) {
     const modal = document.getElementById('resume-modal');
     const closeBtn = document.getElementById('resume-modal-close');
     const cancelBtn = document.getElementById('resume-cancel-btn');
+    const saveBtn = document.getElementById('resume-save-btn');
 
     const hideModal = () => { modal.style.display = 'none'; };
     closeBtn.addEventListener('click', hideModal);
@@ -116,7 +117,8 @@ function renderResumesView(container, currentUser) {
         if (e.target === modal) hideModal();
     });
 
-    document.getElementById('resume-form').addEventListener('submit', async e => {
+    // 修复：为保存按钮添加事件监听器
+    saveBtn.addEventListener('click', async e => {
         e.preventDefault();
         const mode = modal.dataset.mode; // 'create' or 'update'
         const resumeId = document.getElementById('resume-id').value || null;

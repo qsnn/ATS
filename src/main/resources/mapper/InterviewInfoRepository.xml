@@ -4,6 +4,7 @@
 
     <!-- 求职者侧面试列表：根据 intervieweeId 关联职位和公司信息 -->
     <select id="selectScheduleByUserId" resultType="com.platform.ats.entity.interview.vo.InterviewScheduleVO">
+        <![CDATA[
         SELECT
             ii.arrange_id           AS arrangeId,
             ii.application_id       AS applicationId,
@@ -22,13 +23,16 @@
             JOIN job_application ja ON ii.application_id = ja.application_id
             LEFT JOIN job_info ji ON ja.job_id = ji.job_id
             LEFT JOIN company_info ci ON ji.company_id = ci.company_id
-        WHERE
+        ]]>
+        <where>
             ii.interviewee_id = #{userId}
             AND ii.delete_flag = 0
+        </where>
     </select>
     
     <!-- 企业侧面试列表：根据 companyId 关联职位和面试者信息 -->
     <select id="selectScheduleByCompanyId" resultType="com.platform.ats.entity.interview.vo.InterviewScheduleVO">
+        <![CDATA[
         SELECT
             ii.arrange_id           AS arrangeId,
             ii.application_id       AS applicationId,
@@ -46,7 +50,8 @@
             JOIN job_application ja ON ii.application_id = ja.application_id
             LEFT JOIN job_info ji ON ja.job_id = ji.job_id
             LEFT JOIN company_info ci ON ji.company_id = ci.company_id
-        WHERE
+        ]]>
+        <where>
             ji.company_id = #{companyId}
             AND ii.delete_flag = 0
             <if test="status != null and status != ''">
@@ -55,6 +60,7 @@
             <if test="interviewDate != null and interviewDate != ''">
                 AND DATE(ii.interview_time) = #{interviewDate}
             </if>
+        </where>
         ORDER BY ii.interview_time DESC
     </select>
 

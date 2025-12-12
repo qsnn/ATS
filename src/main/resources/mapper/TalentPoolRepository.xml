@@ -4,6 +4,7 @@
 
     <!-- 人才库富列表：关联简历表和用户表，补充姓名、职位、电话、邮箱 -->
     <select id="selectDetailByCompanyId" resultType="com.platform.ats.entity.talentpool.vo.TalentPoolDetailVO">
+        <![CDATA[
         SELECT
             tp.talent_id            AS talentId,
             tp.resume_id            AS resumeId,
@@ -19,18 +20,22 @@
         FROM talent_pool tp
             JOIN resume_info r ON tp.resume_id = r.resume_id
             JOIN sys_user u ON r.user_id = u.user_id
-        WHERE
+        ]]>
+        <where>
             tp.company_id = #{companyId}
             AND tp.delete_flag = 0
             AND r.delete_flag = 0
             AND u.delete_flag = 0
+        </where>
         ORDER BY tp.put_in_time DESC
     </select>
     
     <update id="updateDeletedTalentToActive">
+        <![CDATA[
         UPDATE talent_pool 
         SET delete_flag = 0, update_time = NOW()
         WHERE resume_id = #{resumeId} AND company_id = #{companyId} AND delete_flag = 1
+        ]]>
     </update>
 
 </mapper>
