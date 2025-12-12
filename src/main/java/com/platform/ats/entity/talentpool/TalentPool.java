@@ -1,4 +1,4 @@
-package com.platform.ats.entity.company;
+package com.platform.ats.entity.talentpool;
 
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;

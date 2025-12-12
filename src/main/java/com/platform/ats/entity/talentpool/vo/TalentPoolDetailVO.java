@@ -1,4 +1,4 @@
-package com.platform.ats.entity.company.vo;
+package com.platform.ats.entity.talentpool.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;

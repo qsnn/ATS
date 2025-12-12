@@ -1,8 +1,8 @@
 package com.platform.ats.repository;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.platform.ats.entity.company.TalentPool;
-import com.platform.ats.entity.company.vo.TalentPoolDetailVO;
+import com.platform.ats.entity.talentpool.TalentPool;
+import com.platform.ats.entity.talentpool.vo.TalentPoolDetailVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;

@@ -1,8 +1,8 @@
 package com.platform.ats.controller;
 
-import com.platform.ats.entity.company.TalentPool;
-import com.platform.ats.entity.company.vo.TalentPoolDetailVO;
-import com.platform.ats.entity.company.vo.TalentPoolVO;
+import com.platform.ats.entity.talentpool.TalentPool;
+import com.platform.ats.entity.talentpool.vo.TalentPoolDetailVO;
+import com.platform.ats.entity.talentpool.vo.TalentPoolVO;
 import com.platform.ats.entity.user.vo.Result;
 import com.platform.ats.service.TalentPoolService;
 import io.swagger.v3.oas.annotations.Operation;

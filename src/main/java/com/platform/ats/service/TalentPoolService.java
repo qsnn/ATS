@@ -1,9 +1,9 @@
 // language: java
 package com.platform.ats.service;
 
-import com.platform.ats.entity.company.TalentPool;
-import com.platform.ats.entity.company.vo.TalentPoolVO;
-import com.platform.ats.entity.company.vo.TalentPoolDetailVO;
+import com.platform.ats.entity.talentpool.TalentPool;
+import com.platform.ats.entity.talentpool.vo.TalentPoolVO;
+import com.platform.ats.entity.talentpool.vo.TalentPoolDetailVO;
 
 import java.util.List;
 

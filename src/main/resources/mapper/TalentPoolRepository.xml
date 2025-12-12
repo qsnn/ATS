@@ -3,7 +3,7 @@
 <mapper namespace="com.platform.ats.repository.TalentPoolRepository">
 
     <!-- 人才库富列表：关联简历表和用户表，补充姓名、职位、电话、邮箱 -->
-    <select id="selectDetailByCompanyId" resultType="com.platform.ats.entity.company.vo.TalentPoolDetailVO">
+    <select id="selectDetailByCompanyId" resultType="com.platform.ats.entity.talentpool.vo.TalentPoolDetailVO">
         SELECT
             tp.talent_id            AS talentId,
             tp.resume_id            AS resumeId,
