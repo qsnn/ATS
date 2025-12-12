@@ -88,7 +88,15 @@ async function loadTalentPool(user) {
         if (recentEl) {
             const thirtyDaysAgo = new Date();
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-            const recentCount = list.filter(t => t.putInTime && new Date(t.putInTime) >= thirtyDaysAgo).length;
+            const recentCount = list.filter(t => {
+                if (!t.putInTime) return false;
+                try {
+                    const putInTime = new Date(t.putInTime);
+                    return putInTime >= thirtyDaysAgo;
+                } catch (e) {
+                    return false;
+                }
+            }).length;
             recentEl.textContent = recentCount;
         }
 
@@ -197,11 +205,11 @@ async function viewTalentDetail(talentId, resumeId) {
                     </div>
                     <div class="detail-item">
                         <label>工作经验:</label>
-                        <span>${resume.workExperience || ''}</span>
+                        <span>${mapWorkExperienceText(resume.workExperience) || ''}</span>
                     </div>
                     <div class="detail-item">
                         <label>教育背景:</label>
-                        <span>${resume.education || ''}</span>
+                        <span>${mapEducationText(resume.education) || ''}</span>
                     </div>
                     <div class="detail-item">
                         <label>专业技能:</label>
@@ -270,6 +278,7 @@ async function removeTalent(talentId) {
     }
 }
 
+// 模糊搜索功能
 function searchTalentByName() {
     const searchTerm = document.getElementById('talent-search').value.toLowerCase().trim();
     const talentCards = document.querySelectorAll('.talent-card');
@@ -286,6 +295,7 @@ function searchTalentByName() {
     });
 }
 
+// 导出人才库功能
 function exportTalent() {
     const user = Auth.getCurrentUser && Auth.getCurrentUser();
     if (!user || !user.companyId) {
@@ -338,5 +348,30 @@ function closeTalentModal() {
     const modal = document.getElementById('talent-detail-modal');
     if (modal) {
         modal.remove();
+    }
+}
+
+function mapWorkExperienceText(expValue) {
+    if (expValue === 0 || expValue === '0') {
+        return '应届生';
+    }
+    
+    const numValue = parseInt(expValue);
+    if (isNaN(numValue) || numValue < 0) {
+        return expValue;
+    }
+    
+    return numValue + '年';
+}
+
+function mapEducationText(eduValue) {
+    switch (parseInt(eduValue)) {
+        case 0: return '无';
+        case 1: return '高中';
+        case 2: return '大专';
+        case 3: return '本科';
+        case 4: return '硕士';
+        case 5: return '博士';
+        default: return eduValue;
     }
 }

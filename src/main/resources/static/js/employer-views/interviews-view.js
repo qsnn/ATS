@@ -592,6 +592,31 @@ async function viewResume(resumeSnapshot, resumeId, applicationId) {
     }
 }
 
+function mapWorkExperienceText(expValue) {
+    if (expValue === 0 || expValue === '0') {
+        return '应届生';
+    }
+    
+    const numValue = parseInt(expValue);
+    if (isNaN(numValue) || numValue < 0) {
+        return expValue;
+    }
+    
+    return numValue + '年';
+}
+
+function mapEducationText(eduValue) {
+    switch (parseInt(eduValue)) {
+        case 0: return '无';
+        case 1: return '高中';
+        case 2: return '大专';
+        case 3: return '本科';
+        case 4: return '硕士';
+        case 5: return '博士';
+        default: return eduValue;
+    }
+}
+
 function showResumeDetails(data) {
     // 当前后端返回字段：name, age, education, jobIntention, workExperience, skill, createTime, updateTime 等
     // 先用现有字段对齐展示，后续如后端补充 phone/email/projectExperience/selfEvaluation 再扩展
@@ -609,12 +634,12 @@ function showResumeDetails(data) {
     if (data.genderDesc) {
         detailLines.push(`性别：${data.genderDesc}`);
     }
-    detailLines.push(`学历：${data.education || ''}`);
+    detailLines.push(`学历：${mapEducationText(data.education) || ''}`);
     if (data.jobIntention) {
         detailLines.push(`求职意向：${data.jobIntention}`);
     }
     if (data.workExperience) {
-        detailLines.push(`工作经历：${data.workExperience}`);
+        detailLines.push(`工作经历：${mapWorkExperienceText(data.workExperience)}`);
     }
     if (data.skill) {
         detailLines.push(`技能：${data.skill}`);
