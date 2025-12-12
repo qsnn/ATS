@@ -2,6 +2,7 @@
 package com.platform.ats.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.platform.ats.common.annotation.DataPermission;
 import com.platform.ats.entity.user.SysUser;
 import com.platform.ats.entity.user.dto.HrCreateDTO;
 import com.platform.ats.entity.user.dto.UserCreateDTO;
@@ -55,6 +56,7 @@ public class UserController {
 
     @GetMapping("/{userId}")
     @Operation(summary = "根据ID获取用户")
+    @DataPermission(DataPermission.Type.SELF)
     public Result<UserProfileVO> getUserById(@PathVariable Long userId) {
         UserProfileVO userProfile = userService.getUserProfile(userId);
         return Result.success(userProfile);
@@ -62,6 +64,7 @@ public class UserController {
 
     @GetMapping("/page")
     @Operation(summary = "分页查询用户列表")
+    @DataPermission(DataPermission.Type.ALL) // 只有管理员才能分页查询所有用户
     public Result<IPage<UserVO>> getUserPage(UserQuery query,
                                              @RequestParam(defaultValue = "1") Integer pageNum,
                                              @RequestParam(defaultValue = "10") Integer pageSize) {
@@ -71,6 +74,7 @@ public class UserController {
 
     @PostMapping
     @Operation(summary = "创建用户")
+    @DataPermission(DataPermission.Type.ALL) // 只有管理员才能创建用户
     public Result<Long> createUser(@Valid @RequestBody UserCreateDTO userCreateDTO) {
         Long userId = userService.createUser(userCreateDTO);
         return Result.success(userId, "创建成功");
@@ -78,6 +82,7 @@ public class UserController {
 
     @PutMapping("/{userId}")
     @Operation(summary = "更新用户")
+    @DataPermission(DataPermission.Type.SELF)
     public Result<Boolean> updateUser(@PathVariable Long userId, @Valid @RequestBody UserUpdateDTO userUpdateDTO) {
         // 确保路径变量和请求体中的userId一致
         if (!userId.equals(userUpdateDTO.getUserId())) {
@@ -89,6 +94,7 @@ public class UserController {
 
     @PutMapping("/{userId}/status")
     @Operation(summary = "更新用户状态")
+    @DataPermission(DataPermission.Type.ALL) // 只有管理员才能更新用户状态
     public Result<Boolean> updateUserStatus(@PathVariable Long userId, @RequestParam Integer status) {
         Boolean success = userService.updateUserStatus(userId, status);
         return Result.success(success, "状态更新成功");
@@ -96,6 +102,7 @@ public class UserController {
 
     @DeleteMapping("/{userId}")
     @Operation(summary = "删除用户")
+    @DataPermission(DataPermission.Type.ALL) // 只有管理员才能删除用户
     public Result<Boolean> deleteUser(@PathVariable Long userId) {
         Boolean success = userService.deleteUser(userId);
         return Result.success(success, "删除成功");
@@ -103,6 +110,7 @@ public class UserController {
 
     @PutMapping("/{userId}/password")
     @Operation(summary = "修改当前用户密码")
+    @DataPermission(DataPermission.Type.SELF)
     public Result<Boolean> changePassword(@PathVariable Long userId,
                                           @Valid @RequestBody UserPasswordDTO dto) {
         userService.changePassword(userId, dto);
@@ -111,6 +119,7 @@ public class UserController {
 
     @PutMapping("/{userId}/reset-password")
     @Operation(summary = "重置密码")
+    @DataPermission(DataPermission.Type.ALL) // 只有管理员才能重置密码
     public Result<Boolean> resetPassword(@PathVariable Long userId, @RequestParam String newPassword) {
         Boolean success = userService.resetPassword(userId, newPassword);
         return Result.success(success, "密码重置成功");
@@ -139,6 +148,7 @@ public class UserController {
 
     @PostMapping("/hr")
     @Operation(summary = "创建HR账户")
+    @DataPermission(DataPermission.Type.COMPANY) // HR只能创建本公司HR账户
     public Result<Long> createHrAccount(@Valid @RequestBody HrCreateDTO hrCreateDTO) {
         Long userId = userService.createHrAccount(hrCreateDTO);
         return Result.success(userId, "HR账户创建成功");
@@ -146,6 +156,7 @@ public class UserController {
 
     @PostMapping("/hr/batch")
     @Operation(summary = "批量创建HR账户")
+    @DataPermission(DataPermission.Type.COMPANY) // HR只能批量创建本公司HR账户
     public Result<List<Long>> createHrAccounts(@Valid @RequestBody HrCreateDTO hrCreateDTO) {
         int count = hrCreateDTO.getCount() != null ? hrCreateDTO.getCount() : 1;
         if (count < 1 || count > 20) {
@@ -157,6 +168,7 @@ public class UserController {
 
     @GetMapping("/hr/{companyId}")
     @Operation(summary = "获取企业下的所有HR账户")
+    @DataPermission(DataPermission.Type.COMPANY) // HR只能查看本公司HR账户
     public Result<Object> getHrAccountsByCompanyId(
             @PathVariable Long companyId,
             @RequestParam(defaultValue = "1") Integer pageNum,
