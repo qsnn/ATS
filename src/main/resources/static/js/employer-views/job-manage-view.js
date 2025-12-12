@@ -407,7 +407,12 @@ async function togglePublish(jobId, isPublished) {
         alert(isPublished ? '职位已下架' : '职位已发布');
         // 获取当前激活的标签页状态
         const activeTab = document.querySelector('.tab-btn.active');
-        const currentStatus = activeTab ? activeTab.getAttribute('data-status') : '0';
+        let currentStatus = activeTab ? activeTab.getAttribute('data-status') : '0';
+        // 强制转换为字符串并确保是有效的状态值之一
+        currentStatus = String(currentStatus);
+        if (!['0', '1', '2'].includes(currentStatus)) {
+            currentStatus = '0';
+        }
         loadJobList(Auth.getCurrentUser(), currentStatus);
     } catch (e) {
         console.error('更新发布状态失败:', e);
@@ -432,7 +437,12 @@ async function deleteJob(jobId) {
         alert('职位已删除');
         // 获取当前激活的标签页状态
         const activeTab = document.querySelector('.tab-btn.active');
-        const currentStatus = activeTab ? activeTab.getAttribute('data-status') : '0';
+        let currentStatus = activeTab ? activeTab.getAttribute('data-status') : '0';
+        // 强制转换为字符串并确保是有效的状态值之一
+        currentStatus = String(currentStatus);
+        if (!['0', '1', '2'].includes(currentStatus)) {
+            currentStatus = '0';
+        }
         loadJobList(Auth.getCurrentUser(), currentStatus);
     } catch (e) {
         console.error('删除职位失败:', e);
@@ -556,7 +566,12 @@ async function publishJob(jobId) {
         alert('职位已发布');
         // 获取当前激活的标签页状态
         const activeTab = document.querySelector('.tab-btn.active');
-        const currentStatus = activeTab ? activeTab.getAttribute('data-status') : '0';
+        let currentStatus = activeTab ? activeTab.getAttribute('data-status') : '0';
+        // 强制转换为字符串并确保是有效的状态值之一
+        currentStatus = String(currentStatus);
+        if (!['0', '1', '2'].includes(currentStatus)) {
+            currentStatus = '0';
+        }
         loadJobList(Auth.getCurrentUser(), currentStatus);
     } catch (e) {
         console.error('发布职位失败:', e);
@@ -582,7 +597,12 @@ async function unpublishJob(jobId) {
         alert('职位已下架');
         // 获取当前激活的标签页状态
         const activeTab = document.querySelector('.tab-btn.active');
-        const currentStatus = activeTab ? activeTab.getAttribute('data-status') : '0';
+        let currentStatus = activeTab ? activeTab.getAttribute('data-status') : '0';
+        // 强制转换为字符串并确保是有效的状态值之一
+        currentStatus = String(currentStatus);
+        if (!['0', '1', '2'].includes(currentStatus)) {
+            currentStatus = '0';
+        }
         loadJobList(Auth.getCurrentUser(), currentStatus);
     } catch (e) {
         console.error('下架职位失败:', e);
@@ -672,7 +692,12 @@ async function saveJob(user, action) {
         
         // 获取当前激活的标签页状态
         const activeTab = document.querySelector('.tab-btn.active');
-        const currentStatus = activeTab ? activeTab.getAttribute('data-status') : '0';
+        let currentStatus = activeTab ? activeTab.getAttribute('data-status') : '0';
+        // 强制转换为字符串并确保是有效的状态值之一
+        currentStatus = String(currentStatus);
+        if (!['0', '1', '2'].includes(currentStatus)) {
+            currentStatus = '0';
+        }
         loadJobList(user, currentStatus);
     } catch (e) {
         console.error('保存职位失败:', e);

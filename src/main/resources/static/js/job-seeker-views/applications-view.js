@@ -286,8 +286,12 @@ async function withdrawApplication(applicationId, userId) {
         const currentUser = window.Auth && Auth.getCurrentUser ? Auth.getCurrentUser() : null;
         if (currentUser) {
             // 获取当前激活的标签页状态
-            const activeTab = document.querySelector('.tab-btn.active');
-            const currentStatus = activeTab ? activeTab.getAttribute('data-status') : '';
+            let currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || '';
+            // 强制转换为字符串并确保是有效的状态值之一
+            currentStatus = String(currentStatus);
+            if (!['', 'APPLIED', 'ACCEPTED', 'REJECTED', 'WITHDRAWN'].includes(currentStatus)) {
+                currentStatus = '';
+            }
             loadApplications(currentUser, currentStatus);
         }
     } catch (e) {
@@ -326,8 +330,12 @@ async function deleteApplication(applicationId, userId, jobId, resumeId) {
         const currentUser = window.Auth && Auth.getCurrentUser ? Auth.getCurrentUser() : null;
         if (currentUser) {
             // 获取当前激活的标签页状态
-            const activeTab = document.querySelector('.tab-btn.active');
-            const currentStatus = activeTab ? activeTab.getAttribute('data-status') : '';
+            let currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || '';
+            // 强制转换为字符串并确保是有效的状态值之一
+            currentStatus = String(currentStatus);
+            if (!['', 'APPLIED', 'ACCEPTED', 'REJECTED', 'WITHDRAWN'].includes(currentStatus)) {
+                currentStatus = '';
+            }
             loadApplications(currentUser, currentStatus);
         }
     } catch (e) {
@@ -413,8 +421,12 @@ async function reapplyApplication(application, userId) {
         const currentUser = window.Auth && Auth.getCurrentUser ? Auth.getCurrentUser() : null;
         if (currentUser) {
             // 获取当前激活的标签页状态
-            const activeTab = document.querySelector('.tab-btn.active');
-            const currentStatus = activeTab ? activeTab.getAttribute('data-status') : '';
+            let currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || '';
+            // 强制转换为字符串并确保是有效的状态值之一
+            currentStatus = String(currentStatus);
+            if (!['', 'APPLIED', 'ACCEPTED', 'REJECTED', 'WITHDRAWN'].includes(currentStatus)) {
+                currentStatus = '';
+            }
             loadApplications(currentUser, currentStatus);
         }
     } catch (e) {

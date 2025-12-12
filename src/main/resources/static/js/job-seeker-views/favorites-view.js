@@ -185,7 +185,7 @@ async function openApplyFromFavoriteModal(currentUser, jobId, jobInfo) {
     }
     const resumes = res.data || [];
     if (!resumes.length) {
-        alert('您还没有简历，请先在“我的简历”中创建简历。');
+        alert('您还没有简历，请先在"我的简历"中创建简历。');
         return;
     }
 

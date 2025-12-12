@@ -338,7 +338,8 @@ async function saveResume(currentUser, mode, resumeId) {
     }
 
     try {
-        const resp = await fetch(RESUME_API_BASE, {
+        // 使用 Auth.authenticatedFetch 确保携带 JWT 令牌
+        const resp = await Auth.authenticatedFetch(RESUME_API_BASE, {
             method: mode === 'create' ? 'POST' : 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -366,7 +367,8 @@ async function saveResume(currentUser, mode, resumeId) {
 async function deleteResume(resumeId, currentUser) {
     if (!confirm('确认删除该简历吗？')) return;
     try {
-        const resp = await fetch(`${RESUME_API_BASE}/${encodeURIComponent(resumeId)}`, {
+        // 使用 Auth.authenticatedFetch 确保携带 JWT 令牌
+        const resp = await Auth.authenticatedFetch(`${RESUME_API_BASE}/${encodeURIComponent(resumeId)}`, {
             method: 'DELETE'
         });
         if (!resp.ok) {

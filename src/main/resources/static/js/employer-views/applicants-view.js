@@ -395,12 +395,12 @@ async function confirmScheduleInterview(applicationId, userId, interviewTime, in
         await new Promise(resolve => setTimeout(resolve, 200));
 
         // 重新加载申请人列表
-        // 确保状态值是字符串形式，防止被意外转换为数字
-        let currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || '';
+        // 获取当前激活的标签页状态
+        let currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || 'APPLIED';
         // 强制转换为字符串并确保是有效的状态值之一
         currentStatus = String(currentStatus);
-        if (!['', 'APPLIED', 'ACCEPTED', 'REJECTED'].includes(currentStatus)) {
-            currentStatus = '';
+        if (!['APPLIED', 'ACCEPTED', 'REJECTED'].includes(currentStatus)) {
+            currentStatus = 'APPLIED';
         }
         loadApplicants(currentUser, currentStatus);
     } catch (e) {
@@ -537,12 +537,12 @@ async function addToTalentPool(applicationId) {
         alert('已加入人才库');
 
         // 重新加载申请人列表
-        // 确保状态值是字符串形式，防止被意外转换为数字
-        let currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || '';
+        // 获取当前激活的标签页状态
+        let currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || 'APPLIED';
         // 强制转换为字符串并确保是有效的状态值之一
         currentStatus = String(currentStatus);
-        if (!['', 'APPLIED', 'ACCEPTED', 'REJECTED'].includes(currentStatus)) {
-            currentStatus = '';
+        if (!['APPLIED', 'ACCEPTED', 'REJECTED'].includes(currentStatus)) {
+            currentStatus = 'APPLIED';
         }
         loadApplicants(currentUser, currentStatus);
     } catch (e) {
@@ -583,12 +583,11 @@ async function rejectApplicant(applicationId) {
         const currentUser = Auth.getCurrentUser && Auth.getCurrentUser();
         if (currentUser) {
             // 获取当前激活的标签页状态
-            // 确保状态值是字符串形式，防止被意外转换为数字
-            let currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || '';
+            let currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || 'APPLIED';
             // 强制转换为字符串并确保是有效的状态值之一
             currentStatus = String(currentStatus);
-            if (!['', 'APPLIED', 'ACCEPTED', 'REJECTED'].includes(currentStatus)) {
-                currentStatus = '';
+            if (!['APPLIED', 'ACCEPTED', 'REJECTED'].includes(currentStatus)) {
+                currentStatus = 'APPLIED';
             }
             loadApplicants(currentUser, currentStatus);
         }

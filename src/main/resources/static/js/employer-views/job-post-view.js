@@ -121,7 +121,8 @@ async function postJob(user) {
     };
 
     try {
-        const resp = await fetch(`${JOB_API_BASE}/saveOrUpdate`, {
+        // 使用 Auth.authenticatedFetch 确保携带 JWT 令牌
+        const resp = await Auth.authenticatedFetch(`${JOB_API_BASE}/saveOrUpdate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(jobInfo)

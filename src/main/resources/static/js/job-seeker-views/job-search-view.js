@@ -189,7 +189,8 @@ function initCityFilter() {
     }
 
     // 通过API获取城市列表
-    fetch('/api/job/info/cities')
+    // 使用 Auth.authenticatedFetch 确保携带 JWT 令牌
+    Auth.authenticatedFetch('/api/job/info/cities')
         .then(response => response.json())
         .then(cities => {
             if (Array.isArray(cities)) {
@@ -198,7 +199,7 @@ function initCityFilter() {
                     option.value = city;
                     option.textContent = city;
                     locationSelect.appendChild(option);
-                });
+                })
             }
         })
         .catch(error => {
@@ -209,7 +210,8 @@ function initCityFilter() {
 
 async function viewJobDetail(jobId) {
     try {
-        const resp = await fetch(`${API_BASE_URL}/job/info/${encodeURIComponent(jobId)}`);
+        // 使用 Auth.authenticatedFetch 确保携带 JWT 令牌
+        const resp = await Auth.authenticatedFetch(`${API_BASE_URL}/job/info/${encodeURIComponent(jobId)}`);
         if (!resp.ok) {
             const text = await resp.text();
             alert(`网络错误：${resp.status} ${text}`);
@@ -227,7 +229,8 @@ async function viewJobDetail(jobId) {
         let contactInfo = '';
         if (job.companyId) {
             try {
-                const companyResp = await fetch(`${API_BASE_URL}/company/${encodeURIComponent(job.companyId)}`);
+                // 使用 Auth.authenticatedFetch 确保携带 JWT 令牌
+                const companyResp = await Auth.authenticatedFetch(`${API_BASE_URL}/company/${encodeURIComponent(job.companyId)}`);
                 if (companyResp.ok) {
                     const company = await companyResp.json();
                     if (company && company.data) {
