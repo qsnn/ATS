@@ -222,14 +222,14 @@ async function loadJobList(currentUser, status) {
     try {
         statusEl.textContent = '正在加载...';
         const params = new URLSearchParams({
-            pageNum: window.jobsPagination.current,
-            pageSize: window.jobsPagination.size,
-            companyId: currentUser.companyId,
-            status: status
+            current: window.jobsPagination.current,
+            size: window.jobsPagination.size,
+            publishStatus: status,
+            companyId: currentUser.companyId
         });
 
         // 使用 Auth.authenticatedFetch 确保携带 JWT 令牌
-        const response = await Auth.authenticatedFetch(`${JOB_API_BASE}/company/list?${params.toString()}`);
+        const response = await Auth.authenticatedFetch(`${JOB_API_BASE}/list?${params.toString()}`);
         if (!response.ok) {
             const text = await response.text();
             statusEl.textContent = `网络错误: ${response.status} ${text}`;
@@ -237,13 +237,19 @@ async function loadJobList(currentUser, status) {
         }
 
         const json = await response.json();
-        if (json.code !== 200) {
-            statusEl.textContent = json.message || '加载失败';
-            return;
+        console.log('API Response:', json); // 调试信息
+        
+        // 处理统一的API响应格式 {code: 200, message: "", data: {...}}
+        let page;
+        if (json && typeof json === 'object' && 'data' in json) {
+            page = json.data;
+        } else {
+            page = json;
         }
-
-        const page = json.data || {};
-        const records = page.records || [];
+        
+        // 确保正确提取records数组
+        const records = (page && Array.isArray(page.records)) ? page.records : 
+                     (page && Array.isArray(page)) ? page : [];
 
         if (records.length === 0) {
             statusEl.textContent = '暂无职位记录。';
@@ -300,7 +306,13 @@ async function loadJobList(currentUser, status) {
             nameTd.style.verticalAlign = 'middle';
 
             const salaryTd = document.createElement('td');
-            salaryTd.textContent = (job.salaryMin && job.salaryMax) ? `${job.salaryMin}-${job.salaryMax}` : '面议';
+            const min = job.salaryMin || 0;
+            const max = job.salaryMax || 0;
+            let salary = '-';
+            if (min > 0 && max > 0) {
+                salary = `${(min / 1000).toFixed(0)}K-${(max / 1000).toFixed(0)}K`;
+            }
+            salaryTd.textContent = salary;
             salaryTd.style.overflow = 'hidden';
             salaryTd.style.textOverflow = 'ellipsis';
             salaryTd.style.whiteSpace = 'nowrap';
@@ -317,7 +329,7 @@ async function loadJobList(currentUser, status) {
 
             const timeTd = document.createElement('td');
             const updateTime = job.updateTime || '';
-            timeTd.textContent = updateTime ? updateTime.replace('T', ' ') : '';
+            timeTd.textContent = updateTime ? String(updateTime).replace('T', ' ') : '';
             timeTd.style.overflow = 'hidden';
             timeTd.style.textOverflow = 'ellipsis';
             timeTd.style.whiteSpace = 'nowrap';
@@ -380,13 +392,12 @@ async function loadRecruiterCompanyInfo(container, currentUser) {
             <div class="card" style="margin-top: 16px;">
                 <div class="card-body">
                     <h3 style="margin-top: 0;">${company.companyName || ''}</h3>
-                    <p><strong>统一社会信用代码:</strong> ${company.creditCode || ''}</p>
-                    <p><strong>所属行业:</strong> ${company.industry || ''}</p>
-                    <p><strong>所在城市:</strong> ${company.city || ''}</p>
-                    <p><strong>公司规模:</strong> ${company.companySize || ''}</p>
-                    <p><strong>公司性质:</strong> ${company.companyNature || ''}</p>
-                    <p><strong>公司介绍:</strong></p>
-                    <div style="white-space: pre-wrap; background: #f8f9fa; padding: 12px; border-radius: 4px;">${company.description || ''}</div>
+                    <p><strong>公司名称:</strong> ${company.companyName || ''}</p>
+                    <p><strong>公司简介:</strong> ${company.companyDesc || ''}</p>
+                    <p><strong>公司地址:</strong> ${company.companyAddress || ''}</p>
+                    <p><strong>联系人:</strong> ${company.contactPerson || ''}</p>
+                    <p><strong>联系电话:</strong> ${company.contactPhone || ''}</p>
+                    <p><strong>联系邮箱:</strong> ${company.contactEmail || ''}</p>
                 </div>
             </div>
         `;

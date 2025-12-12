@@ -62,6 +62,8 @@ function renderProfileView(container, currentUser) {
         </div>
     `;
 
+    const USER_API_BASE = `${window.API_BASE || '/api'}/user`;
+
     // 填充数据
     document.getElementById('profile-username').value = currentUser.username || '';
     document.getElementById('profile-phone').value = currentUser.phone || '';
@@ -84,9 +86,13 @@ function renderProfileView(container, currentUser) {
         // 检查用户名是否已存在
         if (username !== user.username) {
             try {
-                const checkResp = await ApiService.request(`/user/check/username?username=${encodeURIComponent(username)}`);
+                const checkResp = await Auth.authenticatedFetch(`${USER_API_BASE}/check/username?username=${encodeURIComponent(username)}`);
+                if (!checkResp.ok) {
+                    throw new Error(`HTTP error! status: ${checkResp.status}`);
+                }
+                const result = await checkResp.json();
                 
-                if (checkResp === true) {
+                if (result.data === true) {
                     alert('用户名已存在，请选择其他用户名');
                     return;
                 }

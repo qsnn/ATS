@@ -36,6 +36,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/user/register", "/api/user/login", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         // 允许对所有/api/user开头的接口进行访问（但特定接口仍需认证）
                         .requestMatchers("/api/user/check/**").permitAll()
+                        // 允许HR相关接口访问（但特定接口仍需认证）
+                        .requestMatchers("/api/user/hr/**").authenticated()
+                        // 允许职位信息接口访问
+                        .requestMatchers("/api/job/info/**").authenticated()
                         // 其他所有请求都需要身份验证
                         .anyRequest().authenticated()
                 )

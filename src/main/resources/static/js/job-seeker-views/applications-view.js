@@ -89,7 +89,7 @@ async function loadApplications(currentUser, status = '') {
         }
         
         const base = window.API_BASE || '/api';
-        const resp = await fetch(`${base}/applications/my?${params.toString()}`);
+        const resp = await Auth.authenticatedFetch(`${base}/applications/my?${params.toString()}`);
         if (!resp.ok) {
             const text = await resp.text();
             if (statusEl) statusEl.textContent = `网络错误: ${resp.status} ${text}`;
@@ -265,7 +265,7 @@ async function withdrawApplication(applicationId, userId) {
     
     try {
         const base = window.API_BASE || '/api';
-        const resp = await fetch(`${base}/applications/${applicationId}/withdraw?userId=${userId}`, {
+        const resp = await Auth.authenticatedFetch(`${base}/applications/${applicationId}/withdraw?userId=${userId}`, {
             method: 'PUT'
         });
         
@@ -305,7 +305,7 @@ async function deleteApplication(applicationId, userId, jobId, resumeId) {
     try {
         const base = window.API_BASE || '/api';
         // 使用新的删除接口，通过查询参数传递所需信息
-        const resp = await fetch(`${base}/applications?userId=${userId}&jobId=${jobId}&resumeId=${resumeId}`, {
+        const resp = await Auth.authenticatedFetch(`${base}/applications?userId=${userId}&jobId=${jobId}&resumeId=${resumeId}`, {
             method: 'DELETE'
         });
         
@@ -345,7 +345,7 @@ async function reapplyApplication(application, userId) {
     try {
         // 获取用户的所有简历
         const base = window.API_BASE || '/api';
-        const resumeResp = await fetch(`${base}/resume/list?userId=${userId}`);
+        const resumeResp = await Auth.authenticatedFetch(`${base}/resume/list?userId=${userId}`);
         if (!resumeResp.ok) {
             alert('获取简历列表失败');
             return;
@@ -388,7 +388,7 @@ async function reapplyApplication(application, userId) {
             resumeId: chosenResume.resumeId
         };
         
-        const resp = await fetch(`${base}/applications`, {
+        const resp = await Auth.authenticatedFetch(`${base}/applications`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -426,7 +426,7 @@ async function reapplyApplication(application, userId) {
 async function viewJobDetail(jobId) {
     try {
         const base = window.API_BASE || '/api';
-        const resp = await fetch(`${base}/job/info/${encodeURIComponent(jobId)}`);
+        const resp = await Auth.authenticatedFetch(`${base}/job/info/${encodeURIComponent(jobId)}`);
         if (!resp.ok) {
             const text = await resp.text();
             alert(`网络错误：${resp.status} ${text}`);
@@ -444,7 +444,7 @@ async function viewJobDetail(jobId) {
         let contactInfo = '';
         if (job.companyId) {
             try {
-                const companyResp = await fetch(`${base}/company/${encodeURIComponent(job.companyId)}`);
+                const companyResp = await Auth.authenticatedFetch(`${base}/company/${encodeURIComponent(job.companyId)}`);
                 if (companyResp.ok) {
                     const company = await companyResp.json();
                     if (company && company.data) {

@@ -57,7 +57,7 @@ async function loadInterviews(currentUser) {
         }
         
         // 获取所有面试数据
-        const resp = await fetch(`${base}/interview/user/${encodeURIComponent(userId)}`);
+        const resp = await Auth.authenticatedFetch(`${base}/interview/user/${encodeURIComponent(userId)}`);
         if (!resp.ok) {
             const text = await resp.text();
             if (statusEl) statusEl.textContent = `网络错误: ${resp.status} ${text}`;

@@ -30,23 +30,25 @@ function renderEmployerProfileView(container, currentUser) {
 
         <div class="dashboard-card" style="margin-top: 16px;">
             <h3>修改密码</h3>
-            <div class="form-row">
-                <div>
-                    <label>当前密码</label>
-                    <input type="password" id="emp-old-password" placeholder="请输入当前密码">
+            <form id="emp-password-form">
+                <div class="form-row">
+                    <div>
+                        <label>当前密码</label>
+                        <input type="password" id="emp-old-password" placeholder="请输入当前密码">
+                    </div>
+                    <div>
+                        <label>新密码</label>
+                        <input type="password" id="emp-new-password" placeholder="请输入新密码">
+                    </div>
+                    <div>
+                        <label>确认新密码</label>
+                        <input type="password" id="emp-confirm-password" placeholder="请再次输入新密码">
+                    </div>
                 </div>
-                <div>
-                    <label>新密码</label>
-                    <input type="password" id="emp-new-password" placeholder="请输入新密码">
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="emp-change-password-btn" type="button">保存修改</button>
                 </div>
-                <div>
-                    <label>确认新密码</label>
-                    <input type="password" id="emp-confirm-password" placeholder="请再次输入新密码">
-                </div>
-            </div>
-            <div class="action-buttons">
-                <button class="btn btn-primary" id="emp-change-password-btn">保存修改</button>
-            </div>
+            </form>
         </div>
     `;
 

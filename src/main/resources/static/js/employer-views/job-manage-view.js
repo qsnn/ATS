@@ -217,7 +217,7 @@ async function loadJobList(user, status) {
             companyId: user.companyId
         });
         
-        const resp = await fetch(`${JOB_API_BASE}/list?${params.toString()}`);
+        const resp = await Auth.authenticatedFetch(`${JOB_API_BASE}/list?${params.toString()}`);
         if (!resp.ok) {
             const text = await resp.text();
             if (statusEl) statusEl.textContent = `网络错误: ${resp.status} ${text}`;
@@ -393,7 +393,7 @@ function escapeHtml(text) {
 async function togglePublish(jobId, isPublished) {
     const url = isPublished ? `${JOB_API_BASE}/unpublish/${jobId}` : `${JOB_API_BASE}/publish/${jobId}`;
     try {
-        const resp = await fetch(url, { method: 'PUT' });
+        const resp = await Auth.authenticatedFetch(url, { method: 'PUT' });
         if (!resp.ok) {
             const text = await resp.text();
             alert(`网络错误: ${resp.status} ${text}`);
@@ -418,7 +418,7 @@ async function togglePublish(jobId, isPublished) {
 async function deleteJob(jobId) {
     if (!confirm('确定要删除这个职位吗？')) return;
     try {
-        const resp = await fetch(`${JOB_API_BASE}/${jobId}`, { method: 'DELETE' });
+        const resp = await Auth.authenticatedFetch(`${JOB_API_BASE}/${jobId}`, { method: 'DELETE' });
         if (!resp.ok) {
             const text = await resp.text();
             alert(`网络错误: ${resp.status} ${text}`);
@@ -457,7 +457,7 @@ async function createNewJob(user) {
 // 新增函数：查看职位
 async function viewJob(jobId) {
     try {
-        const resp = await fetch(`${JOB_API_BASE}/detail/${jobId}`);
+        const resp = await Auth.authenticatedFetch(`${JOB_API_BASE}/detail/${jobId}`);
         if (!resp.ok) {
             const text = await resp.text();
             alert(`网络错误: ${resp.status} ${text}`);
@@ -510,7 +510,7 @@ async function viewJob(jobId) {
 // 新增函数：编辑职位
 async function editJob(jobId) {
     try {
-        const resp = await fetch(`${JOB_API_BASE}/detail/${jobId}`);
+        const resp = await Auth.authenticatedFetch(`${JOB_API_BASE}/detail/${jobId}`);
         if (!resp.ok) {
             const text = await resp.text();
             alert(`网络错误: ${resp.status} ${text}`);
@@ -542,7 +542,7 @@ async function editJob(jobId) {
 // 新增函数：发布职位
 async function publishJob(jobId) {
     try {
-        const resp = await fetch(`${JOB_API_BASE}/publish/${jobId}`, { method: 'PUT' });
+        const resp = await Auth.authenticatedFetch(`${JOB_API_BASE}/publish/${jobId}`, { method: 'PUT' });
         if (!resp.ok) {
             const text = await resp.text();
             alert(`网络错误: ${resp.status} ${text}`);
@@ -568,7 +568,7 @@ async function publishJob(jobId) {
 async function unpublishJob(jobId) {
     if (!confirm('确定要下架这个职位吗？')) return;
     try {
-        const resp = await fetch(`${JOB_API_BASE}/unpublish/${jobId}`, { method: 'PUT' });
+        const resp = await Auth.authenticatedFetch(`${JOB_API_BASE}/unpublish/${jobId}`, { method: 'PUT' });
         if (!resp.ok) {
             const text = await resp.text();
             alert(`网络错误: ${resp.status} ${text}`);
@@ -650,7 +650,7 @@ async function saveJob(user, action) {
             jobInfo.publishStatus = 0; // 草稿
         }
         
-        const resp = await fetch(`${JOB_API_BASE}`, {
+        const resp = await Auth.authenticatedFetch(`${JOB_API_BASE}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(jobInfo)

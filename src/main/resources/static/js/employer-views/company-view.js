@@ -119,7 +119,7 @@ async function loadCompanyInfo(user) {
         return;
     }
     try {
-        const resp = await fetch(`${COMPANY_API_BASE}/${companyId}`);
+        const resp = await Auth.authenticatedFetch(`${COMPANY_API_BASE}/${companyId}`);
         if (!resp.ok) return;
         const json = await resp.json();
         if (!json || json.code !== 200 || !json.data) return;
@@ -152,7 +152,7 @@ async function saveCompanyInfo(user) {
     const method = hasId ? 'PUT' : 'POST';
 
     try {
-        const resp = await fetch(`${COMPANY_API_BASE}`, {
+        const resp = await Auth.authenticatedFetch(`${COMPANY_API_BASE}`, {
             method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(companyData)
@@ -186,7 +186,7 @@ async function createCompany(user) {
     };
 
     try {
-        const resp = await fetch(`${COMPANY_API_BASE}`, {
+        const resp = await Auth.authenticatedFetch(`${COMPANY_API_BASE}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(companyData)

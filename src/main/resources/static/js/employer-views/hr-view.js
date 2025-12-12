@@ -124,7 +124,7 @@ async function loadHrList(user) {
             pageSize: window.hrPagination.size
         });
         
-        const resp = await fetch(`${USER_API_BASE}/hr/${user.companyId}?${params}`, {
+        const resp = await Auth.authenticatedFetch(`${USER_API_BASE}/hr/${user.companyId}?${params}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
         });
@@ -172,19 +172,35 @@ async function loadHrList(user) {
 async function createHrAccount(currentUser) {
     try {
         // 先获取公司信息以获取联系方式
-        const companyResp = await fetch(`${COMPANY_API_BASE}/${currentUser.companyId}`, {
+        const companyResp = await Auth.authenticatedFetch(`${COMPANY_API_BASE}/${currentUser.companyId}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
         });
         
-        const companyJson = await companyResp.json();
+        // 检查响应是否有效
+        if (!companyResp.ok) {
+            throw new Error(`HTTP error! status: ${companyResp.status}`);
+        }
+
+        const companyText = await companyResp.text();
+        if (!companyText) {
+            throw new Error('服务器返回空响应');
+        }
+
+        let companyJson;
+        try {
+            companyJson = JSON.parse(companyText);
+        } catch (parseError) {
+            throw new Error('服务器响应不是有效的JSON格式');
+        }
+        
         if (companyJson.code !== 200) {
             throw new Error(companyJson.message || '获取公司信息失败');
         }
         
         const companyInfo = companyJson.data || {};
         
-        const resp = await fetch(`${USER_API_BASE}/hr`, {
+        const resp = await Auth.authenticatedFetch(`${USER_API_BASE}/hr`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -194,7 +210,22 @@ async function createHrAccount(currentUser) {
             })
         });
         
-        const json = await resp.json();
+        // 检查响应是否有效
+        if (!resp.ok) {
+            throw new Error(`HTTP error! status: ${resp.status}`);
+        }
+
+        const text = await resp.text();
+        if (!text) {
+            throw new Error('服务器返回空响应');
+        }
+
+        let json;
+        try {
+            json = JSON.parse(text);
+        } catch (parseError) {
+            throw new Error('服务器响应不是有效的JSON格式');
+        }
         if (json.code !== 200) {
             throw new Error(json.message || '创建失败');
         }
@@ -214,12 +245,27 @@ async function showResetPasswordModal(userId) {
     }
     
     try {
-        const resp = await fetch(`${USER_API_BASE}/${userId}/reset-password?newPassword=123456`, {
+        const resp = await Auth.authenticatedFetch(`${USER_API_BASE}/${userId}/reset-password?newPassword=123456`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' }
         });
         
-        const json = await resp.json();
+        // 检查响应是否有效
+        if (!resp.ok) {
+            throw new Error(`HTTP error! status: ${resp.status}`);
+        }
+
+        const text = await resp.text();
+        if (!text) {
+            throw new Error('服务器返回空响应');
+        }
+
+        let json;
+        try {
+            json = JSON.parse(text);
+        } catch (parseError) {
+            throw new Error('服务器响应不是有效的JSON格式');
+        }
         if (json.code !== 200) {
             throw new Error(json.message || '重置失败');
         }
@@ -237,12 +283,27 @@ async function deleteHrAccount(userId) {
     }
     
     try {
-        const resp = await fetch(`${USER_API_BASE}/${userId}`, {
+        const resp = await Auth.authenticatedFetch(`${USER_API_BASE}/${userId}`, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' }
         });
         
-        const json = await resp.json();
+        // 检查响应是否有效
+        if (!resp.ok) {
+            throw new Error(`HTTP error! status: ${resp.status}`);
+        }
+
+        const text = await resp.text();
+        if (!text) {
+            throw new Error('服务器返回空响应');
+        }
+
+        let json;
+        try {
+            json = JSON.parse(text);
+        } catch (parseError) {
+            throw new Error('服务器响应不是有效的JSON格式');
+        }
         if (json.code !== 200) {
             throw new Error(json.message || '删除失败');
         }
@@ -266,19 +327,35 @@ async function batchCreateHrAccounts(currentUser) {
         }
         
         // 先获取公司信息以获取联系方式
-        const companyResp = await fetch(`${COMPANY_API_BASE}/${currentUser.companyId}`, {
+        const companyResp = await Auth.authenticatedFetch(`${COMPANY_API_BASE}/${currentUser.companyId}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
         });
         
-        const companyJson = await companyResp.json();
+        // 检查响应是否有效
+        if (!companyResp.ok) {
+            throw new Error(`HTTP error! status: ${companyResp.status}`);
+        }
+
+        const companyText = await companyResp.text();
+        if (!companyText) {
+            throw new Error('服务器返回空响应');
+        }
+
+        let companyJson;
+        try {
+            companyJson = JSON.parse(companyText);
+        } catch (parseError) {
+            throw new Error('服务器响应不是有效的JSON格式');
+        }
+        
         if (companyJson.code !== 200) {
             throw new Error(companyJson.message || '获取公司信息失败');
         }
         
         const companyInfo = companyJson.data || {};
         
-        const resp = await fetch(`${USER_API_BASE}/hr/batch`, {
+        const resp = await Auth.authenticatedFetch(`${USER_API_BASE}/hr/batch`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -289,7 +366,22 @@ async function batchCreateHrAccounts(currentUser) {
             })
         });
         
-        const json = await resp.json();
+        // 检查响应是否有效
+        if (!resp.ok) {
+            throw new Error(`HTTP error! status: ${resp.status}`);
+        }
+
+        const text = await resp.text();
+        if (!text) {
+            throw new Error('服务器返回空响应');
+        }
+
+        let json;
+        try {
+            json = JSON.parse(text);
+        } catch (parseError) {
+            throw new Error('服务器响应不是有效的JSON格式');
+        }
         if (json.code !== 200) {
             throw new Error(json.message || '批量创建失败');
         }
@@ -308,12 +400,28 @@ async function batchCreateHrAccounts(currentUser) {
 async function exportHrToCsv(currentUser) {
     try {
         // 获取所有HR账户数据
-        const resp = await fetch(`${USER_API_BASE}/hr/${currentUser.companyId}?pageNum=1&pageSize=10000`, {
+        const resp = await Auth.authenticatedFetch(`${USER_API_BASE}/hr/${currentUser.companyId}?pageNum=1&pageSize=10000`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
         });
 
-        const json = await resp.json();
+        // 检查响应是否有效
+        if (!resp.ok) {
+            throw new Error(`HTTP error! status: ${resp.status}`);
+        }
+
+        const text = await resp.text();
+        if (!text) {
+            throw new Error('服务器返回空响应');
+        }
+
+        let json;
+        try {
+            json = JSON.parse(text);
+        } catch (parseError) {
+            throw new Error('服务器响应不是有效的JSON格式');
+        }
+
         if (json.code !== 200) {
             throw new Error(json.message || '导出失败');
         }
