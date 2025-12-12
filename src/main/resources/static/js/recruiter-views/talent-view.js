@@ -3,13 +3,7 @@ function renderTalentView(container, currentUser) {
         <div class="flex items-center justify-between mb-4">
             <h2>企业人才库</h2>
             <div class="flex gap-2">
-                <select id="talent-filter" onchange="filterTalent()">
-                    <option value="">全部人才</option>
-                    <option value="web">Web开发</option>
-                    <option value="java">Java开发</option>
-                    <option value="ui">UI设计</option>
-                </select>
-                <input type="text" placeholder="搜索人才..." oninput="searchTalent()">
+                <input type="text" id="talent-search" placeholder="按姓名搜索人才..." oninput="searchTalentByName()">
                 <button class="btn btn-primary" onclick="addNewTalent()">+ 添加人才</button>
             </div>
         </div>
@@ -21,11 +15,10 @@ function renderTalentView(container, currentUser) {
                         <strong>人才库统计</strong>
                         <p style="margin: 5px 0 0 0; font-size: 12px; color: #666;">
                             共 <span id="total-talents">0</span> 人 |
-                            活跃人才：<span id="active-talents">0</span> 人 |
-                            最近被邀请：<span id="recent-invited">0</span> 人
+                            最近添加：<span id="recent-added">0</span> 人
                         </p>
                     </div>
-                    <button class="btn btn-sm" onclick="exportTalentData()">导出数据</button>
+                    <button class="btn btn-sm" onclick="exportTalent()">导出人才库</button>
                 </div>
             </div>
         </div>
@@ -38,97 +31,228 @@ function renderTalentView(container, currentUser) {
         </div>
     `;
 
-    loadTalentPool();
+    loadTalentPool(currentUser);
 }
 
-async function loadTalentPool() {
-    const talentList = document.getElementById('recruiter-talent-list');
-    if (!talentList) return;
+async function loadTalentPool(user) {
+    const container = document.getElementById('recruiter-talent-list');
+    const totalEl = document.getElementById('total-talents');
+    const recentEl = document.getElementById('recent-added');
+    if (!container) return;
 
-    talentList.innerHTML = `<div class="empty-state"><div class="icon">🔄</div><p>正在加载人才数据...</p></div>`;
+    container.innerHTML = '<p>正在加载人才库...</p>';
+
+    if (!user.companyId) {
+        container.innerHTML = '<p>当前账号未关联公司，无法加载人才库。</p>';
+        return;
+    }
 
     try {
-        // 从API获取人才库数据
-        const talents = await ApiService.getTalentPool();
+        // 使用 ApiService.request 替代 ApiService.getTalentPool 以确保携带 JWT 令牌并处理统一返回格式
+        const result = await ApiService.request(`/talent/company/${encodeURIComponent(user.companyId)}`);
+        if (!result.success) {
+            throw new Error(result.message || '获取人才库失败');
+        }
+        const list = Array.isArray(result.data) ? result.data : [];
 
-        if (!talents || talents.length === 0) {
-            talentList.innerHTML = `
-                <div class="empty-state">
-                    <div class="icon">📚</div>
-                    <p>人才库为空</p>
-                    <p style="font-size: 12px; margin-top: 8px;">点击"添加人才"按钮开始建立人才库</p>
-                </div>
-            `;
-            updateTalentStats([]);
+        if (totalEl) totalEl.textContent = list.length;
+        if (recentEl) {
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            const recentCount = list.filter(t => {
+                if (!t.putInTime) return false;
+                try {
+                    const putInTime = new Date(t.putInTime);
+                    return putInTime >= thirtyDaysAgo;
+                } catch (e) {
+                    return false;
+                }
+            }).length;
+            recentEl.textContent = recentCount;
+        }
+
+        if (!list.length) {
+            container.innerHTML = '<p>人才库为空。</p>';
             return;
         }
 
-        updateTalentStats(talents);
+        // 后端已返回富VO，直接使用列表渲染
+        const enriched = list.map(tp => ({
+            talentId: tp.talentId,
+            resumeId: tp.resumeId,
+            tag: tp.tag,
+            putInTime: tp.putInTime,
+            candidateName: tp.candidateName || '',
+            position: tp.position || '',
+            phone: tp.phone || '',
+            email: tp.email || ''
+        }));
 
-        talentList.innerHTML = talents.map(talent => `
-            <div class="talent-card">
+        container.innerHTML = enriched.map(talent => `
+            <div class="talent-card" data-talent-id="${talent.talentId}">
                 <div class="talent-header">
                     <div>
-                        <h3 class="talent-name">${talent.name || '未命名'}</h3>
+                        <h3 class="talent-name">${talent.candidateName || ''}</h3>
                         <div style="font-size: 14px; color: #666; margin-top: 4px;">
-                            ${talent.position || '未填写职位'} · ${talent.experience || '经验不详'} · ${talent.education || '学历不详'}
+                            ${talent.tag || ''}
                         </div>
                     </div>
-                    <span class="talent-source">${talent.source || '未知'}</span>
                 </div>
-
                 <div class="talent-info">
                     <div class="talent-info-item">
                         <span>📱</span>
-                        <span>${talent.phone || '未提供'}</span>
+                        <span>${talent.phone || ''}</span>
                     </div>
                     <div class="talent-info-item">
                         <span>📧</span>
-                        <span>${talent.email || '未提供'}</span>
+                        <span>${talent.email || ''}</span>
                     </div>
                     <div class="talent-info-item">
                         <span>📅</span>
-                        <span>添加：${talent.createTime ? new Date(talent.createTime).toLocaleDateString() : '未知'}</span>
+                        <span>${talent.putInTime || ''}</span>
                     </div>
                 </div>
-
-                <div class="talent-tags">
-                    ${(talent.skills || '').split(',').filter(s => s.trim()).slice(0, 5).map(skill =>
-                        `<span class="talent-tag">${skill.trim()}</span>`
-                    ).join('')}
-                </div>
-
-                ${talent.note ? `
-                <div class="talent-note">
-                    <strong>备注：</strong>
-                    ${talent.note}
-                </div>
-                ` : ''}
-
                 <div class="talent-actions">
-                    <button class="btn btn-sm" onclick="viewTalentDetail(${talent.id})">查看</button>
-                    <button class="btn btn-primary btn-sm" onclick="inviteTalent(${talent.id})">邀请面试</button>
-                    <button class="btn btn-sm" onclick="editTalent(${talent.id})">编辑</button>
-                    <button class="btn btn-danger btn-sm" onclick="removeTalent(${talent.id})">移除</button>
+                    <button class="btn btn-sm" onclick="viewTalentDetail(${talent.talentId}, ${talent.resumeId})">查看详情</button>
+                    <button class="btn btn-danger btn-sm" onclick="removeTalent(${talent.talentId})">移除</button>
                 </div>
             </div>
         `).join('');
-    } catch (error) {
-        console.error('加载人才数据失败:', error);
-        talentList.innerHTML = `<div class="empty-state"><div class="icon">❌</div><p>加载人才数据失败: ${error.message}</p></div>`;
+    } catch (e) {
+        console.error('加载人才库失败:', e);
+        container.innerHTML = '<p>加载失败，请稍后重试</p>';
     }
 }
 
 function updateTalentStats(talents = []) {
-    const activeTalents = talents.filter(t => t.status === 'active').length;
     document.getElementById('total-talents').textContent = talents.length;
-    document.getElementById('active-talents').textContent = activeTalents || talents.length;
-    document.getElementById('recent-invited').textContent = Math.floor(talents.length * 0.3);
+    document.getElementById('recent-added').textContent = Math.floor(talents.length * 0.3);
 }
 
 // 人才管理相关函数
-function viewTalentDetail(talentId) {
-    alert(`查看人才 ${talentId} 详情（后续实现）`);
+async function viewTalentDetail(talentId, resumeId) {
+    if (!talentId) {
+        alert('找不到该人才信息');
+        return;
+    }
+
+    try {
+        const talentResult = await ApiService.request(`/talent/${encodeURIComponent(talentId)}`);
+        if (!talentResult.success) {
+            alert(talentResult.message || '获取人才信息失败');
+            return;
+        }
+        
+        let resumeResult = null;
+        if (resumeId) {
+            try {
+                resumeResult = await ApiService.request(`/resume/${encodeURIComponent(resumeId)}`);
+            } catch (e) {
+                console.error('加载简历详情失败:', e);
+            }
+        }
+
+        const talent = talentResult.data;
+        const resume = resumeResult && resumeResult.success ? resumeResult.data : null;
+
+        if (!talent && !resume) {
+            alert('找不到该人才信息');
+            return;
+        }
+
+        const name = (resume && resume.name) || (talent && talent.candidateName) || '';
+        const tag = (talent && talent.tag) || '';
+        const phone = (resume && resume.phone) || '';
+        const email = (resume && resume.email) || '';
+
+        // 构建简历详细信息HTML
+        let resumeDetails = '';
+        if (resume) {
+            resumeDetails = `
+                <div class="resume-details">
+                    <h4>简历信息</h4>
+                    <div class="detail-item">
+                        <label>姓名:</label>
+                        <span>${resume.name || ''}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>性别:</label>
+                        <span>${resume.gender === 1 ? '男' : resume.gender === 2 ? '女' : ''}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>年龄:</label>
+                        <span>${resume.age || ''}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>邮箱:</label>
+                        <span>${resume.email || ''}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>电话:</label>
+                        <span>${resume.phone || ''}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>地址:</label>
+                        <span>${resume.address || ''}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>教育背景:</label>
+                        <span>${resume.education || ''}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>工作经验:</label>
+                        <span>${resume.experience || ''}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>技能:</label>
+                        <span>${resume.skills || ''}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>备注:</label>
+                        <span>${resume.note || ''}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        const modalHtml = `
+            <div id="talent-detail-modal" class="talent-modal" style="display: block;">
+                <div class="talent-modal-content">
+                    <div class="talent-modal-header">
+                        <h3 class="talent-modal-title">人才详情</h3>
+                        <button class="close-modal" onclick="closeTalentModal()">&times;</button>
+                    </div>
+                    <div class="talent-modal-body">
+                        <div class="talent-info">
+                            <div class="talent-info-item">
+                                <span>姓名:</span>
+                                <span>${name}</span>
+                            </div>
+                            <div class="talent-info-item">
+                                <span>标签:</span>
+                                <span>${tag}</span>
+                            </div>
+                            <div class="talent-info-item">
+                                <span>电话:</span>
+                                <span>${phone}</span>
+                            </div>
+                            <div class="talent-info-item">
+                                <span>邮箱:</span>
+                                <span>${email}</span>
+                            </div>
+                        </div>
+                        ${resumeDetails}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // 添加模态框到页面
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+    } catch (e) {
+        console.error('查看人才详情失败:', e);
+        alert('查看人才详情失败，请稍后重试');
+    }
 }
 
 function inviteTalent(talentId) {
@@ -145,15 +269,24 @@ function editTalent(talentId) {
 async function removeTalent(talentId) {
     if (confirm('确定要从人才库移除该人才吗？此操作不可恢复。')) {
         try {
-            await ApiService.removeTalent(talentId);
+            const result = await ApiService.request(`/talent/${encodeURIComponent(talentId)}`, {
+                method: 'DELETE'
+            });
+            
+            if (!result.success) {
+                alert(result.message || '移除人才失败');
+                return;
+            }
+            
             alert('人才移除成功！');
-            loadTalentPool(); // 刷新列表
+            // 重新加载人才库
+            const currentUser = Auth.getCurrentUser();
+            if (currentUser) {
+                loadTalentPool(currentUser);
+            }
         } catch (error) {
             console.error('移除人才失败:', error);
-            // 避免重复提示，只显示一次错误信息
-            if (!(error.message && (error.message.includes('NOT_FOUND') || error.message.includes('404')))) {
-                alert('移除人才失败: ' + error.message);
-            }
+            alert('移除人才失败，请稍后重试');
         }
     }
 }
@@ -253,23 +386,14 @@ function addNewTalent() {
     });
 }
 
-function filterTalent() {
-    const v = document.getElementById('talent-filter').value;
-    alert('筛选人才：' + (v || '全部') + '（模拟操作）');
+function searchTalentByName() {
+    const searchTerm = document.getElementById('talent-search').value.toLowerCase();
+    // 在实际应用中，这里应该重新调用API进行搜索
+    alert(`搜索功能占位符：搜索 "${searchTerm}"`);
 }
 
-function searchTalent() {
-    const kw = document.querySelector('input[placeholder*="搜索人才"]').value;
-    if (kw) {
-        alert('搜索人才：' + kw + '（模拟操作）');
-    }
-}
-
-function exportTalentData() {
-    alert('正在导出人才数据...（模拟操作）');
-    setTimeout(() => {
-        alert('人才数据已导出为 talent_pool.csv（模拟）');
-    }, 1000);
+function exportTalent() {
+    alert('导出人才库功能占位符');
 }
 
 function closeTalentModal() {

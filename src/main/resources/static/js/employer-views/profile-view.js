@@ -59,8 +59,12 @@ function renderEmployerProfileView(container, currentUser) {
 
 async function loadEmployerProfile(user) {
     try {
-        const resp = await ApiService.request(`/user/${encodeURIComponent(user.userId)}`);
-        const data = resp || {};
+        const result = await ApiService.request(`/user/${encodeURIComponent(user.userId)}`);
+        if (!result.success) {
+            console.error('加载账号信息失败:', result.message || '未知错误');
+            return;
+        }
+        const data = result.data || {};
 
         document.getElementById('emp-username-input').value = data.username || '';
         document.getElementById('emp-role-input').value = (data.roleName || data.role || '企业管理员');
@@ -92,9 +96,9 @@ function bindEmployerProfileSave(user) {
         // 检查用户名是否已存在（如果不是当前用户名）
         if (username !== user.username) {
             try {
-                const checkResp = await ApiService.request(`/user/check/username?username=${encodeURIComponent(username)}`);
+                const result = await ApiService.request(`/user/check/username?username=${encodeURIComponent(username)}`);
                 
-                if (checkResp === true) {
+                if (result.success && result.data === true) {
                     alert('用户名已存在，请选择其他用户名');
                     usernameInput.focus();
                     return;
@@ -114,10 +118,15 @@ function bindEmployerProfileSave(user) {
         };
 
         try {
-            const resp = await ApiService.request(`/user/${user.userId}`, {
+            const result = await ApiService.request(`/user/${user.userId}`, {
                 method: 'PUT',
                 body: JSON.stringify(payload)
             });
+            
+            if (!result.success) {
+                alert(result.message || '保存失败');
+                return;
+            }
             
             alert('基本信息已保存');
             
@@ -161,6 +170,11 @@ function bindEmployerPasswordChange(user) {
                 method: 'PUT',
                 body: JSON.stringify({ oldPassword: oldPwd, newPassword: newPwd })
             });
+            
+            if (!result.success) {
+                alert(result.message || '修改密码失败');
+                return;
+            }
             
             alert('密码修改成功，请使用新密码重新登录。');
         } catch (e) {

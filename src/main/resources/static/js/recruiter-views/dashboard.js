@@ -228,28 +228,15 @@ async function loadJobList(currentUser, status) {
             companyId: currentUser.companyId
         });
 
-        // 使用 Auth.authenticatedFetch 确保携带 JWT 令牌
-        const response = await Auth.authenticatedFetch(`${JOB_API_BASE}/list?${params.toString()}`);
-        if (!response.ok) {
-            const text = await response.text();
-            statusEl.textContent = `网络错误: ${response.status} ${text}`;
+        // 使用 apiRequest 替代 Auth.authenticatedFetch 以适配新的统一返回格式
+        const result = await apiRequest(`${JOB_API_BASE}/list?${params.toString()}`);
+        if (!result.success) {
+            statusEl.textContent = result.message || '加载失败';
             return;
         }
-
-        const json = await response.json();
-        console.log('API Response:', json); // 调试信息
         
-        // 处理统一的API响应格式 {code: 200, message: "", data: {...}}
-        let page;
-        if (json && typeof json === 'object' && 'data' in json) {
-            page = json.data;
-        } else {
-            page = json;
-        }
-        
-        // 确保正确提取records数组
-        const records = (page && Array.isArray(page.records)) ? page.records : 
-                     (page && Array.isArray(page)) ? page : [];
+        const page = result.data || {};
+        const records = page.records || [];
 
         if (records.length === 0) {
             statusEl.textContent = '暂无职位记录。';
@@ -373,21 +360,14 @@ async function loadRecruiterCompanyInfo(container, currentUser) {
             return;
         }
 
-        // 使用 Auth.authenticatedFetch 确保携带 JWT 令牌
-        const response = await Auth.authenticatedFetch(`${COMPANY_API_BASE}/${encodeURIComponent(currentUser.companyId)}`);
-        if (!response.ok) {
-            const text = await response.text();
-            loadingEl.innerHTML = `<p>网络错误: ${response.status} ${text}</p>`;
+        // 使用 apiRequest 替代 Auth.authenticatedFetch 以适配新的统一返回格式
+        const result = await apiRequest(`${COMPANY_API_BASE}/${encodeURIComponent(currentUser.companyId)}`);
+        if (!result.success) {
+            loadingEl.innerHTML = `<p>${result.message || '加载失败'}</p>`;
             return;
         }
 
-        const json = await response.json();
-        if (json.code !== 200) {
-            loadingEl.innerHTML = `<p>${json.message || '加载失败'}</p>`;
-            return;
-        }
-
-        const company = json.data || {};
+        const company = result.data || {};
         loadingEl.outerHTML = `
             <div class="card" style="margin-top: 16px;">
                 <div class="card-body">
@@ -475,15 +455,14 @@ function renderRecruiterProfileView(container, currentUser) {
 
 async function loadRecruiterProfile(user) {
     try {
-        // 使用 Auth.authenticatedFetch 确保携带 JWT 令牌
-        const response = await Auth.authenticatedFetch(`/api/user/${encodeURIComponent(user.userId)}`);
-        if (!response.ok) return;
+        // 使用 apiRequest 替代 Auth.authenticatedFetch 以适配新的统一返回格式
+        const result = await apiRequest(`/api/user/${encodeURIComponent(user.userId)}`);
+        if (!result.success) {
+            console.error('加载账号信息失败:', result.message || '未知错误');
+            return;
+        }
         
-        const json = await response.json();
-        const data = (json && typeof json === 'object' && 'code' in json)
-            ? (json.code === 200 ? json.data : null)
-            : json;
-        if (!data) return;
+        const data = result.data || {};
 
         document.getElementById('rec-username-display').textContent = data.username || '';
         document.getElementById('rec-email-display').textContent = data.email || '';
@@ -512,21 +491,14 @@ function bindRecruiterPasswordChange(user) {
         }
 
         try {
-            // 使用 Auth.authenticatedFetch 确保携带 JWT 令牌
-            const response = await Auth.authenticatedFetch(`/api/user/${encodeURIComponent(user.userId)}/password`, {
+            // 使用 apiRequest 替代 Auth.authenticatedFetch 以适配新的统一返回格式
+            const result = await apiRequest(`/api/user/${encodeURIComponent(user.userId)}/password`, {
                 method: 'PUT',
                 body: JSON.stringify({ oldPassword: oldPwd, newPassword: newPwd })
             });
             
-            if (!response.ok) {
-                const text = await response.text();
-                alert(`网络错误: ${response.status} ${text}`);
-                return;
-            }
-            
-            const json = await response.json();
-            if (!json || json.code !== 200) {
-                alert((json && json.message) || '修改密码失败');
+            if (!result.success) {
+                alert(result.message || '修改密码失败');
                 return;
             }
             

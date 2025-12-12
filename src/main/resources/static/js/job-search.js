@@ -58,14 +58,12 @@ async function searchJobs() {
 
     try {
         const url = `${API_BASE_URL}/job/info/list?${params.toString()}`;
-        // 使用 Auth.authenticatedFetch 替代普通 fetch 以确保携带 JWT 令牌
-        const response = await Auth.authenticatedFetch(url);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        // 使用 apiRequest 替代 Auth.authenticatedFetch 以适配新的统一返回格式
+        const result = await apiRequest(url);
+        if (!result.success) {
+            throw new Error(result.message || '获取职位列表失败');
         }
-
-        const result = await response.json();
-        const data = result.data || result;
+        const data = result.data;
         // 后端返回的结构是 IPage，职位列表在 records 字段中
         renderJobList(data && data.records ? data.records : []);
         
@@ -315,14 +313,13 @@ async function applyJob(jobId) {
 
 async function viewJobDetail(jobId) {
     try {
-        // 使用 Auth.authenticatedFetch 替代普通 fetch 以确保携带 JWT 令牌
-        const resp = await Auth.authenticatedFetch(`${API_BASE_URL}/job/info/${encodeURIComponent(jobId)}`);
-        if (!resp.ok) {
-            const text = await resp.text();
-            alert(`网络错误：${resp.status} ${text}`);
+        // 使用 apiRequest 替代 Auth.authenticatedFetch 以适配新的统一返回格式
+        const result = await apiRequest(`${API_BASE_URL}/job/info/${encodeURIComponent(jobId)}`);
+        if (!result.success) {
+            alert(result.message || '获取职位详情失败');
             return;
         }
-        const job = await resp.json();
+        const job = result.data;
         
         // 生成完整的地址信息
         let fullAddress = '';
@@ -334,14 +331,11 @@ async function viewJobDetail(jobId) {
         let contactInfo = '';
         if (job.companyId) {
             try {
-                // 使用 Auth.authenticatedFetch 替代普通 fetch 以确保携带 JWT 令牌
-                const companyResp = await Auth.authenticatedFetch(`${API_BASE_URL}/company/${encodeURIComponent(job.companyId)}`);
-                if (companyResp.ok) {
-                    const company = await companyResp.json();
-                    if (company && company.data) {
-                        if (company.data.contactPhone) contactInfo += `\n联系电话：${company.data.contactPhone}`;
-                        if (company.data.contactEmail) contactInfo += `\n联系邮箱：${company.data.contactEmail}`;
-                    }
+                // 使用 apiRequest 替代 Auth.authenticatedFetch 以适配新的统一返回格式
+                const companyResult = await apiRequest(`${API_BASE_URL}/company/${encodeURIComponent(job.companyId)}`);
+                if (companyResult.success && companyResult.data) {
+                    if (companyResult.data.contactPhone) contactInfo += `\n联系电话：${companyResult.data.contactPhone}`;
+                    if (companyResult.data.contactEmail) contactInfo += `\n联系邮箱：${companyResult.data.contactEmail}`;
                 }
             } catch (companyError) {
                 console.warn('获取公司信息失败:', companyError);

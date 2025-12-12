@@ -98,9 +98,13 @@ async function loadApplicants(currentUser, status = '') {
         }
 
         // 使用 ApiService.request 替代普通 fetch 以确保携带 JWT 令牌
-        const resp = await ApiService.request(`/applications/company/${encodeURIComponent(currentUser.companyId)}?${params.toString()}`);
-
-        const page = resp || {};
+        const result = await ApiService.request(`/applications/company/${encodeURIComponent(currentUser.companyId)}?${params.toString()}`);
+        if (!result.success) {
+            if (statusEl) statusEl.textContent = result.message || '加载失败';
+            return;
+        }
+        
+        const page = result.data || {};
         const records = page.records || [];
 
         if (records.length === 0) {
@@ -428,39 +432,51 @@ async function viewResume(resumeSnapshot, resumeId, applicationId) {
     // 如果没有快照或解析失败，尝试通过applicationId获取申请详情
     if (applicationId) {
         try {
-            const appData = await ApiService.request(`/applications/company/application/${encodeURIComponent(applicationId)}`);
-            if (appData && appData.resumeSnapshot) {
-                try {
-                    const data = JSON.parse(appData.resumeSnapshot);
-                    showResumeDetails(data);
-                    return;
-                } catch (e) {
-                    console.error('解析简历快照失败:', e);
+            const result = await ApiService.request(`/applications/company/application/${encodeURIComponent(applicationId)}`);
+            if (result.success && result.data) {
+                const appData = result.data;
+                if (appData.resumeSnapshot && appData.resumeSnapshot !== 'null') {
+                    try {
+                        const data = JSON.parse(appData.resumeSnapshot);
+                        showResumeDetails(data);
+                        return;
+                    } catch (e) {
+                        console.error('解析简历快照失败:', e);
+                    }
+                }
+                
+                // 如果申请数据中有resumeId，则通过resumeId获取简历
+                if (appData.resumeId) {
+                    try {
+                        const resumeResult = await ApiService.request(`/resume/${encodeURIComponent(appData.resumeId)}`);
+                        if (resumeResult.success && resumeResult.data) {
+                            showResumeDetails(resumeResult.data);
+                            return;
+                        }
+                    } catch (e) {
+                        console.error('通过申请ID中的简历ID获取简历信息失败:', e);
+                    }
                 }
             }
         } catch (e) {
-            console.error('通过申请ID获取简历信息失败:', e);
+            console.error('通过申请ID获取申请详情失败:', e);
         }
     }
 
-    // 回退到原来的查询方式
-    if (!resumeId) {
-        alert('无法查看简历：缺少简历ID');
-        return;
-    }
-
-    try {
-        const data = await ApiService.request(`/resume/${encodeURIComponent(resumeId)}`);
-        if (!data) {
-            alert('未找到简历信息');
-            return;
+    // 回退到直接通过resumeId查询简历信息
+    if (resumeId) {
+        try {
+            const result = await ApiService.request(`/resume/${encodeURIComponent(resumeId)}`);
+            if (result.success && result.data) {
+                showResumeDetails(result.data);
+                return;
+            }
+        } catch (e) {
+            console.error('通过简历ID获取简历信息失败:', e);
         }
-
-        showResumeDetails(data);
-    } catch (e) {
-        console.error('查看简历失败:', e);
-        // ApiService 已经弹出错误提示
     }
+
+    alert('无法查看简历：缺少有效的简历信息');
 }
 
 function showResumeDetails(data) {
@@ -477,15 +493,16 @@ function showResumeDetails(data) {
     if (data.age != null) {
         detailLines.push(`年龄：${data.age}`);
     }
-    if (data.genderDesc) {
-        detailLines.push(`性别：${data.genderDesc}`);
+    if (data.gender != null) {
+        const genderMap = {1: '男', 2: '女'};
+        detailLines.push(`性别：${genderMap[data.gender] || data.gender}`);
     }
-    detailLines.push(`学历：${data.education || ''}`);
+    detailLines.push(`学历：${mapEducationText(data.education) || ''}`);
     if (data.jobIntention) {
         detailLines.push(`求职意向：${data.jobIntention}`);
     }
-    if (data.workExperience) {
-        detailLines.push(`工作经历：${data.workExperience}`);
+    if (data.workExperience != null) {
+        detailLines.push(`工作经历：${mapWorkExperienceText(data.workExperience)}`);
     }
     if (data.skill) {
         detailLines.push(`技能：${data.skill}`);

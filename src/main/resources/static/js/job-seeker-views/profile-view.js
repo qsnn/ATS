@@ -98,7 +98,7 @@ function renderProfileView(container, currentUser) {
                 }
             } catch (error) {
                 console.error('检查用户名失败:', error);
-                alert('检查用户名时发生错误，请稍后重试');
+                showMessage('检查用户名时发生错误，请稍后重试', 'error');
                 return;
             }
         }
@@ -112,7 +112,7 @@ function renderProfileView(container, currentUser) {
 
         const result = await updateUserProfileApi(payload);
         if (result.success) {
-            alert('个人信息更新成功！');
+            showMessage('个人信息更新成功！', 'success');
 
             // 更新界面右上角的欢迎信息
             const greeting = document.getElementById('user-greeting');
@@ -125,7 +125,7 @@ function renderProfileView(container, currentUser) {
                 Auth.updateCurrentUser({ username, phone, email });
             }
         } else {
-            alert('更新失败：' + result.message);
+            showMessage('更新失败：' + result.message, 'error');
         }
 
     });
@@ -138,7 +138,7 @@ function renderProfileView(container, currentUser) {
 
             const user = Auth.getCurrentUser();
             if (!user) {
-                alert('用户未登录，无法修改密码。');
+                showMessage('用户未登录，无法修改密码。', 'error');
                 return;
             }
 
@@ -147,20 +147,20 @@ function renderProfileView(container, currentUser) {
             const confirmPassword = document.getElementById('confirm-password').value.trim();
 
             if (!oldPassword || !newPassword || !confirmPassword) {
-                alert('请完整填写当前密码和新密码。');
+                showMessage('请完整填写当前密码和新密码。', 'warning');
                 return;
             }
             if (newPassword.length < 6) {
-                alert('新密码长度不能少于 6 位。');
+                showMessage('新密码长度不能少于 6 位。', 'warning');
                 return;
             }
             if (newPassword !== confirmPassword) {
-                alert('两次输入的新密码不一致，请重新输入。');
+                showMessage('两次输入的新密码不一致，请重新输入。', 'warning');
                 return;
             }
 
             if (typeof updateUserPasswordApi !== 'function') {
-                alert('修改密码接口未就绪，请稍后重试。');
+                showMessage('修改密码接口未就绪，请稍后重试。', 'error');
                 return;
             }
 
@@ -171,11 +171,11 @@ function renderProfileView(container, currentUser) {
             });
 
             if (!result.success) {
-                alert(result.message || '修改密码失败');
+                showMessage(result.message || '修改密码失败', 'error');
                 return;
             }
 
-            alert('修改密码成功，请使用新密码重新登录。');
+            showMessage('修改密码成功，请使用新密码重新登录。', 'success');
             // 安全起见，修改成功后强制登出
             Auth.logout();
             window.location.href = 'login.html';

@@ -81,7 +81,7 @@ public class UserController {
     public Result<Boolean> updateUser(@PathVariable Long userId, @Valid @RequestBody UserUpdateDTO userUpdateDTO) {
         // 确保路径变量和请求体中的userId一致
         if (!userId.equals(userUpdateDTO.getUserId())) {
-            return Result.error(400, "路径中的用户ID与请求体中的用户ID不一致");
+            return Result.error(ErrorCode.PARAM_INVALID.getCode(), "路径中的用户ID与请求体中的用户ID不一致");
         }
         Boolean success = userService.updateUser(userUpdateDTO);
         return Result.success(success, "更新成功");

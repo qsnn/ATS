@@ -9,50 +9,7 @@ const ApiService = (function () {
      */
     async function request(endpoint, options = {}) {
         const url = `${API_BASE}${endpoint}`;
-        const config = {
-            headers: {
-                'Content-Type': 'application/json',
-                ...options.headers,
-            },
-            ...options,
-        };
-
-        try {
-            // 使用 Auth.authenticatedFetch 确保携带 JWT 令牌
-            const response = await Auth.authenticatedFetch(url, config);
-
-            // 先读取文本，再尝试解析为 JSON（有些错误响应不是 JSON）
-            const text = await response.text();
-            let json = null;
-            try {
-                json = text ? JSON.parse(text) : null;
-            } catch (parseErr) {
-                // 非 JSON 响应，保持 json 为 null，使用原始文本作为 message
-                json = null;
-            }
-
-            // 当 response 不 OK 时，构造合理的错误信息
-            if (!response.ok) {
-                const msg = (json && json.message) ? json.message : text || `HTTP ${response.status}`;
-                throw new Error(msg);
-            }
-
-            // 如果后端约定了 { code, data } 结构，进行额外检查；否则直接返回解析后的 JSON 或文本
-            if (json && typeof json === 'object' && 'code' in json) {
-                if (json.code !== 200) {
-                    throw new Error(json.message || `API error code: ${json.code}`);
-                }
-                return json.data;
-            }
-
-            // 如果解析出了 JSON（非标准包装），直接返回；否则返回原始文本
-            if (json !== null) return json;
-            return text;
-        } catch (error) {
-            console.error(`API Error: ${error.message}`, { url, config });
-            // 抛出错误让调用者处理，但不直接显示 alert
-            throw error;
-        }
+        return apiRequest(url, options);
     }
 
     // 获取当前登录用户的公司 ID

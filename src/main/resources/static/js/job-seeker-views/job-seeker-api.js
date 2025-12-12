@@ -1,24 +1,5 @@
 const JOB_SEEKER_API_BASE = '/api';
 
-async function apiRequest(url, options = {}) {
-    try {
-        // 使用 Auth.authenticatedFetch 替代普通 fetch 以确保携带 JWT 令牌
-        const resp = await Auth.authenticatedFetch(url, options);
-        if (!resp.ok) {
-            const text = await resp.text();
-            return { success: false, message: `网络错误: ${resp.status} ${text}` };
-        }
-        const json = await resp.json();
-        if (json.code !== 200) {
-            return { success: false, message: json.message || '请求失败' };
-        }
-        return { success: true, data: json.data };
-    } catch (e) {
-        console.error('API 请求异常:', e);
-        return { success: false, message: '请求异常，请稍后重试' };
-    }
-}
-
 async function applyJobApi(payload) {
     return apiRequest(`${JOB_SEEKER_API_BASE}/applications`, {
         method: 'POST',

@@ -81,8 +81,11 @@ async function loadTalentPool(user) {
 
     try {
         // 1. 先拉取当前公司的人才库记录（仅有 talentId/resumeId/companyId/tag/putInTime 等）
-        const talentList = await ApiService.getTalentPool();
-        const list = Array.isArray(talentList) ? talentList : [];
+        const result = await ApiService.getTalentPool();
+        if (!result.success) {
+            throw new Error(result.message || '获取人才库失败');
+        }
+        const list = Array.isArray(result.data) ? result.data : [];
 
         if (totalEl) totalEl.textContent = list.length;
         if (recentEl) {
@@ -160,15 +163,23 @@ async function viewTalentDetail(talentId, resumeId) {
     }
 
     try {
-        const talent = await ApiService.getTalentById(talentId);
-        let resume = null;
+        const talentResult = await ApiService.getTalentById(talentId);
+        if (!talentResult.success) {
+            alert(talentResult.message || '获取人才信息失败');
+            return;
+        }
+        
+        let resumeResult = null;
         if (resumeId) {
             try {
-                resume = await ApiService.request(`/resume/${encodeURIComponent(resumeId)}`);
+                resumeResult = await ApiService.request(`/resume/${encodeURIComponent(resumeId)}`);
             } catch (e) {
                 console.error('加载简历详情失败:', e);
             }
         }
+
+        const talent = talentResult.data;
+        const resume = resumeResult && resumeResult.success ? resumeResult.data : null;
 
         if (!talent && !resume) {
             alert('找不到该人才信息');

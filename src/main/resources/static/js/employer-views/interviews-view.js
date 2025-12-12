@@ -182,9 +182,13 @@ async function loadInterviews(currentUser, status) {
         }
 
         // 使用 ApiService.request 替代普通 fetch 以确保携带 JWT 令牌
-        const resp = await ApiService.request(`/interview/company/${encodeURIComponent(currentUser.companyId)}?${params.toString()}`);
-
-        const page = resp || {};
+        const result = await ApiService.request(`/interview/company/${encodeURIComponent(currentUser.companyId)}?${params.toString()}`);
+        if (!result.success) {
+            if (statusEl) statusEl.textContent = result.message || '加载失败';
+            return;
+        }
+        
+        const page = result.data || {};
         const records = page.records || [];
 
         if (records.length === 0) {
@@ -557,39 +561,106 @@ async function viewResume(resumeSnapshot, resumeId, applicationId) {
     // 如果没有快照或解析失败，尝试通过applicationId获取申请详情
     if (applicationId) {
         try {
-            const appData = await ApiService.request(`/applications/company/application/${encodeURIComponent(applicationId)}`);
-            if (appData && appData.resumeSnapshot) {
-                try {
-                    const data = JSON.parse(appData.resumeSnapshot);
-                    showResumeDetails(data);
-                    return;
-                } catch (e) {
-                    console.error('解析简历快照失败:', e);
+            const result = await ApiService.request(`/applications/company/application/${encodeURIComponent(applicationId)}`);
+            if (result.success && result.data) {
+                const appData = result.data;
+                if (appData.resumeSnapshot && appData.resumeSnapshot !== 'null') {
+                    try {
+                        const data = JSON.parse(appData.resumeSnapshot);
+                        showResumeDetails(data);
+                        return;
+                    } catch (e) {
+                        console.error('解析简历快照失败:', e);
+                    }
+                }
+                
+                // 如果申请数据中有resumeId，则通过resumeId获取简历
+                if (appData.resumeId) {
+                    try {
+                        const resumeResult = await ApiService.request(`/resume/${encodeURIComponent(appData.resumeId)}`);
+                        if (resumeResult.success && resumeResult.data) {
+                            showResumeDetails(resumeResult.data);
+                            return;
+                        }
+                    } catch (e) {
+                        console.error('通过申请ID中的简历ID获取简历信息失败:', e);
+                    }
                 }
             }
         } catch (e) {
-            console.error('通过申请ID获取简历信息失败:', e);
+            console.error('通过申请ID获取申请详情失败:', e);
         }
     }
 
-    // 回退到原来的查询方式
-    if (!resumeId) {
-        alert('无法查看简历：缺少简历ID');
-        return;
-    }
-
-    try {
-        const data = await ApiService.request(`/resume/${encodeURIComponent(resumeId)}`);
-        if (!data) {
-            alert('未找到简历信息');
-            return;
+    // 回退到直接通过resumeId查询简历信息
+    if (resumeId) {
+        try {
+            const result = await ApiService.request(`/resume/${encodeURIComponent(resumeId)}`);
+            if (result.success && result.data) {
+                showResumeDetails(result.data);
+                return;
+            }
+        } catch (e) {
+            console.error('通过简历ID获取简历信息失败:', e);
         }
-
-        showResumeDetails(data);
-    } catch (e) {
-        console.error('查看简历失败:', e);
-        // ApiService 已经弹出错误提示
     }
+
+    alert('无法查看简历：缺少有效的简历信息');
+}
+
+function showResumeDetails(data) {
+    // 当前后端返回字段：name, age, education, jobIntention, workExperience, skill, createTime, updateTime 等
+    // 先用现有字段对齐展示，后续如后端补充 phone/email/projectExperience/selfEvaluation 再扩展
+    const detailLines = [];
+    detailLines.push(`姓名：${data.name || ''}`);
+    if (data.phone) {
+        detailLines.push(`电话：${data.phone}`);
+    }
+    if (data.email) {
+        detailLines.push(`邮箱：${data.email}`);
+    }
+    if (data.age != null) {
+        detailLines.push(`年龄：${data.age}`);
+    }
+    if (data.gender != null) {
+        // 优先使用genderDesc，如果没有则使用gender数字映射
+        if (data.genderDesc) {
+            detailLines.push(`性别：${data.genderDesc}`);
+        } else {
+            const genderMap = {1: '男', 2: '女'};
+            detailLines.push(`性别：${genderMap[data.gender] || data.gender}`);
+        }
+    }
+    // 优先使用educationDesc，如果没有则使用education数字映射
+    if (data.educationDesc) {
+        detailLines.push(`学历：${data.educationDesc}`);
+    } else {
+        detailLines.push(`学历：${mapEducationText(data.education) || ''}`);
+    }
+    if (data.jobIntention) {
+        detailLines.push(`求职意向：${data.jobIntention}`);
+    }
+    // 优先使用workExperienceDesc，如果没有则使用workExperience数字映射
+    if (data.workExperienceDesc) {
+        detailLines.push(`工作经历：${data.workExperienceDesc}`);
+    } else if (data.workExperience != null) {
+        detailLines.push(`工作经历：${mapWorkExperienceText(data.workExperience)}`);
+    }
+    if (data.skill) {
+        detailLines.push(`技能：${data.skill}`);
+    }
+    if (data.resumeName) {
+        detailLines.push(`简历名称：${data.resumeName}`);
+    }
+    if (data.createTime) {
+        detailLines.push(`创建时间：${data.createTime}`);
+    }
+    if (data.updateTime) {
+        detailLines.push(`更新时间：${data.updateTime}`);
+    }
+
+    const detailHtml = '\n' + detailLines.join('\n');
+    alert(`简历详情：\n\n${detailHtml}`);
 }
 
 function mapWorkExperienceText(expValue) {
@@ -615,45 +686,4 @@ function mapEducationText(eduValue) {
         case 5: return '博士';
         default: return eduValue;
     }
-}
-
-function showResumeDetails(data) {
-    // 当前后端返回字段：name, age, education, jobIntention, workExperience, skill, createTime, updateTime 等
-    // 先用现有字段对齐展示，后续如后端补充 phone/email/projectExperience/selfEvaluation 再扩展
-    const detailLines = [];
-    detailLines.push(`姓名：${data.name || ''}`);
-    if (data.phone) {
-        detailLines.push(`电话：${data.phone}`);
-    }
-    if (data.email) {
-        detailLines.push(`邮箱：${data.email}`);
-    }
-    if (data.age != null) {
-        detailLines.push(`年龄：${data.age}`);
-    }
-    if (data.genderDesc) {
-        detailLines.push(`性别：${data.genderDesc}`);
-    }
-    detailLines.push(`学历：${mapEducationText(data.education) || ''}`);
-    if (data.jobIntention) {
-        detailLines.push(`求职意向：${data.jobIntention}`);
-    }
-    if (data.workExperience) {
-        detailLines.push(`工作经历：${mapWorkExperienceText(data.workExperience)}`);
-    }
-    if (data.skill) {
-        detailLines.push(`技能：${data.skill}`);
-    }
-    if (data.resumeName) {
-        detailLines.push(`简历名称：${data.resumeName}`);
-    }
-    if (data.createTime) {
-        detailLines.push(`创建时间：${data.createTime}`);
-    }
-    if (data.updateTime) {
-        detailLines.push(`更新时间：${data.updateTime}`);
-    }
-
-    const detailHtml = '\n' + detailLines.join('\n');
-    alert(`简历详情：\n\n${detailHtml}`);
 }

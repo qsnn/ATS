@@ -470,14 +470,13 @@ function mapEducationText(eduValue) {
 
 async function viewJobDetail(jobId) {
     try {
-        const base = window.API_BASE || '/api';
-        const resp = await Auth.authenticatedFetch(`${base}/job/info/${encodeURIComponent(jobId)}`);
-        if (!resp.ok) {
-            const text = await resp.text();
-            alert(`网络错误：${resp.status} ${text}`);
+        // 使用 apiRequest 替代 Auth.authenticatedFetch 以适配新的统一返回格式
+        const result = await apiRequest(`${API_BASE_URL}/job/info/${encodeURIComponent(jobId)}`);
+        if (!result.success) {
+            alert(result.message || '获取职位详情失败');
             return;
         }
-        const job = await resp.json();
+        const job = result.data;
         
         // 生成完整的地址信息
         let fullAddress = '';
@@ -489,13 +488,11 @@ async function viewJobDetail(jobId) {
         let contactInfo = '';
         if (job.companyId) {
             try {
-                const companyResp = await Auth.authenticatedFetch(`${base}/company/${encodeURIComponent(job.companyId)}`);
-                if (companyResp.ok) {
-                    const company = await companyResp.json();
-                    if (company && company.data) {
-                        if (company.data.contactPhone) contactInfo += `\n联系电话：${company.data.contactPhone}`;
-                        if (company.data.contactEmail) contactInfo += `\n联系邮箱：${company.data.contactEmail}`;
-                    }
+                // 使用 apiRequest 替代 Auth.authenticatedFetch 以适配新的统一返回格式
+                const companyResult = await apiRequest(`${API_BASE_URL}/company/${encodeURIComponent(job.companyId)}`);
+                if (companyResult.success && companyResult.data) {
+                    if (companyResult.data.contactPhone) contactInfo += `\n联系电话：${companyResult.data.contactPhone}`;
+                    if (companyResult.data.contactEmail) contactInfo += `\n联系邮箱：${companyResult.data.contactEmail}`;
                 }
             } catch (companyError) {
                 console.warn('获取公司信息失败:', companyError);
