@@ -16,7 +16,6 @@
         <result column="company_name" property="companyName"/>
     </resultMap>
 
-    <!-- SysUser 全限定名 -->
     <select id="selectByUsername" resultType="com.platform.ats.entity.user.SysUser">
         SELECT * FROM sys_user
         WHERE username = #{username} AND delete_flag = 0
@@ -54,6 +53,14 @@
         ORDER BY u.create_time DESC
     </select>
 
+
+
+    <update id="updateStatus">
+        UPDATE sys_user
+        SET status = #{status}, update_time = NOW()
+        WHERE user_id = #{userId} AND delete_flag = 0
+    </update>
+
     <select id="selectByCompanyId" resultType="com.platform.ats.entity.user.SysUser">
         SELECT * FROM sys_user
         WHERE company_id = #{companyId} AND delete_flag = 0
@@ -64,17 +71,13 @@
         WHERE user_type = #{userType} AND delete_flag = 0
     </select>
 
-    <update id="updateStatus">
-        UPDATE sys_user
-        SET status = #{status}, update_time = NOW()
-        WHERE user_id = #{userId} AND delete_flag = 0
-    </update>
-
     <update id="logicDelete">
         UPDATE sys_user
         SET delete_flag = 1, update_time = NOW()
         WHERE user_id = #{userId}
     </update>
+
+
 
     <select id="selectHrByCompanyId" resultType="com.platform.ats.entity.user.SysUser">
         SELECT * FROM sys_user
