@@ -1,0 +1,6 @@
+    url: jdbc:mysql://124.71.101.139:3306/recruitment-platform-data?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8
+    username: ${DB_USERNAME:qsnn}
+    password: ${DB_PASSWORD:123}
+#    url: jdbc:mysql://localhost:3306/recruitment-platform-data?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8
+#    username: ${DB_USERNAME:recruitment-platform-data}
+#    password: ${DB_PASSWORD:mysoftwareproject}

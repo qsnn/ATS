@@ -62,8 +62,15 @@ POST /api/user/login
     "username": "testuser",
     "email": "test@example.com",
     "phone": "13800138000",
-    "userType": "JOB_SEEKER",
-    "status": 1
+    "userType": 4,
+    "userTypeDesc": "求职者",
+    "createTime": "2023-01-15T09:30:00",
+    "companyId": null,
+    "companyName": null,
+    "jobApplyCount": 0,
+    "recruitmentCount": 0,
+    "companyManageCount": 0,
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }
 }
 ```
@@ -147,7 +154,7 @@ POST /api/user
   "password": "password123",
   "email": "newuser@example.com",
   "phone": "13900139000",
-  "userType": "JOB_SEEKER"
+  "userType": 4
 }
 ```
 
@@ -236,11 +243,14 @@ GET /api/job/info/list?current=1&size=10
       "district": "海淀区",
       "salaryMin": 15000,
       "salaryMax": 25000,
-      "education": "本科",
+      "education": 2,
+      "educationDesc": "本科",
       "workExperience": 3,
+      "workExperienceDesc": "3-5年",
       "jobDesc": "负责Java后端开发工作",
       "publisherId": 10005,
       "publishStatus": 1,
+      "publishStatusDesc": "已发布",
       "createTime": "2023-01-15T09:30:00",
       "updateTime": "2023-01-15T09:30:00",
       "companyName": "科技有限公司",
@@ -270,11 +280,14 @@ GET /api/job/info/{id}
   "district": "海淀区",
   "salaryMin": 15000,
   "salaryMax": 25000,
-  "education": "本科",
+  "education": 2,
+  "educationDesc": "本科",
   "workExperience": 3,
+  "workExperienceDesc": "3-5年",
   "jobDesc": "负责Java后端开发工作",
   "publisherId": 10005,
   "publishStatus": 1,
+  "publishStatusDesc": "已发布",
   "createTime": "2023-01-15T09:30:00",
   "updateTime": "2023-01-15T09:30:00",
   "companyName": "科技有限公司",
@@ -295,7 +308,7 @@ POST /api/job/info
   "city": "上海",
   "salaryMin": 12000,
   "salaryMax": 20000,
-  "education": "本科",
+  "education": 2,
   "workExperience": 2,
   "jobDesc": "负责前端页面开发",
   "publisherId": 10005
@@ -323,6 +336,8 @@ PUT /api/job/info
   "city": "上海",
   "salaryMin": 15000,
   "salaryMax": 25000,
+  "education": 3,
+  "workExperience": 5,
   "jobDesc": "负责复杂前端应用开发"
 }
 ```
@@ -389,8 +404,8 @@ POST /api/resume
   "name": "张三",
   "gender": 1,
   "age": 28,
-  "education": "本科",
-  "workExperience": "3年",
+  "education": 2,
+  "workExperience": 3,
   "skill": "Java, Spring, MySQL",
   "jobIntention": "Java开发工程师",
   "phone": "13800138000",
@@ -410,8 +425,8 @@ POST /api/resume
     "gender": 1,
     "genderDesc": "男",
     "age": 28,
-    "education": "本科",
-    "workExperience": "3年",
+    "education": 2,
+    "workExperience": 3,
     "skill": "Java, Spring, MySQL",
     "jobIntention": "Java开发工程师",
     "phone": "13800138000",
@@ -436,8 +451,8 @@ PUT /api/resume
   "name": "张三",
   "gender": 1,
   "age": 29,
-  "education": "硕士",
-  "workExperience": "5年",
+  "education": 3,
+  "workExperience": 5,
   "skill": "Java, Spring, MySQL, Redis",
   "jobIntention": "高级Java开发工程师",
   "phone": "13800138000",
@@ -457,8 +472,8 @@ PUT /api/resume
     "gender": 1,
     "genderDesc": "男",
     "age": 29,
-    "education": "硕士",
-    "workExperience": "5年",
+    "education": 3,
+    "workExperience": 5,
     "skill": "Java, Spring, MySQL, Redis",
     "jobIntention": "高级Java开发工程师",
     "phone": "13800138000",
@@ -500,8 +515,8 @@ GET /api/resume/{resumeId}
     "gender": 1,
     "genderDesc": "男",
     "age": 29,
-    "education": "硕士",
-    "workExperience": "5年",
+    "education": 3,
+    "workExperience": 5,
     "skill": "Java, Spring, MySQL, Redis",
     "jobIntention": "高级Java开发工程师",
     "phone": "13800138000",
@@ -531,8 +546,8 @@ GET /api/resume/user/{userId}
       "gender": 1,
       "genderDesc": "男",
       "age": 29,
-      "education": "硕士",
-      "workExperience": "5年",
+      "education": 3,
+      "workExperience": 5,
       "skill": "Java, Spring, MySQL, Redis",
       "jobIntention": "高级Java开发工程师",
       "phone": "13800138000",
@@ -590,9 +605,11 @@ GET /api/applications/my?userId=10001&current=1&size=10
         "companyId": 2001,
         "companyName": "科技有限公司",
         "resumeId": 3001,
-        "status": "APPLIED",
+        "status": 1,
+        "statusDesc": "已申请",
         "applyTime": "2023-01-16T10:30:00",
         "publishStatus": 1,
+        "publishStatusDesc": "已发布",
         "resumeSnapshot": "{\"resumeId\":3001,\"userId\":10001,\"name\":\"张三\",\"education\":\"硕士\",...}"
       }
     ],
@@ -628,7 +645,8 @@ GET /api/applications/company/{companyId}?current=1&size=10
         "email": "zhangsan@example.com",
         "resumeId": 3001,
         "resumeTitle": "张三的简历",
-        "status": "APPLIED",
+        "status": 1,
+        "statusDesc": "已申请",
         "applyTime": "2023-01-16T10:30:00",
         "resumeSnapshot": "{\"resumeId\":3001,\"userId\":10001,\"name\":\"张三\",\"education\":\"硕士\",...}"
       }
@@ -648,7 +666,7 @@ PUT /api/applications/{applicationId}/status
 **请求参数**
 ```json
 {
-  "status": "ACCEPTED",
+  "status": 2,
   "reason": "符合要求，安排面试"
 }
 ```
@@ -840,7 +858,7 @@ POST /api/interview
   "intervieweeId": 10001,
   "interviewTime": "2023-01-20T10:00:00",
   "interviewPlace": "会议室A",
-  "status": "PREPARING_INTERVIEW"
+  "status": 1
 }
 ```
 
@@ -859,7 +877,7 @@ POST /api/interview
     "intervieweeName": "张三",
     "interviewPlace": "会议室A",
     "interviewTime": "2023-01-20T10:00:00",
-    "status": "PREPARING_INTERVIEW"
+    "status": 1
   }
 }
 ```
@@ -875,7 +893,7 @@ PUT /api/interview
   "arrangeId": 5001,
   "interviewTime": "2023-01-20T14:00:00",
   "interviewPlace": "会议室B",
-  "status": "PREPARING_INTERVIEW"
+  "status": 1
 }
 ```
 
@@ -894,7 +912,7 @@ PUT /api/interview
     "intervieweeName": "张三",
     "interviewPlace": "会议室B",
     "interviewTime": "2023-01-20T14:00:00",
-    "status": "PREPARING_INTERVIEW"
+    "status": 1
   }
 }
 ```
@@ -933,7 +951,7 @@ GET /api/interview/interviewer/{interviewerId}
       "intervieweeName": "张三",
       "interviewPlace": "会议室B",
       "interviewTime": "2023-01-20T14:00:00",
-      "status": "PREPARING_INTERVIEW"
+      "status": 1
     }
   ]
 }
@@ -961,8 +979,10 @@ GET /api/interview/user/{userId}
       "interviewPlace": "会议室B",
       "interviewTime": "2023-01-20T14:00:00",
       "intervieweeName": "张三",
-      "status": "PREPARING_INTERVIEW",
+      "status": 1,
+      "statusDesc": "准备面试",
       "publishStatus": 1,
+      "publishStatusDesc": "已发布",
       "resumeId": 3001,
       "resumeSnapshot": "{\"resumeId\":3001,\"userId\":10001,\"name\":\"张三\",\"education\":\"硕士\",...}"
     }
@@ -1039,6 +1059,7 @@ GET /api/favorites/my?userId=10001&current=1&size=10
         "companyName": "科技有限公司",
         "department": "技术部",
         "publishStatus": 1,
+        "publishStatusDesc": "已发布",
         "createTime": "2023-01-16T10:30:00"
       }
     ],
@@ -1173,4 +1194,3 @@ GET /api/talent/company/{companyId}
     }
   ]
 }
-```
