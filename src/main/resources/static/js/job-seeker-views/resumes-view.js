@@ -369,8 +369,56 @@ async function saveResume(currentUser, mode, resumeId) {
     const skills = document.getElementById('resume-skills').value.trim();
     const jobIntention = document.getElementById('resume-job-intention').value.trim();
 
-    if (!title || !name || !phone || !email) {
-        alert('简历标题、姓名、电话、邮箱为必填项');
+    // 前端验证
+    if (!title) {
+        alert('请输入简历标题');
+        document.getElementById('resume-title').focus();
+        return;
+    }
+    
+    if (!name) {
+        alert('请输入姓名');
+        document.getElementById('resume-name').focus();
+        return;
+    }
+    
+    if (!phone) {
+        alert('请输入电话');
+        document.getElementById('resume-phone').focus();
+        return;
+    }
+    
+    // 电话号码简单验证
+    if (!/^1[3-9]\d{9}$/.test(phone)) {
+        alert('请输入正确的手机号码');
+        document.getElementById('resume-phone').focus();
+        return;
+    }
+    
+    if (!email) {
+        alert('请输入邮箱');
+        document.getElementById('resume-email').focus();
+        return;
+    }
+    
+    // 邮箱简单验证
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        alert('请输入正确的邮箱地址');
+        document.getElementById('resume-email').focus();
+        return;
+    }
+    
+    // 年龄验证
+    if (age && (isNaN(age) || age < 16 || age > 100)) {
+        alert('请输入正确的年龄（16-100之间）');
+        document.getElementById('resume-age').focus();
+        return;
+    }
+    
+    // 工作经验验证
+    if (workExperience && (isNaN(workExperience) || workExperience < 0 || workExperience > 50)) {
+        alert('请输入正确的工作经验年数（0-50之间）');
+        document.getElementById('resume-workExp').focus();
         return;
     }
 

@@ -393,8 +393,14 @@ async function scheduleInterview(applicationId, userId) {
         const interviewTime = modal.querySelector('#interview-time').value;
         const interviewPlace = modal.querySelector('#interview-place').value;
 
-        if (!interviewTime || !interviewPlace) {
-            alert('请填写完整的面试信息');
+        // 前端验证
+        if (!interviewTime) {
+            alert('请选择面试时间');
+            return;
+        }
+
+        if (!interviewPlace) {
+            alert('请输入面试地点');
             return;
         }
 

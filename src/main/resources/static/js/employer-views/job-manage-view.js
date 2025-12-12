@@ -566,6 +566,135 @@ async function publishJob(jobId) {
     }
 }
 
+// 在文件末尾添加保存职位的函数
+async function saveJob(currentUser, action) {
+    const jobId = document.getElementById('job-id').value;
+    const title = document.getElementById('job-title').value.trim();
+    const department = document.getElementById('job-department').value.trim();
+    const province = document.getElementById('job-province').value.trim();
+    const city = document.getElementById('job-city').value.trim();
+    const district = document.getElementById('job-district').value.trim();
+    const salaryMin = document.getElementById('job-salary-min').value.trim();
+    const salaryMax = document.getElementById('job-salary-max').value.trim();
+    const experience = document.getElementById('job-experience').value;
+    const education = document.getElementById('job-education').value;
+    const description = document.getElementById('job-description').value.trim();
+
+    // 前端验证
+    if (!title) {
+        alert('请输入职位名称');
+        document.getElementById('job-title').focus();
+        return;
+    }
+
+    if (!province) {
+        alert('请输入省份');
+        document.getElementById('job-province').focus();
+        return;
+    }
+
+    if (!city) {
+        alert('请输入城市');
+        document.getElementById('job-city').focus();
+        return;
+    }
+
+    if (!salaryMin) {
+        alert('请输入最低薪资');
+        document.getElementById('job-salary-min').focus();
+        return;
+    }
+
+    if (!salaryMax) {
+        alert('请输入最高薪资');
+        document.getElementById('job-salary-max').focus();
+        return;
+    }
+
+    const minSalary = parseFloat(salaryMin);
+    const maxSalary = parseFloat(salaryMax);
+
+    if (isNaN(minSalary) || minSalary <= 0) {
+        alert('请输入正确的最低薪资');
+        document.getElementById('job-salary-min').focus();
+        return;
+    }
+
+    if (isNaN(maxSalary) || maxSalary <= 0) {
+        alert('请输入正确的最高薪资');
+        document.getElementById('job-salary-max').focus();
+        return;
+    }
+
+    if (minSalary > maxSalary) {
+        alert('最低薪资不能大于最高薪资');
+        document.getElementById('job-salary-min').focus();
+        return;
+    }
+
+    if (!description) {
+        alert('请输入职位描述');
+        document.getElementById('job-description').focus();
+        return;
+    }
+
+    const payload = {
+        companyId: currentUser.companyId,
+        jobName: title,
+        department: department,
+        province: province,
+        city: city,
+        district: district,
+        salaryMin: minSalary,
+        salaryMax: maxSalary,
+        workExperience: experience,
+        education: education,
+        jobDesc: description
+    };
+
+    // 如果是更新操作，添加jobId
+    if (jobId) {
+        payload.jobId = parseInt(jobId);
+    }
+
+    try {
+        const method = jobId ? 'PUT' : 'POST';
+        const resp = await Auth.authenticatedFetch(JOB_API_BASE, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!resp.ok) {
+            const text = await resp.text();
+            alert(`网络错误：${resp.status} ${text}`);
+            return;
+        }
+
+        const json = await resp.json();
+        if (json.code !== 200) {
+            alert(json.message || '保存失败');
+            return;
+        }
+
+        alert(action === 'draft' ? '草稿保存成功' : '职位发布成功');
+        document.getElementById('job-modal').style.display = 'none';
+        
+        // 获取当前激活的标签页状态
+        const activeTab = document.querySelector('.tab-btn.active');
+        let currentStatus = activeTab ? activeTab.getAttribute('data-status') : '0';
+        // 强制转换为字符串并确保是有效的状态值之一
+        currentStatus = String(currentStatus);
+        if (!['0', '1', '2'].includes(currentStatus)) {
+            currentStatus = '0';
+        }
+        loadJobList(currentUser, currentStatus);
+    } catch (e) {
+        console.error('保存职位异常:', e);
+        alert('请求异常，请稍后重试');
+    }
+}
+
 // 学历映射函数
 function mapEducationText(eduValue) {
     switch (parseInt(eduValue)) {
