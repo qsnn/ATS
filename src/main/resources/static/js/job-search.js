@@ -143,7 +143,7 @@ function renderJobList(jobs) {
                 <span class="company">${escapeHtml(job.companyName || '')}</span>
                 <span class="location">${escapeHtml(job.city || '')}</span>
                 <span class="experience">${escapeHtml(job.workExperience || '')}</span>
-                <span class="education">${escapeHtml(job.education || '')}</span>
+                <span class="education">${escapeHtml(mapEducationText(job.education) || '')}</span>
             </div>
             <div class="job-description">
                 ${escapeHtml((job.jobDesc || '').substring(0, 100))}...
@@ -222,6 +222,31 @@ function escapeHtml(unsafe) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+}
+
+function mapEducationText(eduValue) {
+    switch (parseInt(eduValue)) {
+        case 0: return '无学历要求';
+        case 1: return '高中';
+        case 2: return '大专';
+        case 3: return '本科';
+        case 4: return '硕士';
+        case 5: return '博士';
+        default: return eduValue;
+    }
+}
+
+function mapWorkExperienceText(expValue) {
+    if (expValue === 0 || expValue === '0') {
+        return '应届生';
+    }
+    
+    const numValue = parseInt(expValue);
+    if (isNaN(numValue) || numValue < 0) {
+        return expValue;
+    }
+    
+    return numValue + '年及以上';
 }
 
 // 分页功能
@@ -327,8 +352,8 @@ async function viewJobDetail(jobId) {
 公司：${job.companyName || ''}
 部门：${job.department || ''}
 地点：${fullAddress || job.city || ''}
-经验要求：${job.workExperience || ''}
-学历要求：${job.education || ''}
+经验要求：${mapWorkExperienceText(job.workExperience) || ''}
+学历要求：${mapEducationText(job.education) || ''}
 薪资范围：${(job.salaryMin || 0) / 1000}K - ${(job.salaryMax || 0) / 1000}K${contactInfo}
 
 职位描述：

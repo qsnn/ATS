@@ -62,14 +62,14 @@ public class InterviewInfoServiceImpl extends ServiceImpl<InterviewInfoRepositor
         interviewInfo.setCreate_time(LocalDateTime.now());
         interviewInfo.setUpdate_time(LocalDateTime.now());
         interviewInfo.setDeleteFlag(0);
-        interviewInfo.setStatus("PREPARING_INTERVIEW");
+        interviewInfo.setStatus(1);
 
         interviewInfoRepository.insert(interviewInfo);
 
         // 更新申请状态为ACCEPTED
         JobApplication updatedApplication = new JobApplication();
         updatedApplication.setApplicationId(interviewInfo.getApplicationId());
-        updatedApplication.setStatus("ACCEPTED");
+        updatedApplication.setStatus(2);
         jobApplicationRepository.updateById(updatedApplication);
 
         return toVO(interviewInfo);

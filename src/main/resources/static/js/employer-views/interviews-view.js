@@ -4,10 +4,10 @@ function renderInterviewsView(container, currentUser) {
             <h2>面试管理</h2>
             <!-- 添加状态筛选标签 -->
             <div class="status-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">
-                <button class="tab-btn active" data-status="PREPARING_INTERVIEW" style="padding: 8px 16px; border: none; background-color: #f3f4f6; cursor: pointer; border-radius: 4px;">待面试</button>
-                <button class="tab-btn" data-status="INTERVIEW_ENDED" style="padding: 8px 16px; border: none; background-color: #f3f4f6; cursor: pointer; border-radius: 4px;">待录取</button>
-                <button class="tab-btn" data-status="ACCEPTED" style="padding: 8px 16px; border: none; background-color: #f3f4f6; cursor: pointer; border-radius: 4px;">录取</button>
-                <button class="tab-btn" data-status="REJECTED" style="padding: 8px 16px; border: none; background-color: #f3f4f6; cursor: pointer; border-radius: 4px;">未录取</button>
+                <button class="tab-btn active" data-status="1" style="padding: 8px 16px; border: none; background-color: #f3f4f6; cursor: pointer; border-radius: 4px;">待面试</button>
+                <button class="tab-btn" data-status="2" style="padding: 8px 16px; border: none; background-color: #f3f4f6; cursor: pointer; border-radius: 4px;">待录取</button>
+                <button class="tab-btn" data-status="3" style="padding: 8px 16px; border: none; background-color: #f3f4f6; cursor: pointer; border-radius: 4px;">录取</button>
+                <button class="tab-btn" data-status="4" style="padding: 8px 16px; border: none; background-color: #f3f4f6; cursor: pointer; border-radius: 4px;">未录取</button>
             </div>
             
             <!-- 日期筛选器，仅在待面试状态下显示 -->
@@ -63,7 +63,7 @@ function renderInterviewsView(container, currentUser) {
             
             // 控制日期筛选器的显示（仅在待面试状态下显示）
             const dateFilterContainer = document.getElementById('date-filter-container');
-            if (status === 'PREPARING_INTERVIEW') {
+            if (status === '1') {
                 dateFilterContainer.style.display = 'block';
             } else {
                 dateFilterContainer.style.display = 'none';
@@ -146,7 +146,7 @@ function renderInterviewsView(container, currentUser) {
         }
     }
     
-    loadInterviews(currentUser, 'PREPARING_INTERVIEW');
+    loadInterviews(currentUser, '1');
 }
 
 async function loadInterviews(currentUser, status) {
@@ -168,17 +168,13 @@ async function loadInterviews(currentUser, status) {
             size: window.interviewsPagination.size
         });
         
-        // 如果指定了状态，则添加到参数中（确保是字符串）
+        // 如果指定了状态，则添加到参数中
         if (status) {
-            // 强制转换为字符串并确保是有效的状态值之一
-            const statusStr = String(status);
-            if (['PREPARING_INTERVIEW', 'INTERVIEW_ENDED', 'ACCEPTED', 'REJECTED'].includes(statusStr)) {
-                params.append('status', statusStr);
-            }
+            params.append('status', status);
         }
         
         // 如果是待面试状态且选择了日期，则添加日期参数
-        if (status === 'PREPARING_INTERVIEW') {
+        if (status === '1') {
             const dateFilter = document.getElementById('interview-date-filter');
             if (dateFilter && dateFilter.value) {
                 params.append('interviewDate', dateFilter.value);
@@ -292,7 +288,7 @@ async function loadInterviews(currentUser, status) {
             actionTd.style.verticalAlign = 'middle';
 
             // 根据不同状态显示不同的操作按钮（移除了查看简历按钮）
-            if (status === 'PREPARING_INTERVIEW') {
+            if (status === '1') {
                 // 待面试状态下的操作按钮
                 const finishInterviewButton = document.createElement('button');
                 finishInterviewButton.className = 'btn btn-success btn-sm';
@@ -307,20 +303,20 @@ async function loadInterviews(currentUser, status) {
                 updateInfoButton.style.marginLeft = '5px';
                 updateInfoButton.onclick = () => updateInterviewInfo(interview.arrangeId, interview.interviewTime, interview.interviewPlace);
                 actionTd.appendChild(updateInfoButton);
-            } else if (status === 'INTERVIEW_ENDED') {
+            } else if (status === '2') {
                 // 待录取状态下的操作按钮
                 const acceptButton = document.createElement('button');
                 acceptButton.className = 'btn btn-success btn-sm';
                 acceptButton.textContent = '录取';
                 acceptButton.style.marginLeft = '5px';
-                acceptButton.onclick = () => updateInterviewStatus(interview.arrangeId, 'ACCEPTED');
+                acceptButton.onclick = () => updateInterviewStatus(interview.arrangeId, 3);
                 actionTd.appendChild(acceptButton);
 
                 const rejectButton = document.createElement('button');
                 rejectButton.className = 'btn btn-danger btn-sm';
                 rejectButton.textContent = '拒绝';
                 rejectButton.style.marginLeft = '5px';
-                rejectButton.onclick = () => updateInterviewStatus(interview.arrangeId, 'REJECTED');
+                rejectButton.onclick = () => updateInterviewStatus(interview.arrangeId, 4);
                 actionTd.appendChild(rejectButton);
             }
 
@@ -342,13 +338,17 @@ async function loadInterviews(currentUser, status) {
 function mapInterviewStatus(status) {
     if (!status) return '未知';
     switch (status) {
-        case 'PREPARING_INTERVIEW':
+        case 1:
+        case '1':
             return '待面试';
-        case 'INTERVIEW_ENDED':
+        case 2:
+        case '2':
             return '待录取';
-        case 'ACCEPTED':
+        case 3:
+        case '3':
             return '录取';
-        case 'REJECTED':
+        case 4:
+        case '4':
             return '未录取';
         default:
             return status;
@@ -368,7 +368,7 @@ async function finishInterview(arrangeId) {
     try {
         const payload = {
             arrangeId: arrangeId,
-            status: 'INTERVIEW_ENDED'
+            status: 2
         };
 
         const response = await ApiService.request('/interview', {
@@ -381,11 +381,11 @@ async function finishInterview(arrangeId) {
         // 重新加载面试列表
         const currentUser = Auth.getCurrentUser && Auth.getCurrentUser();
         // 确保状态值是字符串形式，防止被意外转换为数字
-        let currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || 'PREPARING_INTERVIEW';
+        let currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || '1';
         // 强制转换为字符串并确保是有效的状态值之一
         currentStatus = String(currentStatus);
-        if (!['PREPARING_INTERVIEW', 'INTERVIEW_ENDED', 'ACCEPTED', 'REJECTED'].includes(currentStatus)) {
-            currentStatus = 'PREPARING_INTERVIEW';
+        if (!['1', '2', '3', '4'].includes(currentStatus)) {
+            currentStatus = '1';
         }
         loadInterviews(currentUser, currentStatus);
     } catch (e) {
@@ -414,16 +414,16 @@ async function updateInterviewStatus(arrangeId, status) {
             body: JSON.stringify(payload)
         });
 
-        alert(status === 'ACCEPTED' ? '已录取' : '已拒绝');
+        alert(status === 3 ? '已录取' : '已拒绝');
 
         // 重新加载面试列表
         const currentUser = Auth.getCurrentUser && Auth.getCurrentUser();
         // 确保状态值是字符串形式，防止被意外转换为数字
-        let currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || 'INTERVIEW_ENDED';
+        let currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || '2';
         // 强制转换为字符串并确保是有效的状态值之一
         currentStatus = String(currentStatus);
-        if (!['PREPARING_INTERVIEW', 'INTERVIEW_ENDED', 'ACCEPTED', 'REJECTED'].includes(currentStatus)) {
-            currentStatus = 'INTERVIEW_ENDED';
+        if (!['1', '2', '3', '4'].includes(currentStatus)) {
+            currentStatus = '2';
         }
         loadInterviews(currentUser, currentStatus);
     } catch (e) {
@@ -526,11 +526,11 @@ async function confirmUpdateInterviewInfo(arrangeId, interviewTime, interviewPla
         // 重新加载面试列表
         const currentUser = Auth.getCurrentUser && Auth.getCurrentUser();
         // 确保状态值是字符串形式，防止被意外转换为数字
-        let currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || 'PREPARING_INTERVIEW';
+        let currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || '1';
         // 强制转换为字符串并确保是有效的状态值之一
         currentStatus = String(currentStatus);
-        if (!['PREPARING_INTERVIEW', 'INTERVIEW_ENDED', 'ACCEPTED', 'REJECTED'].includes(currentStatus)) {
-            currentStatus = 'PREPARING_INTERVIEW';
+        if (!['1', '2', '3', '4'].includes(currentStatus)) {
+            currentStatus = '1';
         }
         loadInterviews(currentUser, currentStatus);
     } catch (e) {

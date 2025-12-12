@@ -96,9 +96,12 @@ function renderJobManageView(container, currentUser) {
                         <div class="form-group">
                             <label>学历要求</label>
                             <select id="job-education" class="form-control">
-                                <option value="硕士">硕士</option>
-                                <option value="本科" selected>本科</option>
-                                <option value="大专">大专</option>
+                                <option value="5">博士</option>
+                                <option value="4">硕士</option>
+                                <option value="3" selected>本科</option>
+                                <option value="2">大专</option>
+                                <option value="1">高中</option>
+                                <option value="0">无学历要求</option>
                             </select>
                         </div>
                     </div>
@@ -485,29 +488,13 @@ async function viewJob(jobId) {
         const max = job.salaryMax || 0;
         const salary = min && max ? `${(min / 1000).toFixed(0)}K-${(max / 1000).toFixed(0)}K` : '-';
         
-        let experienceText = '';
-        switch(job.workExperience) {
-            case 0: experienceText = '应届生'; break;
-            case 1: experienceText = '1年及以上'; break;
-            case 2: experienceText = '2年及以上'; break;
-            case 3: experienceText = '3年及以上'; break;
-            case 4: experienceText = '4年及以上'; break;
-            case 5: experienceText = '5年及以上'; break;
-            case 6: experienceText = '6年及以上'; break;
-            case 7: experienceText = '7年及以上'; break;
-            case 8: experienceText = '8年及以上'; break;
-            case 9: experienceText = '9年及以上'; break;
-            case 10: experienceText = '10年及以上'; break;
-            default: experienceText = job.workExperience + '年及以上';
-        }
-        
         const msg = `
 职位名称：${job.jobName || ''}
 所属部门：${job.department || ''}
 工作地点：${location}
 薪资范围：${salary}
-工作经验：${experienceText}
-学历要求：${job.education || ''}
+工作经验：${mapWorkExperienceText(job.workExperience) || ''}
+学历要求：${mapEducationText(job.education) || ''}
 职位描述：${job.jobDesc || ''}
         `;
         alert(msg);
@@ -540,7 +527,7 @@ async function editJob(jobId) {
         document.getElementById('job-salary-min').value = job.salaryMin || '';
         document.getElementById('job-salary-max').value = job.salaryMax || '';
         document.getElementById('job-experience').value = job.workExperience || '0';
-        document.getElementById('job-education').value = job.education || '本科';
+        document.getElementById('job-education').value = job.education || '3';
         document.getElementById('job-description').value = job.jobDesc || '';
         modal.style.display = 'block';
     } catch (e) {
@@ -579,128 +566,29 @@ async function publishJob(jobId) {
     }
 }
 
-// 新增函数：下架职位
-async function unpublishJob(jobId) {
-    if (!confirm('确定要下架这个职位吗？')) return;
-    try {
-        const resp = await Auth.authenticatedFetch(`${JOB_API_BASE}/unpublish/${jobId}`, { method: 'PUT' });
-        if (!resp.ok) {
-            const text = await resp.text();
-            alert(`网络错误: ${resp.status} ${text}`);
-            return;
-        }
-        const ok = await resp.json();
-        if (!ok) {
-            alert('下架失败');
-            return;
-        }
-        alert('职位已下架');
-        // 获取当前激活的标签页状态
-        const activeTab = document.querySelector('.tab-btn.active');
-        let currentStatus = activeTab ? activeTab.getAttribute('data-status') : '0';
-        // 强制转换为字符串并确保是有效的状态值之一
-        currentStatus = String(currentStatus);
-        if (!['0', '1', '2'].includes(currentStatus)) {
-            currentStatus = '0';
-        }
-        loadJobList(Auth.getCurrentUser(), currentStatus);
-    } catch (e) {
-        console.error('下架职位失败:', e);
-        alert('下架失败，请稍后重试');
+// 学历映射函数
+function mapEducationText(eduValue) {
+    switch (parseInt(eduValue)) {
+        case 0: return '无学历要求';
+        case 1: return '高中';
+        case 2: return '大专';
+        case 3: return '本科';
+        case 4: return '硕士';
+        case 5: return '博士';
+        default: return eduValue;
     }
 }
 
-async function saveJob(user, action) {
-    const jobId = document.getElementById('job-id').value || null;
-    const title = document.getElementById('job-title').value.trim();
-    const department = document.getElementById('job-department').value.trim();
-    const province = document.getElementById('job-province').value.trim();
-    const city = document.getElementById('job-city').value.trim();
-    const district = document.getElementById('job-district').value.trim();
-    const salaryMinInput = document.getElementById('job-salary-min').value;
-    const salaryMaxInput = document.getElementById('job-salary-max').value;
-    const experience = document.getElementById('job-experience').value;
-    const education = document.getElementById('job-education').value;
-    const description = document.getElementById('job-description').value.trim();
-
-    if (!title || !salaryMinInput || !salaryMaxInput || !province || !city || !description) {
-        alert('请填写所有必填字段（带*的）');
-        return;
-    }
-
-    // 验证薪资输入
-    const salaryMin = parseFloat(salaryMinInput);
-    const salaryMax = parseFloat(salaryMaxInput);
-    
-    if (isNaN(salaryMin) || isNaN(salaryMax)) {
-        alert('请填写有效的数字薪资');
-        return;
+// 工作经验映射函数
+function mapWorkExperienceText(expValue) {
+    if (expValue === 0 || expValue === '0') {
+        return '应届生';
     }
     
-    if (salaryMin >= salaryMax) {
-        alert('最低薪资必须小于最高薪资');
-        return;
+    const numValue = parseInt(expValue);
+    if (isNaN(numValue) || numValue < 0) {
+        return expValue;
     }
-
-    const jobInfo = {
-        companyId: user.companyId || null,
-        publisherId: user.userId,
-        jobName: title,
-        department: department || null,
-        province,
-        city,
-        district: district || null,
-        salaryMin,
-        salaryMax,
-        workExperience: experience ? parseInt(experience) : null,
-        education: education || null,
-        jobDesc: description
-    };
-
-    // 如果是更新操作，需要添加 jobId
-    if (jobId) {
-        jobInfo.jobId = parseInt(jobId);
-    }
-
-    try {
-        // 根据操作类型决定发布状态
-        if (action === 'publish') {
-            jobInfo.publishStatus = 1; // 已发布
-        } else {
-            jobInfo.publishStatus = 0; // 草稿
-        }
-        
-        const resp = await Auth.authenticatedFetch(`${JOB_API_BASE}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(jobInfo)
-        });
-
-        if (!resp.ok) {
-            const text = await resp.text();
-            alert(`网络错误: ${resp.status} ${text}`);
-            return;
-        }
-        const ok = await resp.json();
-        if (!ok) {
-            alert('保存职位失败');
-            return;
-        }
-
-        alert(action === 'publish' ? '职位发布成功！' : '职位保存成功！');
-        document.getElementById('job-modal').style.display = 'none';
-        
-        // 获取当前激活的标签页状态
-        const activeTab = document.querySelector('.tab-btn.active');
-        let currentStatus = activeTab ? activeTab.getAttribute('data-status') : '0';
-        // 强制转换为字符串并确保是有效的状态值之一
-        currentStatus = String(currentStatus);
-        if (!['0', '1', '2'].includes(currentStatus)) {
-            currentStatus = '0';
-        }
-        loadJobList(user, currentStatus);
-    } catch (e) {
-        console.error('保存职位失败:', e);
-        alert('保存失败，请稍后重试');
-    }
+    
+    return numValue + '年及以上';
 }

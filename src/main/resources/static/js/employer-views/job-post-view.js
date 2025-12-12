@@ -36,7 +36,7 @@ function renderJobPostView(container, currentUser) {
                 <div class="form-row">
                     <div class="form-group">
                         <label>工作经验要求（最少年限）</label>
-                        <select id="job-experience">
+                        <select id="job-experience" class="form-control" required>
                             <option value="0">应届生</option>
                             <option value="1">1年及以上</option>
                             <option value="2">2年及以上</option>
@@ -52,10 +52,13 @@ function renderJobPostView(container, currentUser) {
                     </div>
                     <div class="form-group">
                         <label>学历要求</label>
-                        <select id="job-education">
-                            <option value="硕士">硕士</option>
-                            <option value="本科" selected>本科</option>
-                            <option value="大专">大专</option>
+                        <select id="job-education" class="form-control" required>
+                            <option value="0">无学历要求</option>
+                            <option value="1">高中</option>
+                            <option value="2">大专</option>
+                            <option value="3" selected>本科</option>
+                            <option value="4">硕士</option>
+                            <option value="5">博士</option>
                         </select>
                     </div>
                 </div>

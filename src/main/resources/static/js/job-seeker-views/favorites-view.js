@@ -221,3 +221,90 @@ async function openApplyFromFavoriteModal(currentUser, jobId, jobInfo) {
     }
     alert('投递成功');
 }
+
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return String(text || '').replace(/[&<>"']/g, m => map[m]);
+}
+
+function mapWorkExperienceText(expValue) {
+    if (expValue === 0 || expValue === '0') {
+        return '应届生';
+    }
+    
+    const numValue = parseInt(expValue);
+    if (isNaN(numValue) || numValue < 0) {
+        return expValue;
+    }
+    
+    return numValue + '年';
+}
+
+function mapEducationText(eduValue) {
+    switch (parseInt(eduValue)) {
+        case 0: return '无学历要求';
+        case 1: return '高中';
+        case 2: return '大专';
+        case 3: return '本科';
+        case 4: return '硕士';
+        case 5: return '博士';
+        default: return eduValue;
+    }
+}
+
+async function viewJobDetail(jobId) {
+    try {
+        const base = window.API_BASE || '/api';
+        const resp = await Auth.authenticatedFetch(`${base}/job/info/${encodeURIComponent(jobId)}`);
+        if (!resp.ok) {
+            const text = await resp.text();
+            alert(`网络错误：${resp.status} ${text}`);
+            return;
+        }
+        const job = await resp.json();
+        
+        // 生成完整的地址信息
+        let fullAddress = '';
+        if (job.province) fullAddress += job.province;
+        if (job.city) fullAddress += '-' + job.city;
+        if (job.district) fullAddress += '-' + job.district;
+        
+        // 通过公司ID获取公司联系方式
+        let contactInfo = '';
+        if (job.companyId) {
+            try {
+                const companyResp = await Auth.authenticatedFetch(`${base}/company/${encodeURIComponent(job.companyId)}`);
+                if (companyResp.ok) {
+                    const company = await companyResp.json();
+                    if (company && company.data) {
+                        if (company.data.contactPhone) contactInfo += `\n联系电话：${company.data.contactPhone}`;
+                        if (company.data.contactEmail) contactInfo += `\n联系邮箱：${company.data.contactEmail}`;
+                    }
+                }
+            } catch (companyError) {
+                console.warn('获取公司信息失败:', companyError);
+            }
+        }
+        
+        const msg = `职位：${job.jobName || ''}
+公司：${job.companyName || ''}
+部门：${job.department || ''}
+地点：${fullAddress || job.city || ''}
+经验要求：${mapWorkExperienceText(job.workExperience) || ''}
+学历要求：${mapEducationText(job.education) || ''}
+薪资范围：${(job.salaryMin || 0) / 1000}K - ${(job.salaryMax || 0) / 1000}K${contactInfo}
+
+职位描述：
+${job.jobDesc || ''}`;
+        alert(msg);
+    } catch (e) {
+        console.error('查看职位详情异常:', e);
+        alert('请求异常，请稍后重试');
+    }
+}

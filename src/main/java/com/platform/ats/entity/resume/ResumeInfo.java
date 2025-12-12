@@ -29,10 +29,10 @@ public class ResumeInfo {
     private Integer age;
 
     @TableField("education")
-    private String education;
+    private Integer education;
 
     @TableField("work_experience")
-    private String workExperience;
+    private Integer workExperience;
 
     @TableField("skill")
     private String skill;

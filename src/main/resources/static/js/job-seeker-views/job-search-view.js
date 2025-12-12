@@ -32,9 +32,9 @@ function renderJobSearchView(container, currentUser) {
                             <label>学历要求</label>
                             <select id="education-filter" class="filter-select">
                                 <option value="">不限学历</option>
-                                <option value="硕士">硕士</option>
-                                <option value="本科">本科</option>
-                                <option value="大专">大专</option>
+                                <option value="4">硕士</option>
+                                <option value="3">本科</option>
+                                <option value="2">大专</option>
                             </select>
                         </div>
                         
@@ -247,7 +247,7 @@ async function viewJobDetail(jobId) {
 公司：${job.companyName || ''}
 部门：${job.department || ''}
 地点：${fullAddress || job.city || ''}
-经验要求：${job.workExperience || ''}
+经验要求：${mapWorkExperienceText(job.workExperience) || ''}
 学历要求：${job.education || ''}
 薪资范围：${(job.salaryMin || 0) / 1000}K - ${(job.salaryMax || 0) / 1000}K${contactInfo}
 
@@ -258,4 +258,17 @@ ${job.jobDesc || ''}`;
         console.error('查看职位详情异常:', e);
         alert('请求异常，请稍后重试');
     }
+}
+
+function mapWorkExperienceText(expValue) {
+    if (expValue === 0 || expValue === '0') {
+        return '应届生';
+    }
+    
+    const numValue = parseInt(expValue);
+    if (isNaN(numValue) || numValue < 0) {
+        return expValue;
+    }
+    
+    return numValue + '年及以上';
 }

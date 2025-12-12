@@ -169,13 +169,17 @@ async function loadInterviews(currentUser) {
 function mapInterviewStatus(status) {
     if (!status) return '未知';
     switch (status) {
-        case 'PREPARING_INTERVIEW':
+        case 1:
+        case '1':
             return '准备面试';
-        case 'INTERVIEW_ENDED':
+        case 2:
+        case '2':
             return '面试结束';
-        case 'ACCEPTED':
+        case 3:
+        case '3':
             return '录取';
-        case 'REJECTED':
+        case 4:
+        case '4':
             return '未录取';
         default:
             return status;

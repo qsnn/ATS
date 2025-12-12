@@ -26,9 +26,9 @@ public class JobApplication {
     private Long resumeId;
 
     /**
-     * 申请状态：APPLIED/ACCEPTED/REJECTED/WITHDRAWN
+     * 申请状态：1-APPLIED, 2-ACCEPTED, 3-REJECTED, 4-WITHDRAWN
      */
-    private String status;
+    private Integer status;
 
     @TableField("apply_time")
     private LocalDateTime applyTime;

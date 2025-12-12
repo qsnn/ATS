@@ -78,7 +78,7 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
                 .eq(JobApplication::getUserId, dto.getUserId())
                 .eq(JobApplication::getJobId, dto.getJobId())
                 .eq(JobApplication::getResumeId, dto.getResumeId())
-                .eq(JobApplication::getStatus, "APPLIED"));
+                .eq(JobApplication::getStatus, 1));
                 
         if (existingApplication != null) {
             throw new BizException(ErrorCode.APPLICATION_ALREADY_EXISTS, "已投递过该职位");
@@ -88,7 +88,7 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
         entity.setUserId(dto.getUserId());
         entity.setJobId(dto.getJobId());
         entity.setResumeId(dto.getResumeId());
-        entity.setStatus("APPLIED");
+        entity.setStatus(1);
         entity.setApplyTime(LocalDateTime.now());
         entity.setUpdateTime(LocalDateTime.now());
         entity.setDeleteFlag(0); // 添加逻辑删除标志，默认为0（未删除）
@@ -108,7 +108,7 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
     }
 
     @Override
-    public IPage<JobApplicationVO> pageMyApplications(Page<JobApplicationVO> page, Long userId, List<String> status) {
+    public IPage<JobApplicationVO> pageMyApplications(Page<JobApplicationVO> page, Long userId, List<Integer> status) {
         Page<JobApplication> entityPage = new Page<>(page.getCurrent(), page.getSize());
         
         LambdaQueryWrapper<JobApplication> queryWrapper = new LambdaQueryWrapper<>();
@@ -144,7 +144,7 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
     }
 
     @Override
-    public IPage<JobApplicationEmployerVO> pageCompanyApplications(Page<JobApplicationEmployerVO> page, Long companyId, List<String> status, List<String> excludeStatus) {
+    public IPage<JobApplicationEmployerVO> pageCompanyApplications(Page<JobApplicationEmployerVO> page, Long companyId, List<Integer> status, List<Integer> excludeStatus) {
         Page<JobApplication> entityPage = new Page<>(page.getCurrent(), page.getSize());
         
         LambdaQueryWrapper<JobApplication> queryWrapper = new LambdaQueryWrapper<>();
@@ -184,8 +184,8 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
         return voPage;
     }
 
-    public IPage<JobApplicationEmployerVO> pageCompanyApplications(Page<JobApplicationEmployerVO> page, Long companyId, List<String> status) {
-        return pageCompanyApplications(page, companyId, status, Arrays.asList("WITHDRAWN"));
+    public IPage<JobApplicationEmployerVO> pageCompanyApplications(Page<JobApplicationEmployerVO> page, Long companyId, List<Integer> status) {
+        return pageCompanyApplications(page, companyId, status, Arrays.asList(4));
     }
 
     @Override
@@ -273,8 +273,8 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
     }
 
     @Override
-    public boolean updateStatus(Long applicationId, String status, String reason) {
-        if (applicationId == null || status == null || status.isEmpty()) {
+    public boolean updateStatus(Long applicationId, Integer status, String reason) {
+        if (applicationId == null || status == null) {
             throw new BizException(ErrorCode.APPLICATION_STATUS_INVALID, "状态更新参数不完整");
         }
 
@@ -304,7 +304,7 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
 
         LambdaUpdateWrapper<JobApplication> wrapper = new LambdaUpdateWrapper<>();
         wrapper.eq(JobApplication::getApplicationId, applicationId)
-                .set(JobApplication::getStatus, "WITHDRAWN")
+                .set(JobApplication::getStatus, 4)
                 .set(JobApplication::getUpdateTime, LocalDateTime.now());
         int rows = jobApplicationRepository.update(null, wrapper);
         return rows > 0;

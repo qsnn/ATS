@@ -17,55 +17,83 @@ function renderResumesView(container, currentUser) {
                 <div style="background:#fff; width:600px; max-height:90vh; overflow:auto; margin:40px auto; padding:20px; border-radius:6px; position:relative;">
                     <h3 id="resume-modal-title">新建简历</h3>
                     <button id="resume-modal-close" style="position:absolute; right:16px; top:10px; border:none; background:none; font-size:18px; cursor:pointer;">×</button>
+                    
                     <form id="resume-form">
                         <input type="hidden" id="resume-id">
+                        
                         <div class="form-group">
                             <label>简历标题 *</label>
-                            <input type="text" id="resume-title" class="form-control" required>
+                            <input type="text" id="resume-title" class="form-control" placeholder="请输入简历标题">
                         </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>姓名 *</label>
+                                <input type="text" id="resume-name" class="form-control" placeholder="请输入姓名">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>性别</label>
+                                <select id="resume-gender" class="form-control">
+                                    <option value="">请选择</option>
+                                    <option value="1">男</option>
+                                    <option value="2">女</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>年龄</label>
+                                <input type="number" id="resume-age" class="form-control" placeholder="请输入年龄">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>学历</label>
+                                <select id="resume-education" class="form-control">
+                                    <option value="">请选择学历</option>
+                                    <option value="0">无</option>
+                                    <option value="1">高中</option>
+                                    <option value="2">大专</option>
+                                    <option value="3">本科</option>
+                                    <option value="4">硕士</option>
+                                    <option value="5">博士</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>电话 *</label>
+                                <input type="tel" id="resume-phone" class="form-control" placeholder="请输入电话">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>邮箱 *</label>
+                                <input type="email" id="resume-email" class="form-control" placeholder="请输入邮箱">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>工作经验(年)</label>
+                                <input type="number" id="resume-workExp" class="form-control" placeholder="请输入工作经验年数">
+                            </div>
+                        </div>
+                        
                         <div class="form-group">
-                            <label>姓名 *</label>
-                            <input type="text" id="resume-name" class="form-control" required>
+                            <label>技能</label>
+                            <textarea id="resume-skills" class="form-control" rows="3" placeholder="请输入技能，多个技能请用逗号分隔"></textarea>
                         </div>
-                        <div class="form-group">
-                            <label>性别</label>
-                            <select id="resume-gender" class="form-control">
-                                <option value="">请选择</option>
-                                <option value="1">男</option>
-                                <option value="2">女</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>年龄</label>
-                            <input type="number" id="resume-age" class="form-control">
-                        </div>
-                        <div class="form-group">
-                            <label>电话 *</label>
-                            <input type="text" id="resume-phone" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label>邮箱 *</label>
-                            <input type="email" id="resume-email" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label>最高学历</label>
-                            <input type="text" id="resume-education" class="form-control">
-                        </div>
-                        <div class="form-group">
-                            <label>工作经验</label>
-                            <input type="text" id="resume-workExp" class="form-control">
-                        </div>
-                        <div class="form-group">
-                            <label>掌握技能</label>
-                            <textarea id="resume-skills" class="form-control" rows="3"></textarea>
-                        </div>
+                        
                         <div class="form-group">
                             <label>求职意向</label>
-                            <textarea id="resume-job-intention" class="form-control" rows="3"></textarea>
+                            <input type="text" id="resume-job-intention" class="form-control" placeholder="请输入求职意向">
                         </div>
-                        <div style="margin-top:12px; text-align:right;">
+                        
+                        <div style="margin-top:16px; text-align:right;">
                             <button type="button" class="btn" id="resume-cancel-btn">取消</button>
-                            <button type="submit" class="btn btn-primary" id="resume-save-btn" style="margin-left:8px;">保存</button>
+                            <button type="button" class="btn btn-primary" id="resume-save-btn" style="margin-left:8px;">保存</button>
                         </div>
                     </form>
                 </div>
@@ -284,6 +312,31 @@ function editResume(resume) {
     modal.style.display = 'block';
 }
 
+function mapWorkExperienceText(expValue) {
+    if (expValue === 0 || expValue === '0') {
+        return '应届生';
+    }
+    
+    const numValue = parseInt(expValue);
+    if (isNaN(numValue) || numValue < 0) {
+        return expValue;
+    }
+    
+    return numValue + '年';
+}
+
+function mapEducationText(eduValue) {
+    switch (parseInt(eduValue)) {
+        case 0: return '无';
+        case 1: return '高中';
+        case 2: return '大专';
+        case 3: return '本科';
+        case 4: return '硕士';
+        case 5: return '博士';
+        default: return eduValue;
+    }
+}
+
 /** 查看简历详情（简单弹窗，后续可跳转详情页） */
 function viewResumeDetail(resume) {
     const msg = `
@@ -293,8 +346,8 @@ function viewResumeDetail(resume) {
 年龄：${resume.age || ''}
 电话：${resume.phone || ''}
 邮箱：${resume.email || ''}
-学历：${resume.education || ''}
-工作经验：${resume.workExperience || ''}
+学历：${mapEducationText(resume.education) || ''}
+工作经验：${mapWorkExperienceText(resume.workExperience) || ''}
 技能：${resume.skill || ''}
 求职意向：${resume.jobIntention || ''}
     `;

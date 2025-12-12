@@ -4,6 +4,14 @@ const TALENT_API_BASE = '/api/talent';
 const COMPANY_API_BASE = '/api/company';
 const USER_PASSWORD_API_BASE = userId => (`/api/user/${encodeURIComponent(userId)}/password`);
 
+// 动态加载各个模块的渲染函数
+function loadModule(src, callback) {
+    const script = document.createElement('script');
+    script.src = src;
+    script.onload = callback;
+    document.head.appendChild(script);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const currentUser = Auth.getCurrentUser();
     if (!currentUser || currentUser.role !== 'employer') {
@@ -55,23 +63,30 @@ function switchTab(tabName, currentUser = Auth.getCurrentUser()) {
     const container = document.getElementById(`${tabName}-tab`);
     if (!container) return;
 
-    const map = {
-        manage: renderJobManageView,
-        applicants: renderApplicantsView,
-        interviews: renderInterviewsView,
-        talent: renderTalentView,
-        hr: renderHrManageView,
-        company: renderCompanyView,
-        profile: renderEmployerProfileView
+    // 根据标签页动态加载相应模块
+    const moduleMap = {
+        manage: { src: '/js/employer-views/job-manage-view.js', renderFn: 'renderJobManageView' },
+        applicants: { src: '/js/employer-views/applicants-view.js', renderFn: 'renderApplicantsView' },
+        interviews: { src: '/js/employer-views/interviews-view.js', renderFn: 'renderInterviewsView' },
+        talent: { src: '/js/employer-views/talent-view.js', renderFn: 'renderTalentView' },
+        hr: { src: '/js/employer-views/hr-view.js', renderFn: 'renderHrManageView' },
+        company: { src: '/js/employer-views/company-view.js', renderFn: 'renderCompanyView' },
+        profile: { src: '/js/employer-views/profile-view.js', renderFn: 'renderEmployerProfileView' }
     };
 
-    const renderFn = map[tabName];
-    if (typeof renderFn === 'function') {
-        container.innerHTML = '';
-        renderFn(container, currentUser);
+    const moduleInfo = moduleMap[tabName];
+    if (moduleInfo) {
+        loadModule(moduleInfo.src, () => {
+            const renderFn = window[moduleInfo.renderFn];
+            if (typeof renderFn === 'function') {
+                container.innerHTML = '';
+                renderFn(container, currentUser);
+            }
+            container.classList.add('active');
+        });
+    } else {
+        container.classList.add('active');
     }
-
-    container.classList.add('active');
 }
 
 /**

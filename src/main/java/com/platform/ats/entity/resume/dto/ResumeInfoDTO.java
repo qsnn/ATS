@@ -17,8 +17,8 @@ public class ResumeInfoDTO {
     private String name;
     private Integer gender; // 1-男 2-女
     private Integer age;
-    private String education;
-    private String workExperience;
+    private Integer education;
+    private Integer workExperience;
     private String skill;
     private String jobIntention;
     private String phone;

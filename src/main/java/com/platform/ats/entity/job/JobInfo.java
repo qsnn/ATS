@@ -44,7 +44,7 @@ public class JobInfo implements Serializable {
     private BigDecimal salaryMax;
 
     @TableField("education")
-    private String education;
+    private Integer education;
 
     @TableField("work_experience")
     private Integer workExperience;

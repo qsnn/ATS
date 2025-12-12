@@ -4,20 +4,19 @@ function renderApplicantsView(container, currentUser) {
             <h2>职位申请人</h2>
             <!-- 添加状态筛选标签 -->
             <div class="status-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">
-                <button class="tab-btn active" data-status="APPLIED" style="padding: 8px 16px; border: none; background-color: #f3f4f6; cursor: pointer; border-radius: 4px;">待处理</button>
-                <button class="tab-btn" data-status="ACCEPTED" style="padding: 8px 16px; border: none; background-color: #f3f4f6; cursor: pointer; border-radius: 4px;">已通过</button>
-                <button class="tab-btn" data-status="REJECTED" style="padding: 8px 16px; border: none; background-color: #f3f4f6; cursor: pointer; border-radius: 4px;">已拒绝</button>
+                <button class="tab-btn active" data-status="1" style="padding: 8px 16px; border: none; background-color: #f3f4f6; cursor: pointer; border-radius: 4px;">待处理</button>
+                <button class="tab-btn" data-status="2" style="padding: 8px 16px; border: none; background-color: #f3f4f6; cursor: pointer; border-radius: 4px;">已通过</button>
+                <button class="tab-btn" data-status="3" style="padding: 8px 16px; border: none; background-color: #f3f4f6; cursor: pointer; border-radius: 4px;">已拒绝</button>
             </div>
             <div id="applicants-status" style="margin-bottom:8px;color:#666;">正在加载申请人记录...</div>
             <div class="table-container">
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th style="width: 12%; text-align: center; vertical-align: middle;">申请人</th>
-                            <th style="width: 20%; text-align: center; vertical-align: middle;">申请职位</th>
+                            <th style="width: 15%; text-align: center; vertical-align: middle;">申请人</th>
+                            <th style="width: 25%; text-align: center; vertical-align: middle;">申请职位</th>
                             <th style="width: 25%; text-align: center; vertical-align: middle;">申请时间</th>
-                            <th style="width: 9%; text-align: center; vertical-align: middle;">状态</th>
-                            <th style="width: 34%; text-align: center; vertical-align: middle;">操作</th>
+                            <th style="width: 35%; text-align: center; vertical-align: middle;">操作</th>
                         </tr>
                     </thead>
                     <tbody id="applicants-tbody"></tbody>
@@ -69,7 +68,7 @@ function renderApplicantsView(container, currentUser) {
     };
 
     // 默认加载待处理状态的数据
-    loadApplicants(currentUser, 'APPLIED');
+    loadApplicants(currentUser, '1');
 }
 
 async function loadApplicants(currentUser, status = '') {
@@ -89,11 +88,12 @@ async function loadApplicants(currentUser, status = '') {
         const params = new URLSearchParams({
             current: window.applicantsPagination.current,
             size: window.applicantsPagination.size,
-            excludeStatus: 'WITHDRAWN'  // 排除求职者撤回的申请
+            excludeStatus: 4  // 排除求职者撤回的申请
         });
         
         // 如果指定了状态，则添加到参数中
         if (status) {
+            // 直接使用状态值，因为标签页的data-status已经是合适的数字字符串
             params.append('status', status);
         }
 
@@ -182,13 +182,7 @@ async function loadApplicants(currentUser, status = '') {
             dateTd.style.textAlign = 'center';
             dateTd.style.verticalAlign = 'middle';
 
-            const statusTd = document.createElement('td');
-            statusTd.textContent = mapApplicationStatus(app.status);
-            statusTd.style.overflow = 'hidden';
-            statusTd.style.textOverflow = 'ellipsis';
-            statusTd.style.whiteSpace = 'nowrap';
-            statusTd.style.textAlign = 'center';
-            statusTd.style.verticalAlign = 'middle';
+
 
             const actionTd = document.createElement('td');
             actionTd.style.whiteSpace = 'nowrap';
@@ -199,7 +193,7 @@ async function loadApplicants(currentUser, status = '') {
             const currentStatus = status || ''; // 当前标签页状态
 
             // 根据当前标签页和状态显示操作按钮（移除了查看简历按钮）
-            if (currentStatus === 'APPLIED') {
+            if (currentStatus === '1') {
                 // 待处理状态下的额外操作按钮
                 const scheduleInterviewButton = document.createElement('button');
                 scheduleInterviewButton.className = 'btn btn-success btn-sm';
@@ -221,9 +215,9 @@ async function loadApplicants(currentUser, status = '') {
                 rejectButton.style.marginLeft = '5px';
                 rejectButton.onclick = () => rejectApplicant(app.applicationId);
                 actionTd.appendChild(rejectButton);
-            } else if (currentStatus === 'ACCEPTED') {
+            } else if (currentStatus === '2') {
                 // 已通过状态无需额外按钮
-            } else if (currentStatus === 'REJECTED') {
+            } else if (currentStatus === '3') {
                 // 已拒绝状态下的额外操作按钮
                 const addToTalentPoolButton = document.createElement('button');
                 addToTalentPoolButton.className = 'btn btn-sm';
@@ -233,7 +227,7 @@ async function loadApplicants(currentUser, status = '') {
                 actionTd.appendChild(addToTalentPoolButton);
             } else if (currentStatus === '') {
                 // 全部状态下的额外操作按钮（根据实际记录状态显示）
-                if (app.status === 'APPLIED') {
+                if (app.status === '1') {
                     const scheduleInterviewButton = document.createElement('button');
                     scheduleInterviewButton.className = 'btn btn-success btn-sm';
                     scheduleInterviewButton.textContent = '安排面试';
@@ -254,7 +248,7 @@ async function loadApplicants(currentUser, status = '') {
                     rejectButton.style.marginLeft = '5px';
                     rejectButton.onclick = () => rejectApplicant(app.applicationId);
                     actionTd.appendChild(rejectButton);
-                } else if (app.status === 'REJECTED') {
+                } else if (app.status === '3') {
                     const addToTalentPoolButton = document.createElement('button');
                     addToTalentPoolButton.className = 'btn btn-sm';
                     addToTalentPoolButton.textContent = '加入人才库';
@@ -268,7 +262,6 @@ async function loadApplicants(currentUser, status = '') {
             tr.appendChild(userTd);
             tr.appendChild(jobTd);
             tr.appendChild(dateTd);
-            tr.appendChild(statusTd);
             tr.appendChild(actionTd);
 
             tbody.appendChild(tr);
@@ -281,14 +274,24 @@ async function loadApplicants(currentUser, status = '') {
 
 function mapApplicationStatus(status) {
     if (!status) return '未知';
+    
+    // 处理后端返回的字符串枚举值
     switch (status) {
         case 'APPLIED':
+        case '1':
+        case 1:
             return '待处理';
         case 'ACCEPTED':
+        case '2':
+        case 2:
             return '已通过';
         case 'REJECTED':
+        case '3':
+        case 3:
             return '已拒绝';
         case 'WITHDRAWN':
+        case '4':
+        case 4:
             return '已撤回';
         default:
             return status;
@@ -396,11 +399,11 @@ async function confirmScheduleInterview(applicationId, userId, interviewTime, in
 
         // 重新加载申请人列表
         // 获取当前激活的标签页状态
-        let currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || 'APPLIED';
+        let currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || '1';
         // 强制转换为字符串并确保是有效的状态值之一
         currentStatus = String(currentStatus);
-        if (!['APPLIED', 'ACCEPTED', 'REJECTED'].includes(currentStatus)) {
-            currentStatus = 'APPLIED';
+        if (!['1', '2', '3'].includes(currentStatus)) {
+            currentStatus = '1';
         }
         loadApplicants(currentUser, currentStatus);
     } catch (e) {
@@ -538,11 +541,11 @@ async function addToTalentPool(applicationId) {
 
         // 重新加载申请人列表
         // 获取当前激活的标签页状态
-        let currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || 'APPLIED';
+        let currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || '1';
         // 强制转换为字符串并确保是有效的状态值之一
         currentStatus = String(currentStatus);
-        if (!['APPLIED', 'ACCEPTED', 'REJECTED'].includes(currentStatus)) {
-            currentStatus = 'APPLIED';
+        if (!['1', '2', '3'].includes(currentStatus)) {
+            currentStatus = '1';
         }
         loadApplicants(currentUser, currentStatus);
     } catch (e) {
@@ -577,17 +580,17 @@ async function rejectApplicant(applicationId) {
     try {
         await ApiService.request(`/applications/${encodeURIComponent(applicationId)}/status`, {
             method: 'PUT',
-            body: JSON.stringify({ status: 'REJECTED', reason: reason || '' })
+            body: JSON.stringify({ status: 3, reason: reason || '' })
         });
         alert('已拒绝该申请人');
         const currentUser = Auth.getCurrentUser && Auth.getCurrentUser();
         if (currentUser) {
             // 获取当前激活的标签页状态
-            let currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || 'APPLIED';
+            let currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || '1';
             // 强制转换为字符串并确保是有效的状态值之一
             currentStatus = String(currentStatus);
-            if (!['APPLIED', 'ACCEPTED', 'REJECTED'].includes(currentStatus)) {
-                currentStatus = 'APPLIED';
+            if (!['1', '2', '3'].includes(currentStatus)) {
+                currentStatus = '1';
             }
             loadApplicants(currentUser, currentStatus);
         }

@@ -19,7 +19,10 @@ public class JobApplicationVO {
 
     private Long resumeId;
 
-    private String status;
+    /**
+     * 申请状态：1-APPLIED, 2-ACCEPTED, 3-REJECTED, 4-WITHDRAWN
+     */
+    private Integer status;
 
     private LocalDateTime applyTime;
     

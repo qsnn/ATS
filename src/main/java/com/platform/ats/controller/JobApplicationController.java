@@ -34,7 +34,7 @@ public class JobApplicationController {
     public Result<IPage<JobApplicationVO>> pageMyApplications(@RequestParam Long userId,
                                                               @RequestParam(defaultValue = "1") long current,
                                                               @RequestParam(defaultValue = "10") long size,
-                                                              @RequestParam(required = false) List<String> status) {
+                                                              @RequestParam(required = false) List<Integer> status) {
         Page<JobApplicationVO> page = new Page<>(current, size);
         IPage<JobApplicationVO> res = jobApplicationService.pageMyApplications(page, userId, status);
         return Result.success(res);
@@ -46,8 +46,8 @@ public class JobApplicationController {
     public Result<IPage<JobApplicationEmployerVO>> pageCompanyApplications(@PathVariable Long companyId,
                                                                           @RequestParam(defaultValue = "1") long current,
                                                                           @RequestParam(defaultValue = "10") long size,
-                                                                          @RequestParam(required = false) List<String> status,
-                                                                          @RequestParam(required = false) List<String> excludeStatus) {
+                                                                          @RequestParam(required = false) List<Integer> status,
+                                                                          @RequestParam(required = false) List<Integer> excludeStatus) {
         Page<JobApplicationEmployerVO> page = new Page<>(current, size);
         IPage<JobApplicationEmployerVO> res = jobApplicationService.pageCompanyApplications(page, companyId, status, excludeStatus);
         return Result.success(res);
@@ -104,14 +104,14 @@ public class JobApplicationController {
     }
 
     public static class JobStatusUpdateRequest {
-        private String status;
+        private Integer status;
         private String reason;
 
-        public String getStatus() {
+        public Integer getStatus() {
             return status;
         }
 
-        public void setStatus(String status) {
+        public void setStatus(Integer status) {
             this.status = status;
         }
 

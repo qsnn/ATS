@@ -32,7 +32,7 @@ public class InterviewInfoVO {
     private LocalDateTime interviewTime;
 
     /**
-     * 面试状态：PREPARING_INTERVIEW-准备面试, INTERVIEW_ENDED-面试结束, ACCEPTED-录取, REJECTED-未录取
+     * 面试状态：1-PREPARING_INTERVIEW, 2-INTERVIEW_ENDED, 3-ACCEPTED, 4-REJECTED
      */
-    private String status;
+    private Integer status;
 }

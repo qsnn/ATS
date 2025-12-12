@@ -5,10 +5,10 @@ function renderApplicationsView(container, currentUser) {
             <!-- 添加状态筛选标签 -->
             <div class="status-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">
                 <button class="tab-btn active" data-status="">全部</button>
-                <button class="tab-btn" data-status="APPLIED">申请中</button>
-                <button class="tab-btn" data-status="ACCEPTED">已通过</button>
-                <button class="tab-btn" data-status="REJECTED">被驳回</button>
-                <button class="tab-btn" data-status="WITHDRAWN">已撤回</button>
+                <button class="tab-btn" data-status="1">申请中</button>
+                <button class="tab-btn" data-status="2">已通过</button>
+                <button class="tab-btn" data-status="3">被驳回</button>
+                <button class="tab-btn" data-status="4">已撤回</button>
             </div>
             <div id="applications-status" style="margin-bottom:8px;color:#666;">正在加载申请记录...</div>
             <table class="table">
@@ -189,7 +189,8 @@ async function loadApplications(currentUser, status = '') {
             const actionTd = document.createElement('td');
             // 根据不同状态显示不同的操作按钮
             switch (app.status) {
-                case 'APPLIED':
+                case 1:
+                case '1':
                     // 申请中 - 撤回申请
                     const withdrawButton = document.createElement('button');
                     withdrawButton.className = 'btn btn-warning btn-sm';
@@ -197,11 +198,13 @@ async function loadApplications(currentUser, status = '') {
                     withdrawButton.onclick = () => withdrawApplication(app.applicationId, currentUser.userId);
                     actionTd.appendChild(withdrawButton);
                     break;
-                case 'ACCEPTED':
+                case 2:
+                case '2':
                     // 已通过 - 无操作
                     actionTd.textContent = '-';
                     break;
-                case 'REJECTED':
+                case 3:
+                case '3':
                     // 被驳回 - 删除记录
                     const deleteRejectedButton = document.createElement('button');
                     deleteRejectedButton.className = 'btn btn-danger btn-sm';
@@ -209,7 +212,8 @@ async function loadApplications(currentUser, status = '') {
                     deleteRejectedButton.onclick = () => deleteApplication(app.applicationId, currentUser.userId, app.jobId, app.resumeId);
                     actionTd.appendChild(deleteRejectedButton);
                     break;
-                case 'WITHDRAWN':
+                case 4:
+                case '4':
                     // 已撤回 - 删除记录、重新申请
                     const deleteWithdrawnButton = document.createElement('button');
                     deleteWithdrawnButton.className = 'btn btn-danger btn-sm';
@@ -245,13 +249,17 @@ async function loadApplications(currentUser, status = '') {
 function mapApplicationStatus(status) {
     if (!status) return '未知';
     switch (status) {
-        case 'APPLIED':
+        case 1:
+        case '1':
             return '申请中';
-        case 'ACCEPTED':
+        case 2:
+        case '2':
             return '已通过';
-        case 'REJECTED':
+        case 3:
+        case '3':
             return '被驳回';
-        case 'WITHDRAWN':
+        case 4:
+        case '4':
             return '已撤回';
         default:
             return status;
@@ -289,7 +297,7 @@ async function withdrawApplication(applicationId, userId) {
             let currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || '';
             // 强制转换为字符串并确保是有效的状态值之一
             currentStatus = String(currentStatus);
-            if (!['', 'APPLIED', 'ACCEPTED', 'REJECTED', 'WITHDRAWN'].includes(currentStatus)) {
+            if (!['', '1', '2', '3', '4'].includes(currentStatus)) {
                 currentStatus = '';
             }
             loadApplications(currentUser, currentStatus);
@@ -333,7 +341,7 @@ async function deleteApplication(applicationId, userId, jobId, resumeId) {
             let currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || '';
             // 强制转换为字符串并确保是有效的状态值之一
             currentStatus = String(currentStatus);
-            if (!['', 'APPLIED', 'ACCEPTED', 'REJECTED', 'WITHDRAWN'].includes(currentStatus)) {
+            if (!['', '1', '2', '3', '4'].includes(currentStatus)) {
                 currentStatus = '';
             }
             loadApplications(currentUser, currentStatus);
@@ -424,7 +432,7 @@ async function reapplyApplication(application, userId) {
             let currentStatus = document.querySelector('.tab-btn.active')?.getAttribute('data-status') || '';
             // 强制转换为字符串并确保是有效的状态值之一
             currentStatus = String(currentStatus);
-            if (!['', 'APPLIED', 'ACCEPTED', 'REJECTED', 'WITHDRAWN'].includes(currentStatus)) {
+            if (!['', '1', '2', '3', '4'].includes(currentStatus)) {
                 currentStatus = '';
             }
             loadApplications(currentUser, currentStatus);
@@ -432,6 +440,31 @@ async function reapplyApplication(application, userId) {
     } catch (e) {
         console.error('重新申请异常:', e);
         alert('请求异常，请稍后重试');
+    }
+}
+
+function mapWorkExperienceText(expValue) {
+    if (expValue === 0 || expValue === '0') {
+        return '应届生';
+    }
+    
+    const numValue = parseInt(expValue);
+    if (isNaN(numValue) || numValue < 0) {
+        return expValue;
+    }
+    
+    return numValue + '年';
+}
+
+function mapEducationText(eduValue) {
+    switch (parseInt(eduValue)) {
+        case 0: return '无学历要求';
+        case 1: return '高中';
+        case 2: return '大专';
+        case 3: return '本科';
+        case 4: return '硕士';
+        case 5: return '博士';
+        default: return eduValue;
     }
 }
 
@@ -473,8 +506,8 @@ async function viewJobDetail(jobId) {
 公司：${job.companyName || ''}
 部门：${job.department || ''}
 地点：${fullAddress || job.city || ''}
-经验要求：${job.workExperience || ''}
-学历要求：${job.education || ''}
+经验要求：${mapWorkExperienceText(job.workExperience) || ''}
+学历要求：${mapEducationText(job.education) || ''}
 薪资范围：${(job.salaryMin || 0) / 1000}K - ${(job.salaryMax || 0) / 1000}K${contactInfo}
 
 职位描述：
@@ -485,3 +518,5 @@ ${job.jobDesc || ''}`;
         alert('请求异常，请稍后重试');
     }
 }
+
+// 文件结尾
