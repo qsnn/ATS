@@ -64,15 +64,27 @@
             <if test="query.city != null and query.city != ''">
                 AND ji.city = #{query.city}
             </if>
-            <if test="query.education != null and query.education != ''">
-                AND (ji.education = #{query.education}
+            <if test="query.education != null">
+                AND (
                 <choose>
-                    <when test="query.education == '硕士'">
-                        OR ji.education IN ('本科', '大专')
+                    <when test="query.education == 0">
+                        ji.education >= 0
                     </when>
-                    <when test="query.education == '本科'">
-                        OR ji.education = '大专'
+                    <when test="query.education == 1">
+                        ji.education >= 1
                     </when>
+                    <when test="query.education == 2">
+                        ji.education >= 2
+                    </when>
+                    <when test="query.education == 3">
+                        ji.education >= 3
+                    </when>
+                    <when test="query.education == 4">
+                        ji.education >= 4
+                    </when>
+                    <otherwise>
+                        ji.education = 5
+                    </otherwise>
                 </choose>
                 )
             </if>

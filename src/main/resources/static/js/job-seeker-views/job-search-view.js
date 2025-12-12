@@ -29,12 +29,14 @@ function renderJobSearchView(container, currentUser) {
                         </div>
                         
                         <div class="filter-group">
-                            <label>学历要求</label>
+                            <label>最低学历</label>
                             <select id="education-filter" class="filter-select">
                                 <option value="">不限学历</option>
+                                <option value="5">博士</option>
                                 <option value="4">硕士</option>
                                 <option value="3">本科</option>
                                 <option value="2">大专</option>
+                                <option value="1">高中</option>
                             </select>
                         </div>
                         
@@ -248,7 +250,7 @@ async function viewJobDetail(jobId) {
 部门：${job.department || ''}
 地点：${fullAddress || job.city || ''}
 经验要求：${mapWorkExperienceText(job.workExperience) || ''}
-学历要求：${job.education || ''}
+学历要求：${mapEducationText(job.education) || ''}
 薪资范围：${(job.salaryMin || 0) / 1000}K - ${(job.salaryMax || 0) / 1000}K${contactInfo}
 
 职位描述：
@@ -271,4 +273,16 @@ function mapWorkExperienceText(expValue) {
     }
     
     return numValue + '年及以上';
+}
+
+function mapEducationText(eduValue) {
+    switch (parseInt(eduValue)) {
+        case 0: return '无学历要求';
+        case 1: return '高中';
+        case 2: return '大专';
+        case 3: return '本科';
+        case 4: return '硕士';
+        case 5: return '博士';
+        default: return eduValue;
+    }
 }
