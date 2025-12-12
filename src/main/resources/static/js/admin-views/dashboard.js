@@ -83,18 +83,18 @@ function switchTab(tabName, currentUser = Auth.getCurrentUser()) {
  */
 async function updateUserProfileApi(payload) {
     try {
-        const resp = await fetch(`${USER_API_BASE}/${payload.userId}`, {
+        // 使用 Auth.authenticatedFetch 确保携带 JWT 令牌
+        const response = await Auth.authenticatedFetch(`${USER_API_BASE}/${payload.userId}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
 
-        if (!resp.ok) {
-            const errorText = await resp.text();
-            return { success: false, message: `网络错误: ${resp.status} ${errorText}` };
+        if (!response.ok) {
+            const errorText = await response.text();
+            return { success: false, message: `网络错误: ${response.status} ${errorText}` };
         }
 
-        const json = await resp.json();
+        const json = await response.json();
         if (json.code !== 200) {
             return { success: false, message: json.message || '更新失败' };
         }
@@ -102,6 +102,42 @@ async function updateUserProfileApi(payload) {
         return { success: true, message: json.message || '更新成功' };
     } catch (e) {
         console.error('更新用户信息异常:', e);
+        return { success: false, message: '请求异常，请稍后重试' };
+    }
+}
+
+/**
+ * 修改密码 API 封装，供 admin profile 视图使用
+ */
+async function updateUserPasswordApi(payload) {
+    try {
+        const currentUser = Auth.getCurrentUser();
+        if (!currentUser || !currentUser.userId) {
+            return { success: false, message: '用户未登录' };
+        }
+        
+        // 使用 Auth.authenticatedFetch 确保携带 JWT 令牌
+        const response = await Auth.authenticatedFetch(`${USER_API_BASE}/${encodeURIComponent(currentUser.userId)}/password`, {
+            method: 'PUT',
+            body: JSON.stringify({
+                oldPassword: payload.oldPassword,
+                newPassword: payload.newPassword
+            })
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            return { success: false, message: `网络错误: ${response.status} ${errorText}` };
+        }
+
+        const json = await response.json();
+        if (json.code !== 200) {
+            return { success: false, message: json.message || '更新失败' };
+        }
+
+        return { success: true, message: json.message || '更新成功' };
+    } catch (e) {
+        console.error('更新用户密码异常:', e);
         return { success: false, message: '请求异常，请稍后重试' };
     }
 }

@@ -18,7 +18,8 @@ const ApiService = (function () {
         };
 
         try {
-            const response = await fetch(url, config);
+            // 使用 Auth.authenticatedFetch 确保携带 JWT 令牌
+            const response = await Auth.authenticatedFetch(url, config);
 
             // 先读取文本，再尝试解析为 JSON（有些错误响应不是 JSON）
             const text = await response.text();

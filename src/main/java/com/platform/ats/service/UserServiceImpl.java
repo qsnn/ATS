@@ -18,7 +18,7 @@ import com.platform.ats.entity.user.vo.HrVO;
 import com.platform.ats.entity.user.vo.UserProfileVO;
 import com.platform.ats.entity.user.vo.UserVO;
 import com.platform.ats.repository.UserRepository;
-import java.util.List;
+import com.platform.ats.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -39,6 +39,7 @@ import java.util.Objects;
 public class UserServiceImpl extends ServiceImpl<UserRepository, SysUser> implements UserService {
 
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -99,7 +100,18 @@ public class UserServiceImpl extends ServiceImpl<UserRepository, SysUser> implem
         }
 
         UserProfileVO profileVO = new UserProfileVO();
-        BeanUtils.copyProperties(sysUser, profileVO);
+        // 手动复制属性，避免使用BeanUtils.copyProperties可能导致的问题
+        profileVO.setUserId(sysUser.getUserId());
+        profileVO.setUsername(sysUser.getUsername());
+        profileVO.setPhone(sysUser.getPhone());
+        profileVO.setEmail(sysUser.getEmail());
+        profileVO.setUserType(sysUser.getUserType());
+        profileVO.setCreateTime(sysUser.getCreateTime());
+        profileVO.setCompanyId(sysUser.getCompanyId());
+        
+        // 生成JWT令牌
+        String token = jwtUtil.generateToken(sysUser.getUserId(), sysUser.getUsername());
+        profileVO.setToken(token);
 
         return profileVO;
     }

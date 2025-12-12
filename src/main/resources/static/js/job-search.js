@@ -58,7 +58,8 @@ async function searchJobs() {
 
     try {
         const url = `${API_BASE_URL}/job/info/list?${params.toString()}`;
-        const response = await fetch(url);
+        // 使用 Auth.authenticatedFetch 替代普通 fetch 以确保携带 JWT 令牌
+        const response = await Auth.authenticatedFetch(url);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -289,7 +290,8 @@ async function applyJob(jobId) {
 
 async function viewJobDetail(jobId) {
     try {
-        const resp = await fetch(`${API_BASE_URL}/job/info/${encodeURIComponent(jobId)}`);
+        // 使用 Auth.authenticatedFetch 替代普通 fetch 以确保携带 JWT 令牌
+        const resp = await Auth.authenticatedFetch(`${API_BASE_URL}/job/info/${encodeURIComponent(jobId)}`);
         if (!resp.ok) {
             const text = await resp.text();
             alert(`网络错误：${resp.status} ${text}`);
@@ -307,7 +309,8 @@ async function viewJobDetail(jobId) {
         let contactInfo = '';
         if (job.companyId) {
             try {
-                const companyResp = await fetch(`${API_BASE_URL}/company/${encodeURIComponent(job.companyId)}`);
+                // 使用 Auth.authenticatedFetch 替代普通 fetch 以确保携带 JWT 令牌
+                const companyResp = await Auth.authenticatedFetch(`${API_BASE_URL}/company/${encodeURIComponent(job.companyId)}`);
                 if (companyResp.ok) {
                     const company = await companyResp.json();
                     if (company && company.data) {

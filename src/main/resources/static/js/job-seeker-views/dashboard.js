@@ -34,8 +34,8 @@ function handleLogout() {
 
 /**
  * 视图切换
- * \@param {string} viewId
- * \@param {object} currentUser
+ * @param {string} viewId
+ * @param {object} currentUser
  */
 function switchView(viewId, currentUser = Auth.getCurrentUser()) {
     // 激活导航
@@ -69,18 +69,18 @@ function switchView(viewId, currentUser = Auth.getCurrentUser()) {
  */
 async function updateUserProfileApi(payload) {
     try {
-        const resp = await fetch(`${USER_API_BASE}/${payload.userId}`, {
+        // 使用 Auth.authenticatedFetch 确保携带 JWT 令牌
+        const response = await Auth.authenticatedFetch(`${USER_API_BASE}/${payload.userId}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
 
-        if (!resp.ok) {
-            const errorText = await resp.text();
-            return { success: false, message: `网络错误: ${resp.status} ${errorText}` };
+        if (!response.ok) {
+            const errorText = await response.text();
+            return { success: false, message: `网络错误: ${response.status} ${errorText}` };
         }
 
-        const json = await resp.json();
+        const json = await response.json();
         if (json.code !== 200) {
             return { success: false, message: json.message || '更新失败' };
         }
@@ -97,16 +97,17 @@ async function updateUserProfileApi(payload) {
  */
 async function fetchUserResumesApi(userId) {
     try {
-        const resp = await fetch(`${RESUME_API_BASE}/user/${encodeURIComponent(userId)}`, {
+        // 使用 Auth.authenticatedFetch 确保携带 JWT 令牌
+        const response = await Auth.authenticatedFetch(`${RESUME_API_BASE}/user/${encodeURIComponent(userId)}`, {
             method: 'GET'
         });
 
-        if (!resp.ok) {
-            const text = await resp.text();
-            return { success: false, message: `网络错误: ${resp.status} ${text}` };
+        if (!response.ok) {
+            const text = await response.text();
+            return { success: false, message: `网络错误: ${response.status} ${text}` };
         }
 
-        const json = await resp.json();
+        const json = await response.json();
         if (json.code !== 200) {
             return { success: false, message: json.message || '加载失败' };
         }
@@ -125,18 +126,18 @@ async function updateUserPasswordApi(payload) {
         return { success: false, message: '未登录或用户信息缺失' };
     }
     try {
-        const resp = await fetch(`${USER_PASSWORD_API_BASE(currentUser.userId)}`, {
+        // 使用 Auth.authenticatedFetch 确保携带 JWT 令牌
+        const response = await Auth.authenticatedFetch(`${USER_PASSWORD_API_BASE(currentUser.userId)}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
 
-        if (!resp.ok) {
-            const errorText = await resp.text();
-            return { success: false, message: `网络错误: ${resp.status} ${errorText}` };
+        if (!response.ok) {
+            const errorText = await response.text();
+            return { success: false, message: `网络错误: ${response.status} ${errorText}` };
         }
 
-        const json = await resp.json();
+        const json = await response.json();
         if (json.code !== 200) {
             return { success: false, message: json.message || '修改密码失败' };
         }

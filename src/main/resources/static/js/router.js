@@ -14,14 +14,14 @@ const Router = {
         // 直接使用仪表盘页面路径
         '/job-seeker-dashboard.html': 'job-seeker-dashboard.html',
         '/employer-dashboard.html': 'employer-dashboard.html',
-        '/interviewer-dashboard.html': 'interviewer-dashboard.html',
+        '/recruiter-dashboard.html': 'recruiter-dashboard.html',
         '/admin-dashboard.html': 'admin-dashboard.html'
     },
 
     rolePermissions: {
         'job-seeker': ['/job-seeker-dashboard.html'],
         'employer': ['/employer-dashboard.html'],
-        'interviewer': ['/interviewer-dashboard.html'],
+        'recruiter': ['/recruiter-dashboard.html'],
         'admin': ['/admin-dashboard.html']
     },
 
@@ -122,8 +122,7 @@ const Router = {
         localStorage.setItem('returnTo', returnTo);
 
         // 重定向到登录页
-        window.location.h
-        ref = 'login.html';
+        window.location.href = 'login.html';
     },
 
     // 处理路由
@@ -167,7 +166,7 @@ const Router = {
             '/register': '招聘系统 - 注册',
             '/job-seeker-dashboard.html': '招聘系统 - 求职者中心',
             '/employer-dashboard.html': '招聘系统 - 企业管理员中心',
-            '/interviewer-dashboard.html': '招聘系统 - 面试官中心',
+            '/recruiter-dashboard.html': '招聘系统 - 招聘专员中心',
             '/admin-dashboard.html': '招聘系统 - 平台管理员中心'
         };
 
@@ -188,7 +187,7 @@ const Router = {
         const navSelectors = {
             '/job-seeker-dashboard.html': 'a[href*="job-seeker"]',
             '/employer-dashboard.html': 'a[href*="employer"]',
-            '/interviewer-dashboard.html': 'a[href*="interviewer"]',
+            '/recruiter-dashboard.html': 'a[href*="recruiter"]',
             '/admin-dashboard.html': 'a[href*="admin"]'
         };
 
@@ -296,7 +295,7 @@ const Router = {
         const dashboards = {
             'job-seeker': 'job-seeker-dashboard.html',
             'employer': 'employer-dashboard.html',
-            'interviewer': 'interviewer-dashboard.html',
+            'recruiter': 'recruiter-dashboard.html',
             'admin': 'admin-dashboard.html'
         };
 

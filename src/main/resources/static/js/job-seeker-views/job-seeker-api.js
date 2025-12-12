@@ -2,7 +2,8 @@ const JOB_SEEKER_API_BASE = '/api';
 
 async function apiRequest(url, options = {}) {
     try {
-        const resp = await fetch(url, options);
+        // 使用 Auth.authenticatedFetch 替代普通 fetch 以确保携带 JWT 令牌
+        const resp = await Auth.authenticatedFetch(url, options);
         if (!resp.ok) {
             const text = await resp.text();
             return { success: false, message: `网络错误: ${resp.status} ${text}` };

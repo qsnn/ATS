@@ -30,8 +30,10 @@ public class JobApplication {
      */
     private String status;
 
+    @TableField("apply_time")
     private LocalDateTime applyTime;
 
+    @TableField("update_time")
     private LocalDateTime updateTime;
     
     /**

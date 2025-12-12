@@ -19,7 +19,6 @@ public interface JobInfoRepository extends BaseMapper<JobInfo> {
      * 分页查询职位列表（包含公司名称等关联信息）
      * @param page 分页参数
      * @param query 查询条件DTO
-     * @param wrapper 查询条件包装器
      * @return 分页结果
      */
 

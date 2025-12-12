@@ -57,13 +57,8 @@ function renderEmployerProfileView(container, currentUser) {
 
 async function loadEmployerProfile(user) {
     try {
-        const resp = await fetch(`/api/user/${encodeURIComponent(user.userId)}`);
-        if (!resp.ok) return;
-        const json = await resp.json();
-        const data = (json && typeof json === 'object' && 'code' in json)
-            ? (json.code === 200 ? json.data : null)
-            : json;
-        if (!data) return;
+        const resp = await ApiService.request(`/user/${encodeURIComponent(user.userId)}`);
+        const data = resp || {};
 
         document.getElementById('emp-username-input').value = data.username || '';
         document.getElementById('emp-role-input').value = (data.roleName || data.role || '企业管理员');
@@ -95,10 +90,9 @@ function bindEmployerProfileSave(user) {
         // 检查用户名是否已存在（如果不是当前用户名）
         if (username !== user.username) {
             try {
-                const checkResp = await fetch(`/api/user/check/username?username=${encodeURIComponent(username)}`);
-                const checkResult = await checkResp.json();
+                const checkResp = await ApiService.request(`/user/check/username?username=${encodeURIComponent(username)}`);
                 
-                if (checkResult.code === 200 && checkResult.data === true) {
+                if (checkResp === true) {
                     alert('用户名已存在，请选择其他用户名');
                     usernameInput.focus();
                     return;
@@ -118,21 +112,11 @@ function bindEmployerProfileSave(user) {
         };
 
         try {
-            const resp = await fetch(`/api/user/${user.userId}`, {
+            const resp = await ApiService.request(`/user/${user.userId}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
-            if (!resp.ok) {
-                const text = await resp.text();
-                alert(`网络错误: ${resp.status} ${text}`);
-                return;
-            }
-            const json = await resp.json();
-            if (!json || json.code !== 200) {
-                alert((json && json.message) || '保存失败');
-                return;
-            }
+            
             alert('基本信息已保存');
             
             // 同步更新本地 Auth 信息
@@ -171,21 +155,11 @@ function bindEmployerPasswordChange(user) {
         }
 
         try {
-            const resp = await fetch(`/api/user/${encodeURIComponent(user.userId)}/password`, {
+            const resp = await ApiService.request(`/user/${encodeURIComponent(user.userId)}/password`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ oldPassword: oldPwd, newPassword: newPwd })
             });
-            if (!resp.ok) {
-                const text = await resp.text();
-                alert(`网络错误: ${resp.status} ${text}`);
-                return;
-            }
-            const json = await resp.json();
-            if (!json || json.code !== 200) {
-                alert((json && json.message) || '修改密码失败');
-                return;
-            }
+            
             alert('密码修改成功，请使用新密码重新登录。');
         } catch (e) {
             console.error('修改密码失败:', e);

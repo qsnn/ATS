@@ -84,10 +84,9 @@ function renderProfileView(container, currentUser) {
         // 检查用户名是否已存在
         if (username !== user.username) {
             try {
-                const checkResp = await fetch(`/api/user/check/username?username=${encodeURIComponent(username)}`);
-                const checkResult = await checkResp.json();
+                const checkResp = await ApiService.request(`/user/check/username?username=${encodeURIComponent(username)}`);
                 
-                if (checkResult.code === 200 && checkResult.data === true) {
+                if (checkResp === true) {
                     alert('用户名已存在，请选择其他用户名');
                     return;
                 }

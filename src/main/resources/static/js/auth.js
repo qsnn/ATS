@@ -153,6 +153,24 @@ function requireAuth() {
     return true;
 }
 
+// 新增：创建带有认证头的fetch请求
+function authenticatedFetch(url, options = {}) {
+    const currentUser = getCurrentUser();
+    const headers = {
+        'Content-Type': 'application/json',
+        ...options.headers
+    };
+    
+    // 如果用户已登录，添加JWT令牌到请求头
+    if (currentUser && currentUser.token) {
+        headers['Authorization'] = `Bearer ${currentUser.token}`;
+    }
+    
+    return fetch(url, {
+        ...options,
+        headers
+    });
+}
 
 // 暴露到全局 (确保导出了新方法)
 window.Auth = {
@@ -162,5 +180,6 @@ window.Auth = {
     updateCurrentUser, // 暴露新方法
     logout,
     isAuthenticated,
-    requireAuth
+    requireAuth,
+    authenticatedFetch // 新增认证fetch方法
 };

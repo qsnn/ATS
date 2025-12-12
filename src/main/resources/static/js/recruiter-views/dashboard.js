@@ -203,56 +203,51 @@ function renderRecruiterJobManageView(container, currentUser) {
     };
 
     // 默认加载已发布职位
-    setTimeout(() => {
-        loadJobList(currentUser, 1);
-    }, 500);
+    loadJobList(currentUser, 1);
 }
 
-async function loadJobList(user, status) {
-    const statusEl = document.getElementById('jobs-status');
+/**
+ * 加载职位列表
+ */
+async function loadJobList(currentUser, status) {
     const tbody = document.getElementById('job-manage-tbody');
+    const statusEl = document.getElementById('jobs-status');
     const paginationContainer = document.getElementById('jobs-pagination');
     const paginationInfo = document.getElementById('jobs-pagination-info');
     const prevBtn = document.getElementById('jobs-prev-page');
     const nextBtn = document.getElementById('jobs-next-page');
 
-    if (!tbody) return;
-
-    if (statusEl) statusEl.textContent = '正在加载职位信息...';
-    tbody.innerHTML = '';
+    if (!tbody || !statusEl) return;
 
     try {
-        // 修改这里以使用正确的API端点
+        statusEl.textContent = '正在加载...';
         const params = new URLSearchParams({
-            current: window.jobsPagination.current,
-            size: window.jobsPagination.size,
-            publishStatus: status,
-            companyId: user.companyId  // 添加公司ID参数
+            pageNum: window.jobsPagination.current,
+            pageSize: window.jobsPagination.size,
+            companyId: currentUser.companyId,
+            status: status
         });
 
-        // 使用与employer相同的API端点，但添加companyId参数
-        const resp = await fetch(`${JOB_API_BASE}/list?${params.toString()}`);
-        if (!resp.ok) {
-            const text = await resp.text();
-            if (statusEl) statusEl.textContent = `网络错误: ${resp.status} ${text}`;
+        // 使用 Auth.authenticatedFetch 确保携带 JWT 令牌
+        const response = await Auth.authenticatedFetch(`${JOB_API_BASE}/company/list?${params.toString()}`);
+        if (!response.ok) {
+            const text = await response.text();
+            statusEl.textContent = `网络错误: ${response.status} ${text}`;
             return;
         }
-        const json = await resp.json();
-        
-        // 处理统一的API响应格式 {code: 200, message: "", data: {...}}
-        let page;
-        if (json && typeof json === 'object' && 'data' in json) {
-            page = json.data;
-        } else {
-            page = json;
-        }
-        
-        // 确保正确提取records数组
-        const jobs = (page && Array.isArray(page.records)) ? page.records : 
-                     (page && Array.isArray(page)) ? page : [];
 
-        if (jobs.length === 0) {
-            if (statusEl) statusEl.textContent = '暂无职位信息。';
+        const json = await response.json();
+        if (json.code !== 200) {
+            statusEl.textContent = json.message || '加载失败';
+            return;
+        }
+
+        const page = json.data || {};
+        const records = page.records || [];
+
+        if (records.length === 0) {
+            statusEl.textContent = '暂无职位记录。';
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px;">暂无数据</td></tr>';
             if (paginationContainer) paginationContainer.style.display = 'none';
             return;
         }
@@ -260,8 +255,8 @@ async function loadJobList(user, status) {
         // 更新分页信息
         window.jobsPagination.total = page.total || 0;
         window.jobsPagination.pages = page.pages || Math.ceil((page.total || 0) / window.jobsPagination.size) || 0;
-        
-        if (statusEl) statusEl.textContent = `共 ${window.jobsPagination.total} 条职位信息`;
+
+        statusEl.textContent = `共 ${window.jobsPagination.total} 条职位记录`;
 
         if (paginationInfo) {
             paginationInfo.textContent = `第 ${window.jobsPagination.current} 页，共 ${window.jobsPagination.pages} 页`;
@@ -276,7 +271,7 @@ async function loadJobList(user, status) {
             prevBtn.onclick = () => {
                 if (window.jobsPagination.current > 1) {
                     window.jobsPagination.current--;
-                    loadJobList(user, status);
+                    loadJobList(currentUser, status);
                 }
             };
         }
@@ -286,70 +281,59 @@ async function loadJobList(user, status) {
             nextBtn.onclick = () => {
                 if (window.jobsPagination.current < window.jobsPagination.pages) {
                     window.jobsPagination.current++;
-                    loadJobList(user, status);
+                    loadJobList(currentUser, status);
                 }
             };
         }
 
         // 渲染职位列表
         tbody.innerHTML = '';
-        jobs.forEach(job => {
+        records.forEach(job => {
             const tr = document.createElement('tr');
-
-            const titleTd = document.createElement('td');
-            titleTd.textContent = job.jobName || '';
-            titleTd.style.overflow = 'hidden';
-            titleTd.style.textOverflow = 'ellipsis';
-            titleTd.style.whiteSpace = 'nowrap';
-            titleTd.style.textAlign = 'center';
-            titleTd.style.verticalAlign = 'middle';
+            
+            const nameTd = document.createElement('td');
+            nameTd.textContent = job.jobName || '';
+            nameTd.style.overflow = 'hidden';
+            nameTd.style.textOverflow = 'ellipsis';
+            nameTd.style.whiteSpace = 'nowrap';
+            nameTd.style.textAlign = 'center';
+            nameTd.style.verticalAlign = 'middle';
 
             const salaryTd = document.createElement('td');
-            const min = job.salaryMin || 0;
-            const max = job.salaryMax || 0;
-            let salary = '-';
-            if (min > 0 && max > 0) {
-                salary = `${(min / 1000).toFixed(0)}K-${(max / 1000).toFixed(0)}K`;
-            }
-            salaryTd.textContent = salary;
+            salaryTd.textContent = (job.salaryMin && job.salaryMax) ? `${job.salaryMin}-${job.salaryMax}` : '面议';
             salaryTd.style.overflow = 'hidden';
             salaryTd.style.textOverflow = 'ellipsis';
             salaryTd.style.whiteSpace = 'nowrap';
             salaryTd.style.textAlign = 'center';
             salaryTd.style.verticalAlign = 'middle';
 
-            const locationTd = document.createElement('td');
-            // 构造完整地址显示
-            let location = '';
-            if (job.province) location += job.province;
-            if (job.city) location += job.city;
-            if (job.district) location += job.district;
-            locationTd.textContent = location;
-            locationTd.style.overflow = 'hidden';
-            locationTd.style.textOverflow = 'ellipsis';
-            locationTd.style.whiteSpace = 'nowrap';
-            locationTd.style.textAlign = 'center';
-            locationTd.style.verticalAlign = 'middle';
+            const cityTd = document.createElement('td');
+            cityTd.textContent = job.city || '';
+            cityTd.style.overflow = 'hidden';
+            cityTd.style.textOverflow = 'ellipsis';
+            cityTd.style.whiteSpace = 'nowrap';
+            cityTd.style.textAlign = 'center';
+            cityTd.style.verticalAlign = 'middle';
 
-            const updateTimeTd = document.createElement('td');
-            const updateTime = job.updateTime ? String(job.updateTime).replace('T', ' ') : '';
-            updateTimeTd.textContent = updateTime.substring(0, 16);
-            updateTimeTd.style.overflow = 'hidden';
-            updateTimeTd.style.textOverflow = 'ellipsis';
-            updateTimeTd.style.whiteSpace = 'nowrap';
-            updateTimeTd.style.textAlign = 'center';
-            updateTimeTd.style.verticalAlign = 'middle';
+            const timeTd = document.createElement('td');
+            const updateTime = job.updateTime || '';
+            timeTd.textContent = updateTime ? updateTime.replace('T', ' ') : '';
+            timeTd.style.overflow = 'hidden';
+            timeTd.style.textOverflow = 'ellipsis';
+            timeTd.style.whiteSpace = 'nowrap';
+            timeTd.style.textAlign = 'center';
+            timeTd.style.verticalAlign = 'middle';
 
-            tr.appendChild(titleTd);
+            tr.appendChild(nameTd);
             tr.appendChild(salaryTd);
-            tr.appendChild(locationTd);
-            tr.appendChild(updateTimeTd);
+            tr.appendChild(cityTd);
+            tr.appendChild(timeTd);
 
             tbody.appendChild(tr);
         });
     } catch (e) {
-        console.error('加载职位信息异常:', e);
-        if (statusEl) statusEl.textContent = '请求异常，请稍后重试';
+        console.error('加载职位记录异常:', e);
+        statusEl.textContent = '请求异常，请稍后重试';
     }
 }
 
@@ -358,86 +342,57 @@ async function loadJobList(user, status) {
  */
 function renderRecruiterCompanyView(container, currentUser) {
     container.innerHTML = `
-        <h2>公司信息</h2>
-        <div class="card">
-            <div class="form-group">
-                <label>公司名称</label>
-                <div id="company-name" class="readonly-field" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;"></div>
-            </div>
-            <div class="form-group">
-                <label>公司简介</label>
-                <div id="company-description" class="readonly-field" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; min-height: 80px;"></div>
-            </div>
-            <div class="form-group">
-                <label>公司地址</label>
-                <div id="company-address" class="readonly-field" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;"></div>
-            </div>
-            <div class="form-group">
-                <label>联系人</label>
-                <div id="company-contact" class="readonly-field" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;"></div>
-            </div>
-            <div class="form-group">
-                <label>联系电话</label>
-                <div id="company-phone" class="readonly-field" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;"></div>
-            </div>
-            <div class="form-group">
-                <label>联系邮箱</label>
-                <div id="company-email" class="readonly-field" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;"></div>
-            </div>
+        <div class="view company-view active">
+            <h2>公司信息</h2>
+            <div id="company-info-loading">正在加载公司信息...</div>
         </div>
     `;
 
-    loadCompanyInfo(currentUser);
+    loadRecruiterCompanyInfo(container, currentUser);
 }
 
-async function loadCompanyInfo(user) {
-    const companyId = user.companyId;
-    if (!companyId) {
-        return;
-    }
+async function loadRecruiterCompanyInfo(container, currentUser) {
+    const loadingEl = document.getElementById('company-info-loading');
+    if (!loadingEl) return;
+
     try {
-        const resp = await fetch(`${COMPANY_API_BASE}/${companyId}`);
-        if (!resp.ok) return;
-        const json = await resp.json();
-        if (!json || json.code !== 200 || !json.data) return;
-        const c = json.data;
-        
-        const fields = {
-            'company-name': c.companyName || '',
-            'company-description': c.companyDesc || '',
-            'company-address': c.companyAddress || '',
-            'company-contact': c.contactPerson || '',
-            'company-phone': c.contactPhone || '',
-            'company-email': c.contactEmail || ''
-        };
-        
-        Object.entries(fields).forEach(([id, value]) => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.textContent = value;
-                
-                // 添加点击复制功能
-                element.style.cursor = 'copy';
-                element.title = '点击复制';
-                element.addEventListener('click', () => {
-                    navigator.clipboard.writeText(value).then(() => {
-                        alert('已复制到剪贴板');
-                    }).catch(err => {
-                        console.error('复制失败:', err);
-                        // 创建临时文本框进行复制
-                        const textArea = document.createElement('textarea');
-                        textArea.value = value;
-                        document.body.appendChild(textArea);
-                        textArea.select();
-                        document.execCommand('copy');
-                        document.body.removeChild(textArea);
-                        alert('已复制到剪贴板');
-                    });
-                });
-            }
-        });
+        if (!currentUser.companyId) {
+            loadingEl.innerHTML = '<p>您尚未关联任何公司</p>';
+            return;
+        }
+
+        // 使用 Auth.authenticatedFetch 确保携带 JWT 令牌
+        const response = await Auth.authenticatedFetch(`${COMPANY_API_BASE}/${encodeURIComponent(currentUser.companyId)}`);
+        if (!response.ok) {
+            const text = await response.text();
+            loadingEl.innerHTML = `<p>网络错误: ${response.status} ${text}</p>`;
+            return;
+        }
+
+        const json = await response.json();
+        if (json.code !== 200) {
+            loadingEl.innerHTML = `<p>${json.message || '加载失败'}</p>`;
+            return;
+        }
+
+        const company = json.data || {};
+        loadingEl.outerHTML = `
+            <div class="card" style="margin-top: 16px;">
+                <div class="card-body">
+                    <h3 style="margin-top: 0;">${company.companyName || ''}</h3>
+                    <p><strong>统一社会信用代码:</strong> ${company.creditCode || ''}</p>
+                    <p><strong>所属行业:</strong> ${company.industry || ''}</p>
+                    <p><strong>所在城市:</strong> ${company.city || ''}</p>
+                    <p><strong>公司规模:</strong> ${company.companySize || ''}</p>
+                    <p><strong>公司性质:</strong> ${company.companyNature || ''}</p>
+                    <p><strong>公司介绍:</strong></p>
+                    <div style="white-space: pre-wrap; background: #f8f9fa; padding: 12px; border-radius: 4px;">${company.description || ''}</div>
+                </div>
+            </div>
+        `;
     } catch (e) {
-        console.error('加载公司信息失败:', e);
+        console.error('加载公司信息异常:', e);
+        loadingEl.innerHTML = '<p>请求异常，请稍后重试</p>';
     }
 }
 
@@ -446,50 +401,59 @@ async function loadCompanyInfo(user) {
  */
 function renderRecruiterProfileView(container, currentUser) {
     container.innerHTML = `
-        <h2>账号与安全</h2>
-        <div class="dashboard-card">
-            <h3>基本信息</h3>
-            <div class="form-row">
-                <div>
-                    <label>用户名</label>
-                    <div id="rec-username-display" class="readonly-field" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;"></div>
+        <div class="view profile-view active">
+            <h2>账号与安全</h2>
+            
+            <div class="card" style="margin-bottom: 24px;">
+                <div class="card-header">
+                    <h3 style="margin: 0;">基本信息</h3>
                 </div>
-                <div>
-                    <label>角色</label>
-                    <div id="rec-role-display" class="readonly-field" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">HR</div>
+                <div class="card-body">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div>
+                            <label>用户名</label>
+                            <p id="rec-username-display" style="margin: 8px 0; padding: 8px; background: #f8f9fa; border-radius: 4px;"></p>
+                        </div>
+                        <div>
+                            <label>角色</label>
+                            <p style="margin: 8px 0; padding: 8px; background: #f8f9fa; border-radius: 4px;">HR</p>
+                        </div>
+                        <div>
+                            <label>邮箱</label>
+                            <p id="rec-email-display" style="margin: 8px 0; padding: 8px; background: #f8f9fa; border-radius: 4px;"></p>
+                        </div>
+                        <div>
+                            <label>手机</label>
+                            <p id="rec-phone-display" style="margin: 8px 0; padding: 8px; background: #f8f9fa; border-radius: 4px;"></p>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="form-row" style="margin-top: 8px;">
-                <div>
-                    <label>邮箱</label>
-                    <div id="rec-email-display" class="readonly-field" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;"></div>
-                </div>
-                <div>
-                    <label>手机号</label>
-                    <div id="rec-phone-display" class="readonly-field" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;"></div>
-                </div>
-            </div>
-            <!-- 基本信息栏目不允许修改，只允许修改密码 -->
-        </div>
 
-        <div class="dashboard-card" style="margin-top: 16px;">
-            <h3>修改密码</h3>
-            <div class="form-row">
-                <div>
-                    <label>当前密码</label>
-                    <input type="password" id="rec-old-password" placeholder="请输入当前密码">
+            <div class="card">
+                <div class="card-header">
+                    <h3 style="margin: 0;">修改密码</h3>
                 </div>
-                <div>
-                    <label>新密码</label>
-                    <input type="password" id="rec-new-password" placeholder="请输入新密码">
+                <div class="card-body">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 500px;">
+                        <div>
+                            <label for="rec-old-password">当前密码</label>
+                            <input type="password" id="rec-old-password" class="form-control" placeholder="请输入当前密码">
+                        </div>
+                        <div></div>
+                        <div>
+                            <label for="rec-new-password">新密码</label>
+                            <input type="password" id="rec-new-password" class="form-control" placeholder="请输入新密码">
+                        </div>
+                        <div>
+                            <label for="rec-confirm-password">确认新密码</label>
+                            <input type="password" id="rec-confirm-password" class="form-control" placeholder="请再次输入新密码">
+                        </div>
+                    </div>
+                    <div style="margin-top: 16px;">
+                        <button id="rec-change-password-btn" class="btn btn-primary">保存密码</button>
+                    </div>
                 </div>
-                <div>
-                    <label>确认新密码</label>
-                    <input type="password" id="rec-confirm-password" placeholder="请再次输入新密码">
-                </div>
-            </div>
-            <div class="action-buttons">
-                <button class="btn btn-primary" id="rec-change-password-btn">保存修改</button>
             </div>
         </div>
     `;
@@ -500,9 +464,11 @@ function renderRecruiterProfileView(container, currentUser) {
 
 async function loadRecruiterProfile(user) {
     try {
-        const resp = await fetch(`/api/user/${encodeURIComponent(user.userId)}`);
-        if (!resp.ok) return;
-        const json = await resp.json();
+        // 使用 Auth.authenticatedFetch 确保携带 JWT 令牌
+        const response = await Auth.authenticatedFetch(`/api/user/${encodeURIComponent(user.userId)}`);
+        if (!response.ok) return;
+        
+        const json = await response.json();
         const data = (json && typeof json === 'object' && 'code' in json)
             ? (json.code === 200 ? json.data : null)
             : json;
@@ -535,21 +501,24 @@ function bindRecruiterPasswordChange(user) {
         }
 
         try {
-            const resp = await fetch(`/api/user/${encodeURIComponent(user.userId)}/password`, {
+            // 使用 Auth.authenticatedFetch 确保携带 JWT 令牌
+            const response = await Auth.authenticatedFetch(`/api/user/${encodeURIComponent(user.userId)}/password`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ oldPassword: oldPwd, newPassword: newPwd })
             });
-            if (!resp.ok) {
-                const text = await resp.text();
-                alert(`网络错误: ${resp.status} ${text}`);
+            
+            if (!response.ok) {
+                const text = await response.text();
+                alert(`网络错误: ${response.status} ${text}`);
                 return;
             }
-            const json = await resp.json();
+            
+            const json = await response.json();
             if (!json || json.code !== 200) {
                 alert((json && json.message) || '修改密码失败');
                 return;
             }
+            
             alert('密码修改成功，请使用新密码重新登录。');
         } catch (e) {
             console.error('修改密码失败:', e);

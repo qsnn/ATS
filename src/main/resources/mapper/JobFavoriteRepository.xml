@@ -3,7 +3,7 @@
 <mapper namespace="com.platform.ats.repository.JobFavoriteRepository">
 
     <update id="updateDeletedFavoriteToActive">
-        UPDATE job_favorite 
+        UPDATE job_favorite
         SET delete_flag = 0, update_time = NOW()
         WHERE user_id = #{userId} AND job_id = #{jobId} AND delete_flag = 1
     </update>

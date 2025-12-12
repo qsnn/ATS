@@ -1,39 +1,46 @@
 package com.platform.ats.config;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-
-import static org.springframework.security.config.Customizer.withDefaults;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         http
-                // 禁用 CSRF 防护，便于测试
+                // 禁用 CSRF 防护，便于 API 访问
                 .csrf(AbstractHttpConfigurer::disable)
-//                // 配置请求授权规则
-//                .authorizeHttpRequests(auth -> auth
-//                        // 允许对注册接口、Swagger UI 和 API 文档的匿名访问
-//                        .requestMatchers("/api/user/register", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-//                        // 其他所有请求都需要身份验证
-//                        .anyRequest().authenticated()
-//                )
-//                // 启用 HTTP Basic 认证
-//                .httpBasic(withDefaults());
+                // 设置会话策略为无状态
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // 配置请求授权规则
                 .authorizeHttpRequests(auth -> auth
-                        // 允许所有请求，无需身份验证
-                        .anyRequest().permitAll()
-                );
+                        // 允许对静态资源的访问
+                        .requestMatchers("/", "/index.html", "/login.html", "/register.html", "/favicon.ico").permitAll()
+                        .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
+                        // 允许访问所有仪表板页面（权限控制将在前端处理）
+                        .requestMatchers("/*-dashboard.html").permitAll()
+                        // 允许对注册接口、登录接口、Swagger UI 和 API 文档的匿名访问
+                        .requestMatchers("/api/user/register", "/api/user/login", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        // 允许对所有/api/user开头的接口进行访问（但特定接口仍需认证）
+                        .requestMatchers("/api/user/check/**").permitAll()
+                        // 其他所有请求都需要身份验证
+                        .anyRequest().authenticated()
+                )
+                // 添加JWT认证过滤器
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
@@ -41,5 +48,10 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         // 定义密码编码器，用于密码加密和验证
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+        return authConfig.getAuthenticationManager();
     }
 }

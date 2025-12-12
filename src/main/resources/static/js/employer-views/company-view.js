@@ -206,24 +206,16 @@ async function createCompany(user) {
         const newCompanyId = json.data.companyId;
         
         // 更新用户信息，将companyId设置为新创建的公司ID
-        const userUpdateResp = await fetch(`/api/user/${user.userId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                userId: user.userId,
-                companyId: newCompanyId
-            })
-        });
-        
-        if (!userUpdateResp.ok) {
-            const text = await userUpdateResp.text();
-            alert(`用户信息更新失败: ${userUpdateResp.status} ${text}`);
-            return;
-        }
-        
-        const userUpdateJson = await userUpdateResp.json();
-        if (!userUpdateJson || userUpdateJson.code !== 200) {
-            alert(userUpdateJson && userUpdateJson.message ? userUpdateJson.message : '用户信息更新失败');
+        try {
+            const userUpdateResp = await ApiService.request(`/user/${user.userId}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    userId: user.userId,
+                    companyId: newCompanyId
+                })
+            });
+        } catch (error) {
+            alert(`用户信息更新失败: ${error.message}`);
             return;
         }
         

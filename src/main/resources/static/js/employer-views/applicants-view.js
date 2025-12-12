@@ -97,18 +97,10 @@ async function loadApplicants(currentUser, status = '') {
             params.append('status', status);
         }
 
-        const resp = await fetch(`/api/applications/company/${encodeURIComponent(currentUser.companyId)}?${params.toString()}`);
-        if (!resp.ok) {
-            const text = await resp.text();
-            if (statusEl) statusEl.textContent = `网络错误: ${resp.status} ${text}`;
-            return;
-        }
-        const json = await resp.json();
-        if (json.code !== 200) {
-            if (statusEl) statusEl.textContent = json.message || '加载失败';
-            return;
-        }
-        const page = json.data || {};
+        // 使用 ApiService.request 替代普通 fetch 以确保携带 JWT 令牌
+        const resp = await ApiService.request(`/applications/company/${encodeURIComponent(currentUser.companyId)}?${params.toString()}`);
+
+        const page = resp || {};
         const records = page.records || [];
 
         if (records.length === 0) {

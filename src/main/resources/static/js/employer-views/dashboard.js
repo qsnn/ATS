@@ -79,18 +79,18 @@ function switchTab(tabName, currentUser = Auth.getCurrentUser()) {
  */
 async function updateUserProfileApi(payload) {
     try {
-        const resp = await fetch(`${USER_API_BASE}/${payload.userId}`, {
+        // 使用 Auth.authenticatedFetch 确保携带 JWT 令牌
+        const response = await Auth.authenticatedFetch(`${USER_API_BASE}/${payload.userId}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
 
-        if (!resp.ok) {
-            const errorText = await resp.text();
-            return { success: false, message: `网络错误: ${resp.status} ${errorText}` };
+        if (!response.ok) {
+            const errorText = await response.text();
+            return { success: false, message: `网络错误: ${response.status} ${errorText}` };
         }
 
-        const json = await resp.json();
+        const json = await response.json();
         if (json.code !== 200) {
             return { success: false, message: json.message || '更新失败' };
         }
@@ -111,21 +111,22 @@ async function updateUserPasswordApi(payload) {
         if (!currentUser || !currentUser.userId) {
             return { success: false, message: '用户未登录' };
         }
-        const resp = await fetch(USER_PASSWORD_API_BASE(currentUser.userId), {
+        
+        // 使用 Auth.authenticatedFetch 确保携带 JWT 令牌
+        const response = await Auth.authenticatedFetch(USER_PASSWORD_API_BASE(currentUser.userId), {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 oldPassword: payload.oldPassword,
                 newPassword: payload.newPassword
             })
         });
 
-        if (!resp.ok) {
-            const errorText = await resp.text();
-            return { success: false, message: `网络错误: ${resp.status} ${errorText}` };
+        if (!response.ok) {
+            const errorText = await response.text();
+            return { success: false, message: `网络错误: ${response.status} ${errorText}` };
         }
 
-        const json = await resp.json();
+        const json = await response.json();
         if (json.code !== 200) {
             return { success: false, message: json.message || '修改密码失败' };
         }
