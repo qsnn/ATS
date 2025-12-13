@@ -47,16 +47,9 @@ public class GlobalExceptionHandler {
             message = cve.getConstraintViolations().iterator().next().getMessage();
         }
         return Result.error(ErrorCode.BAD_REQUEST.getCode(), message);
-    
 
-    /**
-     * 处理其他未捕获的异常
-     * 
-     * @param ex 异常对象
-     * @return Result对象
-     */
-    @ExceptionHandler(Exception.class)
-    public Result<Void> handleOtherException(Exception ex) {
+    }
+        public Result<Void> handleOtherException(Exception ex) {
         // 可以在这里添加日志记录
         return Result.error(ErrorCode.INTERNAL_ERROR.getCode(), ErrorCode.INTERNAL_ERROR.getMessage());
     }

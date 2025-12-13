@@ -1,6 +1,11 @@
-// 统一API配置管理模块
+/**
+ * 统一API配置管理模块
+ * 提供各服务的路径前缀配置和URL构建工具
+ */
 const API_CONFIG = {
-    // 各个服务的路径前缀
+    /**
+     * 各个服务的路径前缀
+     */
     SERVICES: {
         USER: '/api/user',
         JOB: '/api/job/info',
@@ -13,9 +18,17 @@ const API_CONFIG = {
     }
 };
 
-// API工具类
+/**
+ * API工具类
+ * 提供常用的API处理方法
+ */
 const ApiUtils = {
-    // 构建完整URL
+    /**
+     * 构建完整URL
+     * @param {string} service - 服务名称
+     * @param {string} path - 路径
+     * @returns {string} 完整URL
+     */
     buildUrl: function(service, path = '') {
         const servicePath = API_CONFIG.SERVICES[service] || '';
         // 确保路径正确拼接

@@ -1,6 +1,12 @@
 const API_BASE_URL = '/api';
 
-// 简单防抖工具
+/**
+ * 简单防抖工具
+ * 用于限制函数执行频率
+ * @param {Function} fn - 需要防抖的函数
+ * @param {number} wait - 等待时间(毫秒)
+ * @returns {Function} 防抖后的函数
+ */
 function debounce(fn, wait) {
     let timer = null;
     return function (...args) {
@@ -19,6 +25,7 @@ window.jobSearchPagination = {
 
 /**
  * 根据条件搜索职位
+ * 从后端获取符合条件的职位列表并渲染到页面
  */
 async function searchJobs() {
     const inputEl = document.getElementById('job-search-input');
@@ -222,6 +229,11 @@ function escapeHtml(unsafe) {
         .replace(/'/g, "&#039;");
 }
 
+/**
+ * 将学历代码映射为文本描述
+ * @param {number|string} eduValue - 学历代码
+ * @returns {string} 学历文本描述
+ */
 function mapEducationText(eduValue) {
     switch (parseInt(eduValue)) {
         case 0: return '无学历要求';
@@ -234,6 +246,11 @@ function mapEducationText(eduValue) {
     }
 }
 
+/**
+ * 将工作经验代码映射为文本描述
+ * @param {number|string} expValue - 工作经验代码
+ * @returns {string} 工作经验文本描述
+ */
 function mapWorkExperienceText(expValue) {
     if (expValue === 0 || expValue === '0') {
         return '应届生';
@@ -247,7 +264,10 @@ function mapWorkExperienceText(expValue) {
     return numValue + '年及以上';
 }
 
-// 分页功能
+/**
+ * 分页功能
+ * 跳转到上一页
+ */
 function goToPreviousPage() {
     if (window.jobSearchPagination.current > 1) {
         window.jobSearchPagination.current--;
@@ -255,6 +275,10 @@ function goToPreviousPage() {
     }
 }
 
+/**
+ * 分页功能
+ * 跳转到下一页
+ */
 function goToNextPage() {
     if (window.jobSearchPagination.current < window.jobSearchPagination.pages) {
         window.jobSearchPagination.current++;
@@ -262,6 +286,10 @@ function goToNextPage() {
     }
 }
 
+/**
+ * 申请职位
+ * @param {number} jobId - 职位ID
+ */
 async function applyJob(jobId) {
     const currentUser = window.Auth && Auth.getCurrentUser ? Auth.getCurrentUser() : null;
     if (!currentUser || currentUser.role !== 'job-seeker') {
@@ -311,6 +339,10 @@ async function applyJob(jobId) {
     alert('投递成功！您可以在"我的申请"中查看投递记录。');
 }
 
+/**
+ * 查看职位详情
+ * @param {number} jobId - 职位ID
+ */
 async function viewJobDetail(jobId) {
     try {
         // 使用 apiRequest 替代 Auth.authenticatedFetch 以适配新的统一返回格式

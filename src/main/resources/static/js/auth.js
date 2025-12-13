@@ -1,11 +1,22 @@
-// js/auth.js
-// 认证与本地存储工具（接入后端接口）
+/**
+ * 认证与本地存储工具（接入后端接口）
+ * 提供用户登录、注册、信息存储等功能
+ */
 
 const API_BASE = '/api/user';
 const CURRENT_USER_KEY = 'currentUser';
 
-// 本地存储封装
+/**
+ * 本地存储封装
+ * 提供安全的本地存储读写操作
+ */
 const storage = {
+    /**
+     * 从本地存储获取数据
+     * @param {string} key - 存储键
+     * @param {*} defaultValue - 默认值
+     * @returns {*} 存储的值或默认值
+     */
     get(key, defaultValue = null) {
         try {
             const raw = localStorage.getItem(key);
@@ -16,6 +27,12 @@ const storage = {
             return defaultValue;
         }
     },
+    
+    /**
+     * 向本地存储设置数据
+     * @param {string} key - 存储键
+     * @param {*} value - 存储值
+     */
     set(key, value) {
         try {
             localStorage.setItem(key, JSON.stringify(value));
@@ -23,6 +40,11 @@ const storage = {
             console.error('写入本地存储失败:', key, e);
         }
     },
+    
+    /**
+     * 从本地存储移除数据
+     * @param {string} key - 存储键
+     */
     remove(key) {
         try {
             localStorage.removeItem(key);
@@ -32,7 +54,11 @@ const storage = {
     }
 };
 
-// 后端 userType(数字) → 前端 role(字符串) 映射
+/**
+ * 后端 userType(数字) → 前端 role(字符串) 映射
+ * @param {number} userType - 后端用户类型
+ * @returns {string|null} 前端角色标识
+ */
 function mapUserTypeToRole(userType) {
     switch (userType) {
         case 1: return 'admin';       // 平台管理员
@@ -43,7 +69,12 @@ function mapUserTypeToRole(userType) {
     }
 }
 
-// 登录
+/**
+ * 用户登录
+ * @param {string} username - 用户名
+ * @param {string} password - 密码
+ * @returns {Promise<Object>} 登录结果
+ */
 async function login(username, password) {
     try {
         const resp = await fetch(`${API_BASE}/login`, {
@@ -94,7 +125,11 @@ async function login(username, password) {
     }
 }
 
-// 注册（这里示例为求职者，按你后端约定调整 userType）
+/**
+ * 用户注册
+ * @param {Object} payload - 注册信息
+ * @returns {Promise<Object>} 注册结果
+ */
 async function register(payload) {
     try {
         const resp = await fetch(`${API_BASE}/register`, {
@@ -125,7 +160,12 @@ function getCurrentUser() {
     return storage.get(CURRENT_USER_KEY, null);
 }
 
-// 新增：用于在更新信息后，同步更新本地存储
+/**
+ * 更新当前用户信息
+ * 用于在更新信息后，同步更新本地存储
+ * @param {Object} updatedFields - 更新的字段
+ * @returns {Object|null} 更新后的用户信息
+ */
 function updateCurrentUser(updatedFields) {
     const currentUser = getCurrentUser();
     if (currentUser) {
@@ -153,7 +193,12 @@ function requireAuth() {
     return true;
 }
 
-// 新增：创建带有认证头的fetch请求
+/**
+ * 创建带有认证头的fetch请求
+ * @param {string} url - 请求URL
+ * @param {Object} options - fetch选项
+ * @returns {Promise<Response>} fetch响应
+ */
 function authenticatedFetch(url, options = {}) {
     const currentUser = getCurrentUser();
     const headers = {

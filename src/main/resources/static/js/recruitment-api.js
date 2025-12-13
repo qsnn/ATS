@@ -1,3 +1,7 @@
+/**
+ * 招聘相关API服务
+ * 提供人才库相关的API调用封装
+ */
 const ApiService = (function () {
     const API_BASE = '/api';
 
@@ -12,7 +16,10 @@ const ApiService = (function () {
         return apiRequest(url, options);
     }
 
-    // 获取当前登录用户的公司 ID
+    /**
+     * 获取当前登录用户的公司 ID
+     * @returns {number|null} 公司ID或null
+     */
     function getCompanyId() {
         const currentUser = Auth.getCurrentUser();
         if (!currentUser || !currentUser.companyId) {

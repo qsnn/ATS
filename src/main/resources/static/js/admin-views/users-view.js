@@ -1,3 +1,8 @@
+/**
+ * 渲染用户管理视图
+ * @param {HTMLElement} container - 容器元素
+ * @param {Object} currentUser - 当前用户信息
+ */
 function renderUsersView(container, currentUser) {
     container.innerHTML = `
         <h2>用户管理</h2>
@@ -38,6 +43,10 @@ function renderUsersView(container, currentUser) {
     loadUsers(currentUser);
 }
 
+/**
+ * 加载用户数据
+ * @param {Object} adminUser - 管理员用户信息
+ */
 async function loadUsers(adminUser) {
     const tbody = document.getElementById('user-table-body');
     if (!tbody) return;
@@ -94,22 +103,37 @@ async function loadUsers(adminUser) {
     }
 }
 
+/**
+ * 查看用户详情
+ * @param {number} userId - 用户ID
+ */
 function viewUserDetail(userId) {
     alert('查看用户 ' + userId + ' 详情（后续实现）');
 }
 
+/**
+ * 锁定用户
+ * @param {number} userId - 用户ID
+ */
 function lockUser(userId) {
     if (confirm('确定锁定用户 ' + userId + '？')) {
         alert('已锁定用户 ' + userId + '（模拟操作）');
     }
 }
 
+/**
+ * 删除用户
+ * @param {number} userId - 用户ID
+ */
 function deleteUser(userId) {
     if (confirm('确定删除用户 ' + userId + '？此操作不可恢复！')) {
         alert('用户 ' + userId + ' 已删除（模拟操作）');
     }
 }
 
+/**
+ * 搜索用户
+ */
 function searchUser() {
     const keyword = document.getElementById('user-search').value;
     if (keyword) {
@@ -117,6 +141,9 @@ function searchUser() {
     }
 }
 
+/**
+ * 按角色筛选用户
+ */
 function filterUserByRole() {
     const role = document.getElementById('user-role-filter').value;
     alert('按角色筛选：' + (role || '全部') + '（模拟操作）');

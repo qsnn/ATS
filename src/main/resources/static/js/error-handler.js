@@ -1,6 +1,14 @@
-// 统一错误处理模块
+/**
+ * 统一错误处理模块
+ * 提供错误码到用户友好消息的映射和处理功能
+ */
 const ErrorHandler = {
-    // 错误码到用户友好消息的映射
+    /**
+     * 错误码到用户友好消息的映射
+     * @param {number} errorCode - 错误码
+     * @param {string} defaultMessage - 默认消息
+     * @returns {string} 用户友好的错误消息
+     */
     getFriendlyMessage: function(errorCode, defaultMessage) {
         const errorMessages = {
             // 用户相关错误 (1000-1099)
@@ -79,7 +87,11 @@ const ErrorHandler = {
         return errorMessages[errorCode] || defaultMessage || "操作失败，请稍后再试";
     },
     
-    // 处理API响应错误
+    /**
+     * 处理API响应错误
+     * @param {Object} response - API响应
+     * @returns {Object} 处理后的结果
+     */
     handleApiResponse: function(response) {
         if (response.code !== 200) {
             const friendlyMessage = this.getFriendlyMessage(response.code, response.message);
@@ -96,7 +108,11 @@ const ErrorHandler = {
         };
     },
     
-    // 处理网络错误
+    /**
+     * 处理网络错误
+     * @param {Error} error - 网络错误
+     * @returns {Object} 处理后的结果
+     */
     handleNetworkError: function(error) {
         console.error('网络请求异常:', error);
         return {
@@ -106,7 +122,13 @@ const ErrorHandler = {
     }
 };
 
-// 统一消息显示函数
+/**
+ * 统一消息显示函数
+ * 在页面右上角显示一个消息提示
+ * @param {string} message - 消息内容
+ * @param {string} type - 消息类型 (success, error, warning, info)
+ * @param {number} duration - 显示持续时间(毫秒)
+ */
 function showMessage(message, type = 'info', duration = 3000) {
     // 移除已存在的消息
     const existingMessage = document.querySelector('.message-toast');
