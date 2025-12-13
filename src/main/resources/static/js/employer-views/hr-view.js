@@ -267,13 +267,22 @@ async function showResetPasswordModal(userId) {
             throw new Error('服务器响应不是有效的JSON格式');
         }
         if (json.code !== 200) {
+            // 特别处理密码格式错误
+            if (json.code === 1007) { // PASSWORD_FORMAT_INVALID
+                alert('默认密码不符合安全要求，无法重置密码，请联系系统管理员');
+                return;
+            }
             throw new Error(json.message || '重置失败');
         }
         
         alert('密码重置成功');
     } catch (e) {
         console.error('重置密码失败:', e);
-        alert(`重置密码失败: ${e.message}`);
+        if (e.message.includes('安全要求')) {
+            alert(e.message);
+        } else {
+            alert(`重置密码失败: ${e.message}`);
+        }
     }
 }
 

@@ -485,6 +485,18 @@ function bindRecruiterPasswordChange(user) {
             alert('请完整填写所有密码字段');
             return;
         }
+        
+        if (newPwd.length < 8) {
+            alert('新密码长度不能少于 8 位');
+            return;
+        }
+        
+        // 检查密码是否包含字母和数字
+        if (!/[a-zA-Z]/.test(newPwd) || !/\d/.test(newPwd)) {
+            alert('新密码必须同时包含字母和数字');
+            return;
+        }
+        
         if (newPwd !== confirmPwd) {
             alert('两次输入的新密码不一致');
             return;

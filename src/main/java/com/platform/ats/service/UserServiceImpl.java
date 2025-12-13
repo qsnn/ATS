@@ -228,6 +228,8 @@ public class UserServiceImpl extends ServiceImpl<UserRepository, SysUser> implem
         if (!passwordEncoder.matches(dto.getOldPassword(), sysUser.getPassword())) {
             throw new BizException(ErrorCode.PASSWORD_ERROR, "原密码不正确");
         }
+        // 校验新密码强度
+        validatePasswordStrength(dto.getNewPassword());
         // 更新为新密码
         SysUser toUpdate = new SysUser();
         toUpdate.setUserId(userId);
@@ -238,6 +240,10 @@ public class UserServiceImpl extends ServiceImpl<UserRepository, SysUser> implem
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean resetPassword(Long userId, String newPassword) {
+        // 校验新密码强度（除非是默认密码）
+        if (!"123456".equals(newPassword)) {
+            validatePasswordStrength(newPassword);
+        }
         SysUser sysUser = new SysUser();
         sysUser.setUserId(userId);
         sysUser.setPassword(passwordEncoder.encode(newPassword));
@@ -367,5 +373,34 @@ public class UserServiceImpl extends ServiceImpl<UserRepository, SysUser> implem
             sb.append(chars.charAt(random.nextInt(chars.length())));
         }
         return sb.toString();
+    }
+
+    /**
+     * 校验密码强度
+     * 密码必须至少8位，且同时包含字母和数字
+     */
+    private void validatePasswordStrength(String password) {
+        if (password == null || password.length() < 8) {
+            throw new BizException(ErrorCode.PASSWORD_FORMAT_INVALID, "密码长度不能少于8位");
+        }
+        
+        boolean hasLetter = false;
+        boolean hasDigit = false;
+        
+        for (char c : password.toCharArray()) {
+            if (Character.isLetter(c)) {
+                hasLetter = true;
+            } else if (Character.isDigit(c)) {
+                hasDigit = true;
+            }
+            
+            if (hasLetter && hasDigit) {
+                break;
+            }
+        }
+        
+        if (!hasLetter || !hasDigit) {
+            throw new BizException(ErrorCode.PASSWORD_FORMAT_INVALID, "密码必须同时包含字母和数字");
+        }
     }
 }

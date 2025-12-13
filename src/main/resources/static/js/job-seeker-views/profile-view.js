@@ -150,8 +150,13 @@ function renderProfileView(container, currentUser) {
                 showMessage('请完整填写当前密码和新密码。', 'warning');
                 return;
             }
-            if (newPassword.length < 6) {
-                showMessage('新密码长度不能少于 6 位。', 'warning');
+            if (newPassword.length < 8) {
+                showMessage('新密码长度不能少于 8 位。', 'warning');
+                return;
+            }
+            // 检查密码是否包含字母和数字
+            if (!/[a-zA-Z]/.test(newPassword) || !/\d/.test(newPassword)) {
+                showMessage('新密码必须同时包含字母和数字。', 'warning');
                 return;
             }
             if (newPassword !== confirmPassword) {
