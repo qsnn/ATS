@@ -11,6 +11,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * 公司信息管理控制器
+ *
+ * @author Administrator
+ * @since 2025-12-13
+ */
 @RestController
 @RequestMapping("/api/company")
 @RequiredArgsConstructor

@@ -2,6 +2,9 @@ package com.platform.ats.common;
 
 /**
  * 统一错误码定义
+ *
+ * @author Administrator
+ * @since 2025-12-13
  */
 public enum ErrorCode {
 

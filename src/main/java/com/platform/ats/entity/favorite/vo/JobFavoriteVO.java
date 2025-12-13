@@ -6,20 +6,41 @@ import java.time.LocalDateTime;
 
 /**
  * 职位收藏展示对象（带部分职位信息）
+ *
+ * @author Administrator
+ * @since 2025-12-13
  */
 @Data
 public class JobFavoriteVO {
 
+    /**
+     * 收藏ID
+     */
     private Long favoriteId;
 
+    /**
+     * 职位ID
+     */
     private Long jobId;
 
+    /**
+     * 用户ID
+     */
     private Long userId;
 
+    /**
+     * 职位标题
+     */
     private String jobTitle;
 
+    /**
+     * 公司ID
+     */
     private Long companyId;
     
+    /**
+     * 公司名称
+     */
     private String companyName;
 
     /**
@@ -32,5 +53,8 @@ public class JobFavoriteVO {
      */
     private Integer publishStatus;
 
+    /**
+     * 创建时间
+     */
     private LocalDateTime createTime;
 }

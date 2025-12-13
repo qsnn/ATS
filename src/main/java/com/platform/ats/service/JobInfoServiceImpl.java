@@ -19,6 +19,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+/**
+ * 职位信息服务实现类
+ *
+ * @author Administrator
+ * @since 2025-12-13
+ */
 public class JobInfoServiceImpl extends ServiceImpl<JobInfoRepository, JobInfo> implements JobInfoService {
 
     private final JobInfoRepository jobInfoRepository;

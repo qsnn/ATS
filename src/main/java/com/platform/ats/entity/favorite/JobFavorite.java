@@ -7,21 +7,39 @@ import java.time.LocalDateTime;
 
 /**
  * 职位收藏实体
+ *
+ * @author Administrator
+ * @since 2025-12-13
  */
 @Data
 @TableName("job_favorite")
 public class JobFavorite {
 
+    /**
+     * 收藏ID，主键自增
+     */
     @TableId(type = IdType.AUTO)
     private Long favoriteId;
 
+    /**
+     * 用户ID
+     */
     private Long userId;
 
+    /**
+     * 职位ID
+     */
     private Long jobId;
 
+    /**
+     * 创建时间
+     */
     @TableField(value = "create_time", fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
+    /**
+     * 更新时间
+     */
     @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 

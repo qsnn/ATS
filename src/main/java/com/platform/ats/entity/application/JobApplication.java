@@ -11,28 +11,49 @@ import java.time.LocalDateTime;
 
 /**
  * 职位申请实体
+ *
+ * @author Administrator
+ * @since 2025-12-13
  */
 @Data
 @TableName("job_application")
 public class JobApplication {
 
+    /**
+     * 申请ID，主键自增
+     */
     @TableId(type = IdType.AUTO)
     private Long applicationId;
 
+    /**
+     * 用户ID
+     */
     private Long userId;
 
+    /**
+     * 职位ID
+     */
     private Long jobId;
 
+    /**
+     * 简历ID
+     */
     private Long resumeId;
 
     /**
-     * 申请状态：1-APPLIED, 2-ACCEPTED, 3-REJECTED, 4-WITHDRAWN
+     * 申请状态：1-APPLIED(已申请), 2-ACCEPTED(已接受), 3-REJECTED(已拒绝), 4-WITHDRAWN(已撤销)
      */
     private Integer status;
 
+    /**
+     * 申请时间
+     */
     @TableField("apply_time")
     private LocalDateTime applyTime;
 
+    /**
+     * 更新时间
+     */
     @TableField("update_time")
     private LocalDateTime updateTime;
     

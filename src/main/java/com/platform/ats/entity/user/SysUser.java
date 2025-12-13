@@ -10,6 +10,9 @@ import java.time.LocalDateTime;
 
 /**
  * 系统用户表实体类（MyBatis-Plus 版本）
+ *
+ * @author Administrator
+ * @since 2025-12-13
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -49,13 +52,20 @@ public class SysUser implements Serializable {
     private String email;
 
     /**
-     * 用户类型：1\-平台管理员 2\-企业管理员 3\-HR 4\-求职者
+     * 用户类型：
+     * 1-平台管理员 
+     * 2-企业管理员 
+     * 3-HR 
+     * 4-求职者
      */
     @TableField("user_type")
     private Integer userType;
 
     /**
-     * 账号状态：0\-禁用 1\-正常 2\-待完善
+     * 账号状态：
+     * 0-禁用 
+     * 1-正常 
+     * 2-待完善
      */
     @TableField("status")
     private Integer status;
@@ -75,7 +85,9 @@ public class SysUser implements Serializable {
     private LocalDateTime updateTime;
 
     /**
-     * 删除标记：0\-未删 1\-已删
+     * 删除标记：
+     * 0-未删 
+     * 1-已删
      */
     @TableLogic
     @TableField("delete_flag")
@@ -87,7 +99,11 @@ public class SysUser implements Serializable {
     @TableField("company_id")
     private Long companyId;
 
-    // ========== 业务方法 ==========
+    /**
+     * 判断用户是否被禁用
+     * 
+     * @return true-禁用，false-未禁用
+     */
     public boolean isDisabled() {
         return UserStatus.DISABLED.getCode().equals(status);
     }

@@ -14,6 +14,12 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 人才库服务实现类
+ *
+ * @author Administrator
+ * @since 2025-12-13
+ */
 @Service
 public class TalentPoolServiceImpl implements TalentPoolService {
 
@@ -23,6 +29,12 @@ public class TalentPoolServiceImpl implements TalentPoolService {
         this.talentPoolRepository = talentPoolRepository;
     }
 
+    /**
+     * 创建人才库记录
+     * 
+     * @param talentPool 人才库实体
+     * @return 人才库视图对象
+     */
     @Override
     public TalentPoolVO create(TalentPool talentPool) {
         // 先尝试恢复已逻辑删除的人才记录
@@ -63,6 +75,12 @@ public class TalentPoolServiceImpl implements TalentPoolService {
         return toVO(talentPool);
     }
 
+    /**
+     * 更新人才库记录
+     * 
+     * @param talentPool 人才库实体
+     * @return 人才库视图对象
+     */
     @Override
     public TalentPoolVO update(TalentPool talentPool) {
         if (talentPool.getTalentId() == null) {
@@ -74,6 +92,12 @@ public class TalentPoolServiceImpl implements TalentPoolService {
         return db == null ? null : toVO(db);
     }
 
+    /**
+     * 删除人才库记录
+     * 
+     * @param talentId 人才ID
+     * @return 是否删除成功
+     */
     @Override
     public boolean delete(Long talentId) {
         if (talentId == null) {
@@ -86,12 +110,24 @@ public class TalentPoolServiceImpl implements TalentPoolService {
                 .eq(TalentPool::getTalentId, talentId)) > 0;
     }
 
+    /**
+     * 根据ID获取人才库记录
+     * 
+     * @param talentId 人才ID
+     * @return 人才库视图对象
+     */
     @Override
     public TalentPoolVO getById(Long talentId) {
         TalentPool tp = talentPoolRepository.selectById(talentId);
         return tp == null ? null : toVO(tp);
     }
 
+    /**
+     * 根据公司ID获取人才库记录列表
+     * 
+     * @param companyId 公司ID
+     * @return 人才库视图对象列表
+     */
     @Override
     public List<TalentPoolVO> listByCompanyId(Long companyId) {
         List<TalentPool> list = talentPoolRepository.selectList(
@@ -103,6 +139,12 @@ public class TalentPoolServiceImpl implements TalentPoolService {
         return list.stream().map(this::toVO).collect(Collectors.toList());
     }
 
+    /**
+     * 根据公司ID获取人才库详情列表
+     * 
+     * @param companyId 公司ID
+     * @return 人才库详情视图对象列表
+     */
     @Override
     public List<TalentPoolDetailVO> listDetailByCompanyId(Long companyId) {
         if (companyId == null) {

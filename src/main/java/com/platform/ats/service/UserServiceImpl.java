@@ -32,6 +32,9 @@ import java.util.Objects;
 
 /**
  * 用户服务实现类
+ *
+ * @author Administrator
+ * @since 2025-12-13
  */
 @Slf4j
 @Service
@@ -41,6 +44,12 @@ public class UserServiceImpl extends ServiceImpl<UserRepository, SysUser> implem
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
+    /**
+     * 用户注册
+     *
+     * @param userRegisterDTO 用户注册传输对象
+     * @return 用户ID
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long register(UserRegisterDTO userRegisterDTO) {
@@ -74,6 +83,13 @@ public class UserServiceImpl extends ServiceImpl<UserRepository, SysUser> implem
         return sysUser.getUserId();
     }
 
+    /**
+     * 用户登录
+     *
+     * @param username 用户名
+     * @param password 密码
+     * @return 系统用户对象
+     */
     @Override
     public SysUser login(String username, String password) {
         SysUser sysUser = this.baseMapper.selectByUsername(username);
@@ -92,6 +108,12 @@ public class UserServiceImpl extends ServiceImpl<UserRepository, SysUser> implem
         return sysUser;
     }
 
+    /**
+     * 根据用户ID获取用户个人信息
+     *
+     * @param userId 用户ID
+     * @return 用户个人信息视图对象
+     */
     @Override
     public UserProfileVO getUserProfile(Long userId) {
         SysUser sysUser = this.getById(userId);

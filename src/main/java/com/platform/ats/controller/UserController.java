@@ -28,6 +28,12 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 
+/**
+ * 用户管理控制器
+ *
+ * @author Administrator
+ * @since 2025-12-13
+ */
 @Validated
 @RestController
 @RequestMapping("/api/user")

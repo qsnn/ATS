@@ -12,6 +12,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * 人才库管理控制器
+ *
+ * @author Administrator
+ * @since 2025-12-13
+ */
 @RestController
 @RequestMapping("/api/talent")
 @RequiredArgsConstructor

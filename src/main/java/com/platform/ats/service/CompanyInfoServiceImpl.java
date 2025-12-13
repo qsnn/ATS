@@ -12,6 +12,12 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 公司信息服务实现类
+ *
+ * @author Administrator
+ * @since 2025-12-13
+ */
 @Service
 public class CompanyInfoServiceImpl implements CompanyInfoService {
 
@@ -21,6 +27,12 @@ public class CompanyInfoServiceImpl implements CompanyInfoService {
         this.companyInfoRepository = companyInfoRepository;
     }
 
+    /**
+     * 创建公司信息
+     * 
+     * @param companyInfo 公司信息实体
+     * @return 公司信息视图对象
+     */
     @Override
     public CompanyInfoVO create(CompanyInfo companyInfo) {
         companyInfo.setCompanyId(null);
@@ -29,6 +41,12 @@ public class CompanyInfoServiceImpl implements CompanyInfoService {
         return toVO(companyInfo);
     }
 
+    /**
+     * 更新公司信息
+     * 
+     * @param companyInfo 公司信息实体
+     * @return 公司信息视图对象
+     */
     @Override
     public CompanyInfoVO update(CompanyInfo companyInfo) {
         if (companyInfo.getCompanyId() == null) {
@@ -40,6 +58,12 @@ public class CompanyInfoServiceImpl implements CompanyInfoService {
         return db == null ? null : toVO(db);
     }
 
+    /**
+     * 删除公司信息
+     * 
+     * @param companyId 公司ID
+     * @return 是否删除成功
+     */
     @Override
     public boolean delete(Long companyId) {
         if (companyId == null) {
@@ -48,12 +72,23 @@ public class CompanyInfoServiceImpl implements CompanyInfoService {
         return companyInfoRepository.deleteById(companyId) > 0;
     }
 
+    /**
+     * 根据ID获取公司信息
+     * 
+     * @param companyId 公司ID
+     * @return 公司信息视图对象
+     */
     @Override
     public CompanyInfoVO getById(Long companyId) {
         CompanyInfo companyInfo = companyInfoRepository.selectById(companyId);
         return companyInfo == null ? null : toVO(companyInfo);
     }
 
+    /**
+     * 获取所有公司信息列表
+     * 
+     * @return 公司信息视图对象列表
+     */
     @Override
     public List<CompanyInfoVO> listAll() {
         List<CompanyInfo> list = companyInfoRepository.selectList(

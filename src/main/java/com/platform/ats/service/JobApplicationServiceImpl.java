@@ -53,6 +53,12 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * 申请职位
+     * 
+     * @param dto 职位申请创建传输对象
+     * @return 申请ID
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long apply(JobApplicationCreateDTO dto) {
@@ -107,6 +113,14 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
         return entity.getApplicationId();
     }
 
+    /**
+     * 分页查询我的申请记录
+     * 
+     * @param page 分页参数
+     * @param userId 用户ID
+     * @param status 申请状态列表
+     * @return 申请记录分页结果
+     */
     @Override
     public IPage<JobApplicationVO> pageMyApplications(Page<JobApplicationVO> page, Long userId, List<Integer> status) {
         Page<JobApplication> entityPage = new Page<>(page.getCurrent(), page.getSize());
@@ -143,6 +157,15 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
         return voPage;
     }
 
+    /**
+     * 分页查询公司职位申请记录
+     * 
+     * @param page 分页参数
+     * @param companyId 公司ID
+     * @param status 包含的状态列表
+     * @param excludeStatus 排除的状态列表
+     * @return 申请记录分页结果
+     */
     @Override
     public IPage<JobApplicationEmployerVO> pageCompanyApplications(Page<JobApplicationEmployerVO> page, Long companyId, List<Integer> status, List<Integer> excludeStatus) {
         Page<JobApplication> entityPage = new Page<>(page.getCurrent(), page.getSize());
@@ -188,6 +211,12 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
         return pageCompanyApplications(page, companyId, status, Arrays.asList(4));
     }
 
+    /**
+     * 根据职位ID查询申请记录列表
+     * 
+     * @param jobId 职位ID
+     * @return 申请记录列表
+     */
     @Override
     public java.util.List<JobApplicationEmployerVO> listJobApplications(Long jobId) {
         List<JobApplication> list = jobApplicationRepository.selectList(new LambdaQueryWrapper<JobApplication>()
@@ -196,6 +225,12 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
         return buildEmployerVOs(list);
     }
 
+    /**
+     * 根据申请ID获取申请详情
+     * 
+     * @param applicationId 申请ID
+     * @return 申请详情
+     */
     @Override
     public JobApplicationEmployerVO getApplicationById(Long applicationId) {
         JobApplication application = jobApplicationRepository.selectById(applicationId);
@@ -272,6 +307,14 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
         }).collect(Collectors.toList());
     }
 
+    /**
+     * 更新申请状态
+     * 
+     * @param applicationId 申请ID
+     * @param status 新状态
+     * @param reason 更新原因
+     * @return 是否更新成功
+     */
     @Override
     public boolean updateStatus(Long applicationId, Integer status, String reason) {
         if (applicationId == null || status == null) {
@@ -286,6 +329,13 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
         return rows > 0;
     }
     
+    /**
+     * 撤销申请
+     * 
+     * @param applicationId 申请ID
+     * @param userId 用户ID
+     * @return 是否撤销成功
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean withdrawApplication(Long applicationId, Long userId) {
@@ -310,6 +360,14 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
         return rows > 0;
     }
     
+    /**
+     * 删除申请（逻辑删除）
+     * 
+     * @param userId 用户ID
+     * @param jobId 职位ID
+     * @param resumeId 简历ID
+     * @return 是否删除成功
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteApplication(Long userId, Long jobId, Long resumeId) {
@@ -329,6 +387,14 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
         return true;
     }
     
+    /**
+     * 恢复已删除的申请
+     * 
+     * @param userId 用户ID
+     * @param jobId 职位ID
+     * @param resumeId 简历ID
+     * @return 恢复后的申请ID
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long restoreApplication(Long userId, Long jobId, Long resumeId) {

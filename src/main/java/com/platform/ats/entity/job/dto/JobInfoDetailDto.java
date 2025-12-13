@@ -5,7 +5,10 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * 职位详情（包含关联信息） DTO
+ * 职位详情（包含关联信息）数据传输对象
+ *
+ * @author Administrator
+ * @since 2025-12-13
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

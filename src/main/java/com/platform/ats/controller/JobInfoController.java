@@ -16,7 +16,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 职位信息 前端控制器
+ * 职位信息前端控制器
+ *
+ * @author Administrator
+ * @since 2025-12-13
  */
 @RestController
 @RequestMapping("/api/job/info")

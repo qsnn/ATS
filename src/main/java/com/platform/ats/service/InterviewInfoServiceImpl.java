@@ -23,6 +23,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 面试信息服务实现类
+ *
+ * @author Administrator
+ * @since 2025-12-13
+ */
 @Service
 @RequiredArgsConstructor
 public class InterviewInfoServiceImpl extends ServiceImpl<InterviewInfoRepository, InterviewInfo> implements InterviewInfoService {
@@ -31,6 +37,12 @@ public class InterviewInfoServiceImpl extends ServiceImpl<InterviewInfoRepositor
     private final JobApplicationRepository jobApplicationRepository;
     private final ResumeInfoRepository resumeInfoRepository;
 
+    /**
+     * 创建面试信息
+     * 
+     * @param interviewInfo 面试信息实体
+     * @return 面试信息视图对象
+     */
     @Override
     public InterviewInfoVO create(InterviewInfo interviewInfo) {
         if (interviewInfo == null) {
@@ -75,6 +87,12 @@ public class InterviewInfoServiceImpl extends ServiceImpl<InterviewInfoRepositor
         return toVO(interviewInfo);
     }
 
+    /**
+     * 更新面试信息
+     * 
+     * @param interviewInfo 面试信息实体
+     * @return 面试信息视图对象
+     */
     @Override
     public InterviewInfoVO update(InterviewInfo interviewInfo) {
         if (interviewInfo == null || interviewInfo.getArrangeId() == null) {
@@ -113,6 +131,12 @@ public class InterviewInfoServiceImpl extends ServiceImpl<InterviewInfoRepositor
         return toVO(dbInterviewInfo);
     }
 
+    /**
+     * 删除面试信息
+     * 
+     * @param arrangeId 面试安排ID
+     * @return 是否删除成功
+     */
     @Override
     public boolean delete(Long arrangeId) {
         if (arrangeId == null) {
@@ -133,6 +157,12 @@ public class InterviewInfoServiceImpl extends ServiceImpl<InterviewInfoRepositor
         return true;
     }
 
+    /**
+     * 根据面试官ID获取面试信息列表
+     * 
+     * @param interviewerId 面试官ID
+     * @return 面试信息视图对象列表
+     */
     @Override
     public List<InterviewInfoVO> getById(Long interviewerId) {
         if (interviewerId == null) {
@@ -151,6 +181,12 @@ public class InterviewInfoServiceImpl extends ServiceImpl<InterviewInfoRepositor
         return interviewInfoVOList;
     }
 
+    /**
+     * 根据求职者用户ID获取面试信息列表
+     * 
+     * @param userId 用户ID
+     * @return 面试安排视图对象列表
+     */
     @Override
     public List<InterviewScheduleVO> getByUserId(Long userId) {
         if (userId == null) {
@@ -160,11 +196,28 @@ public class InterviewInfoServiceImpl extends ServiceImpl<InterviewInfoRepositor
         return interviewInfoRepository.selectScheduleByUserId(userId);
     }
     
+    /**
+     * 根据公司ID分页获取面试信息
+     * 
+     * @param page 分页参数
+     * @param companyId 公司ID
+     * @param status 状态
+     * @return 面试安排视图对象分页结果
+     */
     @Override
     public IPage<InterviewScheduleVO> getByCompanyId(Page<InterviewScheduleVO> page, Long companyId, String status) {
         return getByCompanyId(page, companyId, status, null);
     }
 
+    /**
+     * 根据公司ID分页获取面试信息（支持日期筛选）
+     * 
+     * @param page 分页参数
+     * @param companyId 公司ID
+     * @param status 状态
+     * @param interviewDate 面试日期
+     * @return 面试安排视图对象分页结果
+     */
     @Override
     public IPage<InterviewScheduleVO> getByCompanyId(Page<InterviewScheduleVO> page, Long companyId, String status, String interviewDate) {
         if (companyId == null) {
