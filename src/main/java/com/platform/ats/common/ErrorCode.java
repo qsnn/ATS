@@ -1,11 +1,14 @@
 package com.platform.ats.common;
 
+import lombok.Getter;
+
 /**
  * 统一错误码定义
  *
  * @author Administrator
  * @since 2025-12-13
  */
+@Getter
 public enum ErrorCode {
 
     // 通用错误 0-999

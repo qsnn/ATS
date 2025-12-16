@@ -49,7 +49,9 @@ public class GlobalExceptionHandler {
         return Result.error(ErrorCode.BAD_REQUEST.getCode(), message);
 
     }
-        public Result<Void> handleOtherException(Exception ex) {
+    
+    @ExceptionHandler(Exception.class)
+    public Result<Void> handleOtherException(Exception ex) {
         // 可以在这里添加日志记录
         return Result.error(ErrorCode.INTERNAL_ERROR.getCode(), ErrorCode.INTERNAL_ERROR.getMessage());
     }

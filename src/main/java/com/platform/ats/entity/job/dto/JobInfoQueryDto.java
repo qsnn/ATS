@@ -3,6 +3,7 @@ package com.platform.ats.entity.job.dto;
 import lombok.Data;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.io.Serial;
 
 /**
  * 职位查询参数数据传输对象
@@ -12,6 +13,7 @@ import java.math.BigDecimal;
  */
 @Data
 public class JobInfoQueryDto implements Serializable {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     /**

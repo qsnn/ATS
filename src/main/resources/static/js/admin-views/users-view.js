@@ -47,7 +47,7 @@ function renderUsersView(container, currentUser) {
  * 加载用户数据
  * @param {Object} adminUser - 管理员用户信息
  */
-async function loadUsers(adminUser) {
+async function loadUsers(_adminUser) {
     const tbody = document.getElementById('user-table-body');
     if (!tbody) return;
 

@@ -2,7 +2,7 @@
  * 统一API配置管理模块
  * 提供各服务的路径前缀配置和URL构建工具
  */
-const API_CONFIG = {
+let API_CONFIG = {
     /**
      * 各个服务的路径前缀
      */
@@ -22,7 +22,7 @@ const API_CONFIG = {
  * API工具类
  * 提供常用的API处理方法
  */
-const ApiUtils = {
+let ApiUtils = {
     /**
      * 构建完整URL
      * @param {string} service - 服务名称
@@ -32,11 +32,12 @@ const ApiUtils = {
     buildUrl: function(service, path = '') {
         const servicePath = API_CONFIG.SERVICES[service] || '';
         // 确保路径正确拼接
-        const fullPath = path ? `${servicePath}${path.startsWith('/') ? path : '/' + path}` : servicePath;
-        return fullPath;
+        return path ? `${servicePath}${path.startsWith('/') ? path : '/' + path}` : servicePath;
     }
 };
 
 // 暴露到全局
-window.API_CONFIG = API_CONFIG;
-window.ApiUtils = ApiUtils;
+if (typeof window !== 'undefined') {
+    window.API_CONFIG = API_CONFIG;
+    window.ApiUtils = ApiUtils;
+}

@@ -2,7 +2,7 @@
  * 统一错误处理模块
  * 提供错误码到用户友好消息的映射和处理功能
  */
-const ErrorHandler = {
+let ErrorHandler = {
     /**
      * 错误码到用户友好消息的映射
      * @param {number} errorCode - 错误码
@@ -197,5 +197,7 @@ function showMessage(message, type = 'info', duration = 3000) {
 }
 
 // 将函数暴露到全局作用域
-window.ErrorHandler = ErrorHandler;
-window.showMessage = showMessage;
+if (typeof window !== 'undefined') {
+    window.ErrorHandler = ErrorHandler;
+    window.showMessage = showMessage;
+}

@@ -11,7 +11,6 @@ import com.platform.ats.entity.user.dto.UserRegisterDTO;
 import com.platform.ats.entity.user.dto.UserUpdateDTO;
 import com.platform.ats.entity.user.dto.UserPasswordDTO;
 import com.platform.ats.entity.user.query.UserQuery;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.platform.ats.entity.user.vo.HrVO;
 import com.platform.ats.entity.user.vo.Result;
 import com.platform.ats.entity.user.vo.UserProfileVO;

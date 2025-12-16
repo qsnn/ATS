@@ -108,6 +108,8 @@ async function searchJobs() {
     } catch (error) {
         console.error('获取职位列表失败:', error);
         if (jobListContainer) jobListContainer.innerHTML = '<p>加载职位信息失败，请稍后重试。</p>';
+        // 抛出错误以便上层处理
+        throw error;
     }
 }
 

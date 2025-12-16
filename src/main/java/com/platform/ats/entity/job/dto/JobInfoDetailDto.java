@@ -3,6 +3,7 @@ package com.platform.ats.entity.job.dto;
 import com.platform.ats.entity.job.JobInfo;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import java.io.Serial;
 
 /**
  * 职位详情（包含关联信息）数据传输对象
@@ -13,6 +14,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class JobInfoDetailDto extends JobInfo {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     /**

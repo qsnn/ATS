@@ -1,11 +1,14 @@
 package com.platform.ats.common;
 
+import lombok.Getter;
+
 /**
  * 业务异常，携带统一错误码
  *
  * @author Administrator
  * @since 2025-12-13
  */
+@Getter
 public class BizException extends RuntimeException {
 
     /**

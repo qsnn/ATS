@@ -3,7 +3,8 @@
  * 提供用户登录、注册、信息存储等功能
  */
 
-const API_BASE = '/api/user';
+// 动态确定API基础路径
+const API_BASE = window.location.port === '63342' ? 'http://localhost:10085/api/user' : '/api/user';
 const CURRENT_USER_KEY = 'currentUser';
 
 /**

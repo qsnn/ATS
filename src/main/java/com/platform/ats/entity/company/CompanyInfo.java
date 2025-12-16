@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.io.Serial;
 
 /**
  * 公司信息实体类
@@ -19,6 +20,7 @@ import java.time.LocalDateTime;
 @TableName("company_info")
 public class CompanyInfo implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     /**

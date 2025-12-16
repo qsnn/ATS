@@ -6,6 +6,7 @@ import lombok.Data;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.io.Serial;
 
 /**
  * 职位信息表实体类
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 @TableName("job_info")
 public class JobInfo implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     /**
