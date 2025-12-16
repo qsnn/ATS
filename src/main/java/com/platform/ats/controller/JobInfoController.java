@@ -3,6 +3,7 @@ package com.platform.ats.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.platform.ats.common.annotation.DataPermission;
+import com.platform.ats.common.annotation.LogOperation;
 import com.platform.ats.entity.job.JobInfo;
 import com.platform.ats.entity.job.dto.JobInfoDetailDto;
 import com.platform.ats.entity.job.dto.JobInfoQueryDto;
@@ -32,6 +33,7 @@ public class JobInfoController {
      */
     @GetMapping("/list")
     @DataPermission(DataPermission.Type.ALL) // 所有登录用户都可以查看职位列表
+    @LogOperation(module = "职位管理", type = "查询", content = "分页查询职位列表")
     public Result<IPage<JobInfoDetailDto>> list(
             @RequestParam(defaultValue = "1") Long current,
             @RequestParam(defaultValue = "10") Long size,
@@ -49,6 +51,7 @@ public class JobInfoController {
      */
     @GetMapping("/cities")
     @DataPermission(DataPermission.Type.ALL) // 所有登录用户都可以获取城市列表
+    @LogOperation(module = "职位管理", type = "查询", content = "获取所有工作地点")
     public Result<List<String>> getAllCities() {
         List<String> cities = jobInfoService.list().stream()
                 .map(JobInfo::getCity)
@@ -64,6 +67,7 @@ public class JobInfoController {
      */
     @GetMapping("/{id}")
     @DataPermission(DataPermission.Type.ALL) // 所有登录用户都可以查看职位详情
+    @LogOperation(module = "职位管理", type = "查询", content = "根据ID获取职位详情")
     public Result<JobInfoDetailDto> getById(@PathVariable Long id) {
         JobInfoQueryDto queryDto = new JobInfoQueryDto();
         queryDto.setJobId(id);
@@ -80,6 +84,7 @@ public class JobInfoController {
      */
     @GetMapping("/detail/{id}")
     @DataPermission(DataPermission.Type.COMPANY) // 只有同公司的HR才能编辑职位
+    @LogOperation(module = "职位管理", type = "查询", content = "根据ID获取职位信息用于编辑")
     public Result<JobInfo> getDetailById(@PathVariable Long id) {
         JobInfo jobInfo = jobInfoService.getById(id);
         return Result.success(jobInfo);
@@ -90,6 +95,7 @@ public class JobInfoController {
      */
     @PostMapping
     @DataPermission(DataPermission.Type.COMPANY) // 只有HR可以创建职位
+    @LogOperation(module = "职位管理", type = "新增", content = "创建职位")
     public Result<Boolean> create(@RequestBody JobInfo jobInfo) {
         boolean result = jobInfoService.saveOrUpdate(jobInfo);
         return Result.success(result, "职位创建成功");
@@ -100,6 +106,7 @@ public class JobInfoController {
      */
     @PutMapping
     @DataPermission(DataPermission.Type.COMPANY) // 只有同公司的HR才能更新职位
+    @LogOperation(module = "职位管理", type = "修改", content = "更新职位")
     public Result<Boolean> update(@RequestBody JobInfo jobInfo) {
         boolean result = jobInfoService.saveOrUpdate(jobInfo);
         return Result.success(result, "职位更新成功");
@@ -110,6 +117,7 @@ public class JobInfoController {
      */
     @DeleteMapping("/{id}")
     @DataPermission(DataPermission.Type.COMPANY) // 只有同公司的HR才能删除职位
+    @LogOperation(module = "职位管理", type = "删除", content = "删除职位")
     public Result<Boolean> delete(@PathVariable Long id) {
         boolean result = jobInfoService.removeById(id);
         return Result.success(result, "职位删除成功");
@@ -120,6 +128,7 @@ public class JobInfoController {
      */
     @PutMapping("/publish/{id}")
     @DataPermission(DataPermission.Type.COMPANY) // 只有同公司的HR才能发布职位
+    @LogOperation(module = "职位管理", type = "修改", content = "发布职位")
     public Result<Boolean> publishJob(@PathVariable Long id) {
         boolean result = jobInfoService.publishJob(id);
         return Result.success(result, "职位发布成功");
@@ -130,6 +139,7 @@ public class JobInfoController {
      */
     @PutMapping("/unpublish/{id}")
     @DataPermission(DataPermission.Type.COMPANY) // 只有同公司的HR才能下架职位
+    @LogOperation(module = "职位管理", type = "修改", content = "下架职位")
     public Result<Boolean> unpublishJob(@PathVariable Long id) {
         boolean result = jobInfoService.unpublishJob(id);
         return Result.success(result, "职位下架成功");
