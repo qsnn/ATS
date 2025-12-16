@@ -40,17 +40,20 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
     private final ResumeInfoRepository resumeInfoRepository;
     private final CompanyInfoRepository companyInfoRepository;
     private final ObjectMapper objectMapper;
+    private final NotificationHelperService notificationHelperService;
 
     public JobApplicationServiceImpl(JobApplicationRepository jobApplicationRepository,
                                      JobInfoRepository jobInfoRepository,
                                      ResumeInfoRepository resumeInfoRepository,
                                      CompanyInfoRepository companyInfoRepository,
-                                     ObjectMapper objectMapper) {
+                                     ObjectMapper objectMapper,
+                                     NotificationHelperService notificationHelperService) {
         this.jobApplicationRepository = jobApplicationRepository;
         this.jobInfoRepository = jobInfoRepository;
         this.resumeInfoRepository = resumeInfoRepository;
         this.companyInfoRepository = companyInfoRepository;
         this.objectMapper = objectMapper;
+        this.notificationHelperService = notificationHelperService;
     }
 
     /**
@@ -321,11 +324,24 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
             throw new BizException(ErrorCode.APPLICATION_STATUS_INVALID, "状态更新参数不完整");
         }
 
+        // 先查询原始申请信息
+        JobApplication originalApplication = jobApplicationRepository.selectById(applicationId);
+        if (originalApplication == null) {
+            throw new BizException(ErrorCode.APPLICATION_NOT_FOUND, "申请记录不存在");
+        }
+
         LambdaUpdateWrapper<JobApplication> wrapper = new LambdaUpdateWrapper<>();
         wrapper.eq(JobApplication::getApplicationId, applicationId)
                 .set(JobApplication::getStatus, status)
                 .set(JobApplication::getUpdateTime, LocalDateTime.now());
         int rows = jobApplicationRepository.update(null, wrapper);
+        
+        // 如果状态更新成功，创建通知
+        if (rows > 0) {
+            JobApplication updatedApplication = jobApplicationRepository.selectById(applicationId);
+            notificationHelperService.createApplicationProcessedNotice(updatedApplication);
+        }
+        
         return rows > 0;
     }
     

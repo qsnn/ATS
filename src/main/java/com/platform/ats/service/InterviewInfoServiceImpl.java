@@ -1,12 +1,13 @@
 package com.platform.ats.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.platform.ats.common.BizException;
 import com.platform.ats.common.ErrorCode;
 import com.platform.ats.entity.application.JobApplication;
+import com.platform.ats.entity.application.JobApplicationEmployerVO;
 import com.platform.ats.entity.interview.InterviewInfo;
 import com.platform.ats.entity.interview.vo.InterviewInfoVO;
 import com.platform.ats.entity.interview.vo.InterviewScheduleVO;
@@ -14,28 +15,31 @@ import com.platform.ats.entity.resume.ResumeInfo;
 import com.platform.ats.repository.InterviewInfoRepository;
 import com.platform.ats.repository.JobApplicationRepository;
 import com.platform.ats.repository.ResumeInfoRepository;
-import com.platform.ats.service.InterviewInfoService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * 面试信息服务实现类
- *
- * @author Administrator
- * @since 2025-12-13
- */
 @Service
-@RequiredArgsConstructor
 public class InterviewInfoServiceImpl extends ServiceImpl<InterviewInfoRepository, InterviewInfo> implements InterviewInfoService {
 
     private final InterviewInfoRepository interviewInfoRepository;
     private final JobApplicationRepository jobApplicationRepository;
     private final ResumeInfoRepository resumeInfoRepository;
+    private final NotificationHelperService notificationHelperService;
+
+    public InterviewInfoServiceImpl(InterviewInfoRepository interviewInfoRepository,
+                                    JobApplicationRepository jobApplicationRepository,
+                                    ResumeInfoRepository resumeInfoRepository,
+                                    NotificationHelperService notificationHelperService) {
+        this.interviewInfoRepository = interviewInfoRepository;
+        this.jobApplicationRepository = jobApplicationRepository;
+        this.resumeInfoRepository = resumeInfoRepository;
+        this.notificationHelperService = notificationHelperService;
+    }
 
     /**
      * 创建面试信息
@@ -44,21 +48,15 @@ public class InterviewInfoServiceImpl extends ServiceImpl<InterviewInfoRepositor
      * @return 面试信息视图对象
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public InterviewInfoVO create(InterviewInfo interviewInfo) {
-        if (interviewInfo == null) {
-            throw new BizException(ErrorCode.PARAM_MISSING, "面试信息不能为空");
-        }
-        if (interviewInfo.getInterviewerId() == null) {
-            throw new BizException(ErrorCode.PARAM_MISSING, "面试官ID不能为空");
-        }
-        if (interviewInfo.getApplicationId() == null) {
-            throw new BizException(ErrorCode.PARAM_MISSING, "申请ID不能为空");
+        if (interviewInfo == null || interviewInfo.getApplicationId() == null) {
+            throw new BizException(ErrorCode.PARAM_MISSING, "缺少必要的面试参数");
         }
 
-        // 通过applicationId获取申请信息，进而获取简历信息和用户ID
+        // 获取申请信息
         JobApplication application = jobApplicationRepository.selectById(interviewInfo.getApplicationId());
-        // 检查申请是否存在且未被删除
-        if (application == null || application.getDeleteFlag() == 1) {
+        if (application == null) {
             throw new BizException(ErrorCode.NOT_FOUND, "面试关联的投递记录不存在");
         }
 
@@ -83,6 +81,9 @@ public class InterviewInfoServiceImpl extends ServiceImpl<InterviewInfoRepositor
         updatedApplication.setApplicationId(interviewInfo.getApplicationId());
         updatedApplication.setStatus(2);
         jobApplicationRepository.updateById(updatedApplication);
+        
+        // 创建面试安排通知
+        notificationHelperService.createInterviewArrangedNotice(interviewInfo);
 
         return toVO(interviewInfo);
     }
@@ -96,18 +97,19 @@ public class InterviewInfoServiceImpl extends ServiceImpl<InterviewInfoRepositor
     @Override
     public InterviewInfoVO update(InterviewInfo interviewInfo) {
         if (interviewInfo == null || interviewInfo.getArrangeId() == null) {
-            throw new BizException(ErrorCode.PARAM_MISSING, "面试信息或ID不能为空");
+            throw new BizException(ErrorCode.PARAM_MISSING, "缺少必要的面试参数");
         }
 
         InterviewInfo dbInterviewInfo = interviewInfoRepository.selectById(interviewInfo.getArrangeId());
         if (dbInterviewInfo == null) {
-            throw new BizException(ErrorCode.NOT_FOUND, "未找到对应面试信息");
+            throw new BizException(ErrorCode.NOT_FOUND, "面试记录不存在");
         }
 
-        // 只更新允许更新的字段
-        if (interviewInfo.getInterviewerId() != null) {
-            dbInterviewInfo.setInterviewerId(interviewInfo.getInterviewerId());
-        }
+        // 保存原始状态用于判断是否需要发送通知
+        Integer originalStatus = dbInterviewInfo.getStatus();
+
+        dbInterviewInfo.setUpdate_time(LocalDateTime.now());
+        // 只更新非空字段
         if (interviewInfo.getInterviewTime() != null) {
             dbInterviewInfo.setInterviewTime(interviewInfo.getInterviewTime());
         }
@@ -117,16 +119,15 @@ public class InterviewInfoServiceImpl extends ServiceImpl<InterviewInfoRepositor
         if (interviewInfo.getStatus() != null) {
             dbInterviewInfo.setStatus(interviewInfo.getStatus());
         }
-        if (interviewInfo.getIntervieweeName() != null) {
-            dbInterviewInfo.setIntervieweeName(interviewInfo.getIntervieweeName());
-        }
-        if (interviewInfo.getIntervieweeId() != null) {
-            dbInterviewInfo.setIntervieweeId(interviewInfo.getIntervieweeId());
-        }
-
-        dbInterviewInfo.setUpdate_time(LocalDateTime.now());
 
         interviewInfoRepository.updateById(dbInterviewInfo);
+        
+        // 如果面试状态发生了变化，创建面试结果通知
+        if (interviewInfo.getStatus() != null && 
+            !interviewInfo.getStatus().equals(originalStatus) &&
+            (interviewInfo.getStatus() == 3 || interviewInfo.getStatus() == 4)) { // 录取或未录取
+            notificationHelperService.createInterviewResultNotice(dbInterviewInfo);
+        }
 
         return toVO(dbInterviewInfo);
     }

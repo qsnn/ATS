@@ -19,6 +19,7 @@ import com.platform.ats.entity.user.vo.UserVO;
 import java.util.List;
 import com.platform.ats.common.BizException;
 import com.platform.ats.common.ErrorCode;
+import com.platform.ats.service.NotificationHelperService;
 import com.platform.ats.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,6 +43,7 @@ import jakarta.validation.Valid;
 public class UserController {
 
     private final UserService userService;
+    private final NotificationHelperService notificationHelperService;
 
     @PostMapping("/register")
     @Operation(summary = "用户注册")
@@ -59,6 +61,17 @@ public class UserController {
         SysUser sysUser = userService.login(username, dto.getPassword());
         // 调用新方法获取UserProfileVO
         UserProfileVO userProfile = userService.getUserProfile(sysUser.getUserId());
+        
+        // 当HR或雇主登录时，检查未处理的申请和即将到来的面试
+        if (sysUser.getUserType() == 3 || sysUser.getUserType() == 2) { // HR或企业管理员
+            // TODO: 实际查询未处理的申请数量
+            int pendingCount = 0; // 示例值，实际应从数据库查询
+            notificationHelperService.createPendingApplicationsNotice(sysUser.getUserId(), pendingCount);
+            
+            // TODO: 实际查询即将到来的面试
+            // notificationHelperService.createUpcomingInterviewsNotice(sysUser.getUserId(), upcomingInterviews);
+        }
+        
         return Result.success(userProfile, "登录成功");
     }
 

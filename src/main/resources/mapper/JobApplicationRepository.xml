@@ -1,31 +1,40 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.platform.ats.repository.JobApplicationRepository">
 
-    <resultMap id="JobApplicationResultMap" type="com.platform.ats.entity.application.JobApplication">
-        <id property="applicationId" column="application_id" />
-        <result property="userId" column="user_id" />
-        <result property="jobId" column="job_id" />
-        <result property="resumeId" column="resume_id" />
-        <result property="status" column="status" />
-        <result property="applyTime" column="apply_time" />
-        <result property="updateTime" column="update_time" />
-        <result property="resumeSnapshot" column="resume_snapshot" />
-        <result property="deleteFlag" column="delete_flag" />
-    </resultMap>
-
-    <sql id="Base_Column_List">
-        <![CDATA[
-        application_id, user_id, job_id, resume_id, status, apply_time, update_time, resume_snapshot, delete_flag
-        ]]>
-    </sql>
-    
     <update id="updateDeletedApplicationToActive">
-        <![CDATA[
-        UPDATE job_application 
-        SET delete_flag = 0, update_time = NOW()
-        WHERE user_id = #{userId} AND job_id = #{jobId} AND resume_id = #{resumeId} AND delete_flag = 1
-        ]]>
+        UPDATE job_application
+        SET delete_flag = 0
+        WHERE user_id = #{userId}
+          AND job_id = #{jobId}
+          AND resume_id = #{resumeId}
+          AND delete_flag = 1
     </update>
 
+    <select id="countPendingApplicationsByCompanyId" resultType="int">
+        SELECT COUNT(*)
+        FROM job_application ja
+        JOIN job_info ji ON ja.job_id = ji.job_id
+        WHERE ji.company_id = #{companyId}
+          AND ja.status = 1
+          AND ja.delete_flag = 0
+          AND ji.delete_flag = 0
+    </select>
+
+    <select id="selectUpcomingInterviewsByCompanyId" resultType="com.platform.ats.entity.application.JobApplication">
+        SELECT ja.*
+        FROM job_application ja
+        JOIN job_info ji ON ja.job_id = ji.job_id
+        WHERE ji.company_id = #{companyId}
+          AND ja.status = 2
+          AND ja.delete_flag = 0
+          AND ji.delete_flag = 0
+          AND EXISTS (
+              SELECT 1
+              FROM interview_info ii
+              WHERE ii.application_id = ja.application_id
+                AND ii.interview_time BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 2 HOUR)
+                AND ii.delete_flag = 0
+          )
+    </select>
 </mapper>
