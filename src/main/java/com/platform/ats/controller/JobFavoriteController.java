@@ -2,6 +2,7 @@ package com.platform.ats.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.platform.ats.common.annotation.LogOperation;
 import com.platform.ats.entity.favorite.dto.JobFavoriteCreateDTO;
 import com.platform.ats.entity.favorite.vo.JobFavoriteVO;
 import com.platform.ats.entity.user.vo.Result;
@@ -21,6 +22,7 @@ public class JobFavoriteController {
 
     @PostMapping
     @Operation(summary = "收藏职位")
+    @LogOperation(module = "职位收藏管理", type = "新增", content = "收藏职位")
     public Result<Long> addFavorite(@RequestBody JobFavoriteCreateDTO dto) {
         Long id = jobFavoriteService.addFavorite(dto.getUserId(), dto.getJobId());
         return Result.success(id);
@@ -28,6 +30,7 @@ public class JobFavoriteController {
 
     @DeleteMapping
     @Operation(summary = "取消收藏")
+    @LogOperation(module = "职位收藏管理", type = "删除", content = "取消收藏")
     public Result<Boolean> removeFavorite(@RequestParam Long userId,
                                           @RequestParam Long jobId) {
         boolean ok = jobFavoriteService.removeFavorite(userId, jobId);
@@ -44,6 +47,7 @@ public class JobFavoriteController {
 
     @GetMapping("/my")
     @Operation(summary = "分页查询我的收藏职位")
+    @LogOperation(module = "职位收藏管理", type = "查询", content = "分页查询我的收藏职位")
     public Result<IPage<JobFavoriteVO>> pageMyFavorites(@RequestParam Long userId,
                                                         @RequestParam(defaultValue = "1") long current,
                                                         @RequestParam(defaultValue = "10") long size) {

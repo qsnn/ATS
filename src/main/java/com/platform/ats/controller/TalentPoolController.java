@@ -1,5 +1,6 @@
 package com.platform.ats.controller;
 
+import com.platform.ats.common.annotation.LogOperation;
 import com.platform.ats.entity.talentpool.TalentPool;
 import com.platform.ats.entity.talentpool.vo.TalentPoolDetailVO;
 import com.platform.ats.entity.talentpool.vo.TalentPoolVO;
@@ -28,30 +29,35 @@ public class TalentPoolController {
 
     @PostMapping
     @Operation(summary = "新增人才")
+    @LogOperation(module = "人才库管理", type = "新增", content = "新增人才")
     public Result<TalentPoolVO> create(@RequestBody TalentPool talentPool) {
         return Result.success(talentPoolService.create(talentPool));
     }
 
     @PutMapping
     @Operation(summary = "修改人才")
+    @LogOperation(module = "人才库管理", type = "修改", content = "修改人才")
     public Result<TalentPoolVO> update(@RequestBody TalentPool talentPool) {
         return Result.success(talentPoolService.update(talentPool));
     }
 
     @DeleteMapping("/{talentId}")
     @Operation(summary = "删除人才")
+    @LogOperation(module = "人才库管理", type = "删除", content = "删除人才")
     public Result<Boolean> delete(@PathVariable Long talentId) {
         return Result.success(talentPoolService.delete(talentId));
     }
 
     @GetMapping("/{talentId}")
     @Operation(summary = "根据ID查询人才")
+    @LogOperation(module = "人才库管理", type = "查询", content = "根据ID查询人才")
     public Result<TalentPoolVO> getById(@PathVariable Long talentId) {
         return Result.success(talentPoolService.getById(talentId));
     }
 
     @GetMapping("/company/{companyId}")
     @Operation(summary = "根据公司ID查询人才列表")
+    @LogOperation(module = "人才库管理", type = "查询", content = "根据公司ID查询人才列表")
     public Result<List<TalentPoolDetailVO>> listByCompanyId(@PathVariable Long companyId) {
         return Result.success(talentPoolService.listDetailByCompanyId(companyId));
     }

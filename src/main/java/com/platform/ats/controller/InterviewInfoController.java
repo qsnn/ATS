@@ -3,6 +3,7 @@ package com.platform.ats.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.platform.ats.common.annotation.LogOperation;
 import com.platform.ats.entity.interview.InterviewInfo;
 import com.platform.ats.entity.interview.vo.InterviewInfoVO;
 import com.platform.ats.entity.interview.vo.InterviewScheduleVO;
@@ -31,36 +32,42 @@ public class InterviewInfoController{
 
     @PostMapping
     @Operation(summary = "创建面试信息")
+    @LogOperation(module = "面试信息管理", type = "新增", content = "创建面试信息")
     public Result<InterviewInfoVO> addInterviewInfo(@RequestBody InterviewInfo interviewInfo){
         return Result.success(interviewInfoService.create(interviewInfo));
     }
 
     @PutMapping
     @Operation(summary = "更新面试信息")
+    @LogOperation(module = "面试信息管理", type = "修改", content = "更新面试信息")
     public Result<InterviewInfoVO> updateInterviewInfo(@RequestBody InterviewInfo interviewInfo){
         return Result.success(interviewInfoService.update(interviewInfo));
     }
 
     @DeleteMapping("/{arrangeId}")
     @Operation(summary = "删除面试信息")
+    @LogOperation(module = "面试信息管理", type = "删除", content = "删除面试信息")
     public Result<Boolean> deleteInterviewInfo(@PathVariable("arrangeId") Long arrangeId){
         return Result.success(interviewInfoService.delete(arrangeId));
     }
 
     @GetMapping("/interviewer/{interviewerId}")
     @Operation(summary = "根据面试官ID获取面试信息")
+    @LogOperation(module = "面试信息管理", type = "查询", content = "根据面试官ID获取面试信息")
     public Result<List<InterviewInfoVO>> getInterviewInfoByInterviewerId(@PathVariable("interviewerId") Long interviewerId){
         return Result.success(interviewInfoService.getById(interviewerId));
     }
 
     @GetMapping("/user/{userId}")
     @Operation(summary = "根据求职者用户ID获取面试信息")
+    @LogOperation(module = "面试信息管理", type = "查询", content = "根据求职者用户ID获取面试信息")
     public Result<List<InterviewScheduleVO>> getInterviewInfoByUserId(@PathVariable("userId") Long userId){
         return Result.success(interviewInfoService.getByUserId(userId));
     }
     
     @GetMapping("/company/{companyId}")
     @Operation(summary = "根据公司ID分页获取面试信息")
+    @LogOperation(module = "面试信息管理", type = "查询", content = "根据公司ID分页获取面试信息")
     public Result<IPage<InterviewScheduleVO>> getInterviewInfoByCompanyId(
             @PathVariable("companyId") Long companyId,
             @RequestParam(defaultValue = "1") Long current,

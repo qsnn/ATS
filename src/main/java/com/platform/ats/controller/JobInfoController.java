@@ -51,7 +51,6 @@ public class JobInfoController {
      */
     @GetMapping("/cities")
     @DataPermission(DataPermission.Type.ALL) // 所有登录用户都可以获取城市列表
-    @LogOperation(module = "职位管理", type = "查询", content = "获取所有工作地点")
     public Result<List<String>> getAllCities() {
         List<String> cities = jobInfoService.list().stream()
                 .map(JobInfo::getCity)

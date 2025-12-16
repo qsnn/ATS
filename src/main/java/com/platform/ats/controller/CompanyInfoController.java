@@ -1,5 +1,6 @@
 package com.platform.ats.controller;
 
+import com.platform.ats.common.annotation.LogOperation;
 import com.platform.ats.entity.company.CompanyInfo;
 import com.platform.ats.entity.company.vo.CompanyInfoVO;
 import com.platform.ats.entity.user.vo.Result;
@@ -27,30 +28,35 @@ public class CompanyInfoController {
 
     @PostMapping
     @Operation(summary = "新增公司")
+    @LogOperation(module = "公司信息管理", type = "新增", content = "新增公司")
     public Result<CompanyInfoVO> create(@RequestBody CompanyInfo companyInfo) {
         return Result.success(companyInfoService.create(companyInfo));
     }
 
     @PutMapping
     @Operation(summary = "修改公司")
+    @LogOperation(module = "公司信息管理", type = "修改", content = "修改公司")
     public Result<CompanyInfoVO> update(@RequestBody CompanyInfo companyInfo) {
         return Result.success(companyInfoService.update(companyInfo));
     }
 
     @DeleteMapping("/{companyId}")
     @Operation(summary = "删除公司")
+    @LogOperation(module = "公司信息管理", type = "删除", content = "删除公司")
     public Result<Boolean> delete(@PathVariable Long companyId) {
         return Result.success(companyInfoService.delete(companyId));
     }
 
     @GetMapping("/{companyId}")
     @Operation(summary = "根据ID查询公司")
+    @LogOperation(module = "公司信息管理", type = "查询", content = "根据ID查询公司")
     public Result<CompanyInfoVO> getById(@PathVariable Long companyId) {
         return Result.success(companyInfoService.getById(companyId));
     }
 
     @GetMapping("/list")
     @Operation(summary = "查询全部公司列表")
+    @LogOperation(module = "公司信息管理", type = "查询", content = "查询全部公司列表")
     public Result<List<CompanyInfoVO>> listAll() {
         return Result.success(companyInfoService.listAll());
     }

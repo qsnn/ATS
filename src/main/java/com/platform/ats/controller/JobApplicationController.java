@@ -2,6 +2,7 @@ package com.platform.ats.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.platform.ats.common.annotation.LogOperation;
 import com.platform.ats.entity.application.dto.JobApplicationCreateDTO;
 import com.platform.ats.entity.application.vo.JobApplicationVO;
 import com.platform.ats.entity.application.vo.JobApplicationEmployerVO;
@@ -30,6 +31,7 @@ public class JobApplicationController {
 
     @PostMapping
     @Operation(summary = "申请职位")
+    @LogOperation(module = "职位申请管理", type = "新增", content = "申请职位")
     public Result<Long> apply(@RequestBody JobApplicationCreateDTO dto) {
         Long id = jobApplicationService.apply(dto);
         return Result.success(id);
@@ -37,6 +39,7 @@ public class JobApplicationController {
 
     @GetMapping("/my")
     @Operation(summary = "分页查询我的申请记录")
+    @LogOperation(module = "职位申请管理", type = "查询", content = "分页查询我的申请记录")
     public Result<IPage<JobApplicationVO>> pageMyApplications(@RequestParam Long userId,
                                                               @RequestParam(defaultValue = "1") long current,
                                                               @RequestParam(defaultValue = "10") long size,
@@ -49,6 +52,7 @@ public class JobApplicationController {
     // Employer 视角：分页查询该公司下所有申请记录
     @GetMapping("/company/{companyId}")
     @Operation(summary = "分页查询公司下所有申请记录")
+    @LogOperation(module = "职位申请管理", type = "查询", content = "分页查询公司下所有申请记录")
     public Result<IPage<JobApplicationEmployerVO>> pageCompanyApplications(@PathVariable Long companyId,
                                                                           @RequestParam(defaultValue = "1") long current,
                                                                           @RequestParam(defaultValue = "10") long size,
@@ -62,6 +66,7 @@ public class JobApplicationController {
     // Employer 视角：按职位查询该职位下的所有申请人
     @GetMapping("/job/{jobId}")
     @Operation(summary = "查询某职位下的申请记录（企业端）")
+    @LogOperation(module = "职位申请管理", type = "查询", content = "查询某职位下的申请记录（企业端）")
     public Result<java.util.List<JobApplicationEmployerVO>> listJobApplications(@PathVariable Long jobId) {
         java.util.List<JobApplicationEmployerVO> list = jobApplicationService.listJobApplications(jobId);
         return Result.success(list);
@@ -70,6 +75,7 @@ public class JobApplicationController {
     // Employer 视角：通过申请ID获取申请详情
     @GetMapping("/company/application/{applicationId}")
     @Operation(summary = "通过申请ID获取申请详情（企业端）")
+    @LogOperation(module = "职位申请管理", type = "查询", content = "通过申请ID获取申请详情（企业端）")
     public Result<JobApplicationEmployerVO> getApplicationById(@PathVariable Long applicationId) {
         JobApplicationEmployerVO application = jobApplicationService.getApplicationById(applicationId);
         return Result.success(application);
@@ -77,6 +83,7 @@ public class JobApplicationController {
 
     @PutMapping("/{applicationId}/status")
     @Operation(summary = "更新申请状态（如：拒绝、面试中等）")
+    @LogOperation(module = "职位申请管理", type = "修改", content = "更新申请状态（如：拒绝、面试中等）")
     public Result<Boolean> updateStatus(@PathVariable Long applicationId,
                                         @RequestBody JobStatusUpdateRequest request) {
         boolean success = jobApplicationService.updateStatus(applicationId, request.getStatus(), request.getReason());
@@ -85,6 +92,7 @@ public class JobApplicationController {
 
     @PutMapping("/{applicationId}/withdraw")
     @Operation(summary = "取消申请")
+    @LogOperation(module = "职位申请管理", type = "修改", content = "取消申请")
     public Result<Boolean> withdrawApplication(@PathVariable Long applicationId,
                                               @RequestParam Long userId) {
         boolean success = jobApplicationService.withdrawApplication(applicationId, userId);
@@ -93,6 +101,7 @@ public class JobApplicationController {
     
     @DeleteMapping
     @Operation(summary = "删除申请记录")
+    @LogOperation(module = "职位申请管理", type = "删除", content = "删除申请记录")
     public Result<Boolean> deleteApplication(@RequestParam Long userId,
                                             @RequestParam Long jobId,
                                             @RequestParam Long resumeId) {
@@ -102,6 +111,7 @@ public class JobApplicationController {
     
     @PostMapping("/restore")
     @Operation(summary = "恢复已删除的申请记录")
+    @LogOperation(module = "职位申请管理", type = "新增", content = "恢复已删除的申请记录")
     public Result<Long> restoreApplication(@RequestParam Long userId,
                                           @RequestParam Long jobId,
                                           @RequestParam Long resumeId) {
