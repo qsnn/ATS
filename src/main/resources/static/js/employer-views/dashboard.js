@@ -37,6 +37,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 默认进入职位管理
     switchTab('manage', currentUser);
+    
+    // 加载未读通知数量
+    loadUnreadNoticeCount(currentUser);
 });
 
 function handleLogout() {
@@ -71,7 +74,8 @@ function switchTab(tabName, currentUser = Auth.getCurrentUser()) {
         talent: { src: '/js/employer-views/talent-view.js', renderFn: 'renderTalentView' },
         hr: { src: '/js/employer-views/hr-view.js', renderFn: 'renderHrManageView' },
         company: { src: '/js/employer-views/company-view.js', renderFn: 'renderCompanyView' },
-        profile: { src: '/js/employer-views/profile-view.js', renderFn: 'renderEmployerProfileView' }
+        profile: { src: '/js/employer-views/profile-view.js', renderFn: 'renderEmployerProfileView' },
+        notices: { src: '/js/common/notices-view.js', renderFn: 'renderNoticesView' }
     };
 
     const moduleInfo = moduleMap[tabName];
@@ -86,6 +90,49 @@ function switchTab(tabName, currentUser = Auth.getCurrentUser()) {
         });
     } else {
         container.classList.add('active');
+    }
+}
+
+/**
+ * 加载未读通知数量
+ * @param {object} currentUser - 当前用户
+ */
+async function loadUnreadNoticeCount(currentUser) {
+    try {
+        // 动态加载通知模块
+        await new Promise((resolve, reject) => {
+            loadModule('/js/common/notices-view.js', resolve);
+        });
+        
+        const url = `/api/notices/user/${currentUser.userId}/unread-count`;
+        const resp = await Auth.authenticatedFetch(url);
+        if (!resp.ok) {
+            return;
+        }
+        
+        const json = await resp.json();
+        const count = json.data || 0;
+        
+        // 更新侧边栏红点
+        const noticeLink = document.querySelector('[data-tab="notices"]');
+        if (noticeLink) {
+            let badge = noticeLink.querySelector('.badge');
+            if (!badge) {
+                badge = document.createElement('span');
+                badge.className = 'badge';
+                badge.style.cssText = 'background-color: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px; margin-left: 5px; display: inline-block;';
+                noticeLink.appendChild(badge);
+            }
+            
+            if (count > 0) {
+                badge.textContent = count;
+                badge.style.display = 'inline-block';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    } catch (e) {
+        console.error('加载未读通知数量异常:', e);
     }
 }
 

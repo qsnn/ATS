@@ -7,7 +7,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.platform.ats.common.BizException;
 import com.platform.ats.common.ErrorCode;
 import com.platform.ats.entity.application.JobApplication;
-import com.platform.ats.entity.application.JobApplicationEmployerVO;
 import com.platform.ats.entity.interview.InterviewInfo;
 import com.platform.ats.entity.interview.vo.InterviewInfoVO;
 import com.platform.ats.entity.interview.vo.InterviewScheduleVO;

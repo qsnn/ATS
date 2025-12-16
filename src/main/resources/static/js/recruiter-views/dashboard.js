@@ -39,6 +39,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 默认进入面试管理
     switchTab('interviews', currentUser);
+    
+    // 加载未读通知数量
+    loadUnreadNoticeCount(currentUser);
 });
 
 function handleLogout() {
@@ -91,6 +94,17 @@ function switchTab(tabName, currentUser = Auth.getCurrentUser()) {
                 container.innerHTML = '<p>加载失败，请稍后重试</p>';
             });
         }
+    } else if (tabName === 'notices') {
+        // 动态加载通知模块
+        loadModule('../common/notices-view.js', () => {
+            const renderFn = window.renderNoticesView;
+            if (typeof renderFn === 'function') {
+                container.innerHTML = '';
+                renderFn(container, currentUser);
+            }
+            container.classList.add('active');
+        });
+        return;
     }
 
     container.classList.add('active');
@@ -128,6 +142,53 @@ function renderTalentView(container, currentUser) {
         window.renderTalentView(container, currentUser);
     };
     document.head.appendChild(script);
+}
+
+/**
+ * 加载未读通知数量
+ * @param {object} currentUser - 当前用户
+ */
+async function loadUnreadNoticeCount(currentUser) {
+    try {
+        // 动态加载通知模块
+        await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = '../common/notices-view.js';
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+        
+        const url = `/api/notices/user/${currentUser.userId}/unread-count`;
+        const resp = await Auth.authenticatedFetch(url);
+        if (!resp.ok) {
+            return;
+        }
+        
+        const json = await resp.json();
+        const count = json.data || 0;
+        
+        // 更新侧边栏红点
+        const noticeLink = document.querySelector('[data-tab="notices"]');
+        if (noticeLink) {
+            let badge = noticeLink.querySelector('.badge');
+            if (!badge) {
+                badge = document.createElement('span');
+                badge.className = 'badge';
+                badge.style.cssText = 'background-color: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px; margin-left: 5px; display: inline-block;';
+                noticeLink.appendChild(badge);
+            }
+            
+            if (count > 0) {
+                badge.textContent = count;
+                badge.style.display = 'inline-block';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    } catch (e) {
+        console.error('加载未读通知数量异常:', e);
+    }
 }
 
 /**
@@ -202,322 +263,83 @@ function renderRecruiterJobManageView(container, currentUser) {
         pages: 0
     };
 
+    // 绑定分页事件
+    const prevBtn = container.querySelector('#jobs-prev-page');
+    const nextBtn = container.querySelector('#jobs-next-page');
+    
+    prevBtn.addEventListener('click', () => {
+        if (window.jobsPagination.current > 1) {
+            window.jobsPagination.current--;
+            const activeTab = container.querySelector('.tab-btn.active');
+            const status = activeTab.getAttribute('data-status');
+            loadJobList(currentUser, status);
+        }
+    });
+    
+    nextBtn.addEventListener('click', () => {
+        if (window.jobsPagination.current < window.jobsPagination.pages) {
+            window.jobsPagination.current++;
+            const activeTab = container.querySelector('.tab-btn.active');
+            const status = activeTab.getAttribute('data-status');
+            loadJobList(currentUser, status);
+        }
+    });
+
     // 默认加载已发布职位
     loadJobList(currentUser, 1);
-}
-
-/**
- * 加载职位列表
- */
-async function loadJobList(currentUser, status) {
-    const tbody = document.getElementById('job-manage-tbody');
-    const statusEl = document.getElementById('jobs-status');
-    const paginationContainer = document.getElementById('jobs-pagination');
-    const paginationInfo = document.getElementById('jobs-pagination-info');
-    const prevBtn = document.getElementById('jobs-prev-page');
-    const nextBtn = document.getElementById('jobs-next-page');
-
-    if (!tbody || !statusEl) return;
-
-    try {
-        statusEl.textContent = '正在加载...';
-        const params = new URLSearchParams({
-            current: window.jobsPagination.current,
-            size: window.jobsPagination.size,
-            publishStatus: status,
-            companyId: currentUser.companyId
-        });
-
-        // 使用 apiRequest 替代 Auth.authenticatedFetch 以适配新的统一返回格式
-        const result = await apiRequest(`${JOB_API_BASE}/list?${params.toString()}`);
-        if (!result.success) {
-            statusEl.textContent = result.message || '加载失败';
-            return;
-        }
-        
-        const page = result.data || {};
-        const records = page.records || [];
-
-        if (records.length === 0) {
-            statusEl.textContent = '暂无职位记录。';
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px;">暂无数据</td></tr>';
-            if (paginationContainer) paginationContainer.style.display = 'none';
-            return;
-        }
-
-        // 更新分页信息
-        window.jobsPagination.total = page.total || 0;
-        window.jobsPagination.pages = page.pages || Math.ceil((page.total || 0) / window.jobsPagination.size) || 0;
-
-        statusEl.textContent = `共 ${window.jobsPagination.total} 条职位记录`;
-
-        if (paginationInfo) {
-            paginationInfo.textContent = `第 ${window.jobsPagination.current} 页，共 ${window.jobsPagination.pages} 页`;
-        }
-
-        if (paginationContainer) {
-            paginationContainer.style.display = 'flex';
-        }
-
-        if (prevBtn) {
-            prevBtn.disabled = window.jobsPagination.current <= 1;
-            prevBtn.onclick = () => {
-                if (window.jobsPagination.current > 1) {
-                    window.jobsPagination.current--;
-                    loadJobList(currentUser, status);
-                }
-            };
-        }
-
-        if (nextBtn) {
-            nextBtn.disabled = window.jobsPagination.current >= window.jobsPagination.pages;
-            nextBtn.onclick = () => {
-                if (window.jobsPagination.current < window.jobsPagination.pages) {
-                    window.jobsPagination.current++;
-                    loadJobList(currentUser, status);
-                }
-            };
-        }
-
-        // 渲染职位列表
-        tbody.innerHTML = '';
-        records.forEach(job => {
-            const tr = document.createElement('tr');
-            
-            const nameTd = document.createElement('td');
-            nameTd.textContent = job.jobName || '';
-            nameTd.style.overflow = 'hidden';
-            nameTd.style.textOverflow = 'ellipsis';
-            nameTd.style.whiteSpace = 'nowrap';
-            nameTd.style.textAlign = 'center';
-            nameTd.style.verticalAlign = 'middle';
-
-            const salaryTd = document.createElement('td');
-            const min = job.salaryMin || 0;
-            const max = job.salaryMax || 0;
-            let salary = '-';
-            if (min > 0 && max > 0) {
-                salary = `${(min / 1000).toFixed(0)}K-${(max / 1000).toFixed(0)}K`;
-            }
-            salaryTd.textContent = salary;
-            salaryTd.style.overflow = 'hidden';
-            salaryTd.style.textOverflow = 'ellipsis';
-            salaryTd.style.whiteSpace = 'nowrap';
-            salaryTd.style.textAlign = 'center';
-            salaryTd.style.verticalAlign = 'middle';
-
-            const cityTd = document.createElement('td');
-            cityTd.textContent = job.city || '';
-            cityTd.style.overflow = 'hidden';
-            cityTd.style.textOverflow = 'ellipsis';
-            cityTd.style.whiteSpace = 'nowrap';
-            cityTd.style.textAlign = 'center';
-            cityTd.style.verticalAlign = 'middle';
-
-            const timeTd = document.createElement('td');
-            const updateTime = job.updateTime || '';
-            timeTd.textContent = updateTime ? String(updateTime).replace('T', ' ') : '';
-            timeTd.style.overflow = 'hidden';
-            timeTd.style.textOverflow = 'ellipsis';
-            timeTd.style.whiteSpace = 'nowrap';
-            timeTd.style.textAlign = 'center';
-            timeTd.style.verticalAlign = 'middle';
-
-            tr.appendChild(nameTd);
-            tr.appendChild(salaryTd);
-            tr.appendChild(cityTd);
-            tr.appendChild(timeTd);
-
-            tbody.appendChild(tr);
-        });
-    } catch (e) {
-        console.error('加载职位记录异常:', e);
-        statusEl.textContent = '请求异常，请稍后重试';
-    }
-}
-
-/**
- * recruiter的公司信息栏目为卡片形式，只读，允许复制，没有任何按钮
- */
-function renderRecruiterCompanyView(container, currentUser) {
-    container.innerHTML = `
-        <div class="view company-view active">
-            <h2>公司信息</h2>
-            <div id="company-info-loading">正在加载公司信息...</div>
-        </div>
-    `;
-
-    loadRecruiterCompanyInfo(container, currentUser);
-}
-
-async function loadRecruiterCompanyInfo(container, currentUser) {
-    const loadingEl = document.getElementById('company-info-loading');
-    if (!loadingEl) return;
-
-    try {
-        if (!currentUser.companyId) {
-            loadingEl.innerHTML = '<p>您尚未关联任何公司</p>';
-            return;
-        }
-
-        // 使用 apiRequest 替代 Auth.authenticatedFetch 以适配新的统一返回格式
-        const result = await apiRequest(`${COMPANY_API_BASE}/${encodeURIComponent(currentUser.companyId)}`);
-        if (!result.success) {
-            loadingEl.innerHTML = `<p>${result.message || '加载失败'}</p>`;
-            return;
-        }
-
-        const company = result.data || {};
-        loadingEl.outerHTML = `
-            <div class="card" style="margin-top: 16px;">
-                <div class="card-body">
-                    <h3 style="margin-top: 0;">${company.companyName || ''}</h3>
-                    <p><strong>公司名称:</strong> ${company.companyName || ''}</p>
-                    <p><strong>公司简介:</strong> ${company.companyDesc || ''}</p>
-                    <p><strong>公司地址:</strong> ${company.companyAddress || ''}</p>
-                    <p><strong>联系人:</strong> ${company.contactPerson || ''}</p>
-                    <p><strong>联系电话:</strong> ${company.contactPhone || ''}</p>
-                    <p><strong>联系邮箱:</strong> ${company.contactEmail || ''}</p>
-                </div>
-            </div>
-        `;
-    } catch (e) {
-        console.error('加载公司信息异常:', e);
-        loadingEl.innerHTML = '<p>请求异常，请稍后重试</p>';
-    }
 }
 
 /**
  * recruiter的账号与安全内容与employer一致，角色显示为HR，基本信息栏目不允许修改，只允许修改密码
  */
 function renderRecruiterProfileView(container, currentUser) {
-    container.innerHTML = `
-        <div class="view profile-view active">
-            <h2>账号与安全</h2>
-            
-            <div class="card" style="margin-bottom: 24px;">
-                <div class="card-header">
-                    <h3 style="margin: 0;">基本信息</h3>
-                </div>
-                <div class="card-body">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                        <div>
-                            <label>用户名</label>
-                            <p id="rec-username-display" style="margin: 8px 0; padding: 8px; background: #f8f9fa; border-radius: 4px;"></p>
-                        </div>
-                        <div>
-                            <label>角色</label>
-                            <p style="margin: 8px 0; padding: 8px; background: #f8f9fa; border-radius: 4px;">HR</p>
-                        </div>
-                        <div>
-                            <label>邮箱</label>
-                            <p id="rec-email-display" style="margin: 8px 0; padding: 8px; background: #f8f9fa; border-radius: 4px;"></p>
-                        </div>
-                        <div>
-                            <label>手机</label>
-                            <p id="rec-phone-display" style="margin: 8px 0; padding: 8px; background: #f8f9fa; border-radius: 4px;"></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <h3 style="margin: 0;">修改密码</h3>
-                </div>
-                <div class="card-body">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 500px;">
-                        <div>
-                            <label for="rec-old-password">当前密码</label>
-                            <input type="password" id="rec-old-password" class="form-control" placeholder="请输入当前密码">
-                        </div>
-                        <div></div>
-                        <div>
-                            <label for="rec-new-password">新密码</label>
-                            <input type="password" id="rec-new-password" class="form-control" placeholder="请输入新密码">
-                        </div>
-                        <div>
-                            <label for="rec-confirm-password">确认新密码</label>
-                            <input type="password" id="rec-confirm-password" class="form-control" placeholder="请再次输入新密码">
-                        </div>
-                    </div>
-                    <div style="margin-top: 16px;">
-                        <button id="rec-change-password-btn" class="btn btn-primary">保存密码</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-
-    loadRecruiterProfile(currentUser);
-    bindRecruiterPasswordChange(currentUser);
-}
-
-async function loadRecruiterProfile(user) {
-    try {
-        // 使用 apiRequest 替代 Auth.authenticatedFetch 以适配新的统一返回格式
-        const result = await apiRequest(`/api/user/${encodeURIComponent(user.userId)}`);
-        if (!result.success) {
-            console.error('加载账号信息失败:', result.message || '未知错误');
-            return;
-        }
-        
-        const data = result.data || {};
-
-        document.getElementById('rec-username-display').textContent = data.username || '';
-        document.getElementById('rec-email-display').textContent = data.email || '';
-        document.getElementById('rec-phone-display').textContent = data.phone || '';
-    } catch (e) {
-        console.error('加载账号信息失败:', e);
-    }
-}
-
-function bindRecruiterPasswordChange(user) {
-    const btn = document.getElementById('rec-change-password-btn');
-    if (!btn) return;
-
-    btn.onclick = async () => {
-        const oldPwd = document.getElementById('rec-old-password').value.trim();
-        const newPwd = document.getElementById('rec-new-password').value.trim();
-        const confirmPwd = document.getElementById('rec-confirm-password').value.trim();
-
-        if (!oldPwd || !newPwd || !confirmPwd) {
-            alert('请完整填写所有密码字段');
-            return;
-        }
-        
-        if (newPwd.length < 8) {
-            alert('新密码长度不能少于 8 位');
-            return;
-        }
-        
-        // 检查密码是否包含字母和数字
-        if (!/[a-zA-Z]/.test(newPwd) || !/\d/.test(newPwd)) {
-            alert('新密码必须同时包含字母和数字');
-            return;
-        }
-        
-        if (newPwd !== confirmPwd) {
-            alert('两次输入的新密码不一致');
-            return;
-        }
-
-        try {
-            // 使用 apiRequest 替代 Auth.authenticatedFetch 以适配新的统一返回格式
-            const result = await apiRequest(`/api/user/${encodeURIComponent(user.userId)}/password`, {
-                method: 'PUT',
-                body: JSON.stringify({ oldPassword: oldPwd, newPassword: newPwd })
-            });
-            
-            if (!result.success) {
-                alert(result.message || '修改密码失败');
-                return;
-            }
-            
-            alert('密码修改成功，请使用新密码重新登录。');
-        } catch (e) {
-            console.error('修改密码失败:', e);
-            alert('修改密码失败，请稍后重试');
-        }
+    // 动态导入employer的profile-view.js
+    const script = document.createElement('script');
+    script.src = '../employer-views/profile-view.js';
+    script.onload = () => {
+        // 调用实际的渲染函数，但传入recruiter角色
+        const modifiedUser = Object.assign({}, currentUser, { role: 'recruiter' });
+        window.renderEmployerProfileView(container, modifiedUser);
     };
+    document.head.appendChild(script);
+}
+
+/**
+ * recruiter的公司信息栏目为卡片形式，只读，允许复制，没有任何按钮
+ */
+function renderRecruiterCompanyView(container, currentUser) {
+    // 动态导入employer的company-view.js
+    const script = document.createElement('script');
+    script.src = '../employer-views/company-view.js';
+    script.onload = () => {
+        // 调用实际的渲染函数
+        window.renderRecruiterCompanyView(container, currentUser);
+    };
+    document.head.appendChild(script);
+}
+
+/**
+ * 动态加载模块
+ * @param {string} src - 模块路径
+ * @param {function} callback - 加载完成回调
+ * @returns {Promise} 加载完成的Promise
+ */
+function loadModule(src, callback) {
+    return new Promise((resolve, reject) => {
+        // 检查是否已加载
+        if (document.querySelector(`script[src="${src}"]`)) {
+            if (callback) callback();
+            resolve();
+            return;
+        }
+        
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = () => {
+            if (callback) callback();
+            resolve();
+        };
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
 }

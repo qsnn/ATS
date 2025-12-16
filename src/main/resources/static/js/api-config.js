@@ -14,7 +14,8 @@ let API_CONFIG = {
         INTERVIEW: '/api/interview',
         FAVORITE: '/api/favorites',
         TALENT: '/api/talent',
-        RESUME: '/api/resume'
+        RESUME: '/api/resume',
+        NOTICE: '/api/notices'
     }
 };
 

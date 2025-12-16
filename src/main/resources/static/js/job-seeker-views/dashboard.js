@@ -25,6 +25,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 默认进入职位搜索
     switchView('job-search', currentUser);
+    
+    // 加载未读通知数量
+    loadUnreadNoticeCount(currentUser);
 });
 
 function handleLogout() {
@@ -46,6 +49,19 @@ function switchView(viewId, currentUser = Auth.getCurrentUser()) {
     const container = document.getElementById('main-content');
     if (!container) return;
 
+    // 对于通知视图，需要动态加载模块
+    if (viewId === 'notices') {
+        loadModule('/js/common/notices-view.js', () => {
+            const renderFn = window.renderNoticesView;
+            if (typeof renderFn === 'function') {
+                renderFn(container, currentUser);
+            } else {
+                container.innerHTML = '<p>视图未实现</p>';
+            }
+        });
+        return;
+    }
+
     const map = {
         'job-search': renderJobSearchView,
         'profile': renderProfileView,
@@ -61,6 +77,73 @@ function switchView(viewId, currentUser = Auth.getCurrentUser()) {
     } else {
         container.innerHTML = '<p>视图未实现</p>';
     }
+}
+
+/**
+ * 加载未读通知数量
+ * @param {object} currentUser - 当前用户
+ */
+async function loadUnreadNoticeCount(currentUser) {
+    try {
+        // 动态加载通知模块
+        await loadModule('/js/common/notices-view.js');
+        
+        const url = `/api/notices/user/${currentUser.userId}/unread-count`;
+        const resp = await Auth.authenticatedFetch(url);
+        if (!resp.ok) {
+            return;
+        }
+        
+        const json = await resp.json();
+        const count = json.data || 0;
+        
+        // 更新侧边栏红点
+        const noticeLink = document.querySelector('[data-view="notices"]');
+        if (noticeLink) {
+            let badge = noticeLink.querySelector('.badge');
+            if (!badge) {
+                badge = document.createElement('span');
+                badge.className = 'badge';
+                badge.style.cssText = 'background-color: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px; margin-left: 5px; display: inline-block;';
+                noticeLink.appendChild(badge);
+            }
+            
+            if (count > 0) {
+                badge.textContent = count;
+                badge.style.display = 'inline-block';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    } catch (e) {
+        console.error('加载未读通知数量异常:', e);
+    }
+}
+
+/**
+ * 动态加载模块
+ * @param {string} src - 模块路径
+ * @param {function} callback - 加载完成回调
+ * @returns {Promise} 加载完成的Promise
+ */
+function loadModule(src, callback) {
+    return new Promise((resolve, reject) => {
+        // 检查是否已加载
+        if (document.querySelector(`script[src="${src}"]`)) {
+            if (callback) callback();
+            resolve();
+            return;
+        }
+        
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = () => {
+            if (callback) callback();
+            resolve();
+        };
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
 }
 
 /**
