@@ -427,6 +427,7 @@ function getNoticeTypeText(type) {
         'APPLICATION_STATUS': '申请状态',
         'INTERVIEW_ARRANGED': '面试安排',
         'INTERVIEW_RESULT': '面试结果',
+        'INTERVIEW_ENDED': '面试结束',
         'PENDING_APPLICATIONS': '待处理申请',
         'UPCOMING_INTERVIEW': '即将到来的面试'
     };

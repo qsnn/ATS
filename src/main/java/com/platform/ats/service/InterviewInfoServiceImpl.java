@@ -121,11 +121,17 @@ public class InterviewInfoServiceImpl extends ServiceImpl<InterviewInfoRepositor
 
         interviewInfoRepository.updateById(dbInterviewInfo);
         
-        // 如果面试状态发生了变化，创建面试结果通知
+        // 如果面试状态发生了变化，根据新状态创建相应的通知
         if (interviewInfo.getStatus() != null && 
-            !interviewInfo.getStatus().equals(originalStatus) &&
-            (interviewInfo.getStatus() == 3 || interviewInfo.getStatus() == 4)) { // 录取或未录取
-            notificationHelperService.createInterviewResultNotice(dbInterviewInfo);
+            !interviewInfo.getStatus().equals(originalStatus)) {
+            // 面试结束状态通知
+            if (interviewInfo.getStatus() == 2) { // 面试结束
+                notificationHelperService.createInterviewEndedNotice(dbInterviewInfo);
+            }
+            // 录取或未录取结果通知
+            else if (interviewInfo.getStatus() == 3 || interviewInfo.getStatus() == 4) { // 录取或未录取
+                notificationHelperService.createInterviewResultNotice(dbInterviewInfo);
+            }
         }
 
         return toVO(dbInterviewInfo);

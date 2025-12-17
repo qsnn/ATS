@@ -197,4 +197,34 @@ public class NotificationHelperService {
             log.info("为用户{}创建了即将到来的面试通知，面试ID: {}", userId, interview.getArrangeId());
         }
     }
+
+    /**
+     * 当面试结束时创建通知给求职者
+     *
+     * @param interviewInfo 面试信息
+     */
+    public void createInterviewEndedNotice(InterviewInfo interviewInfo) {
+        if (interviewInfo == null || interviewInfo.getIntervieweeId() == null) {
+            log.warn("面试信息为空或缺少面试者ID，无法创建通知");
+            return;
+        }
+
+        // 创建通知给求职者
+        SysNotice notice = new SysNotice();
+        notice.setUserId(interviewInfo.getIntervieweeId());
+        notice.setNoticeType("INTERVIEW_ENDED");
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH:mm:ss");
+        String interviewTimeStr = interviewInfo.getInterviewTime() != null ?
+                interviewInfo.getInterviewTime().format(formatter) : "待定";
+
+        notice.setNoticeContent(String.format("您于%s的面试已结束，请等待面试结果。", interviewTimeStr));
+        notice.setSendTime(LocalDateTime.now());
+        notice.setReadStatus(0); // 未读
+        notice.setSendStatus(0); // 未发
+        notice.setDeleteFlag(0); // 未删
+
+        sysNoticeService.createNotice(notice);
+        log.info("为用户{}创建了面试结束通知，面试ID: {}", interviewInfo.getIntervieweeId(), interviewInfo.getArrangeId());
+    }
 }
