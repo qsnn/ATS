@@ -61,6 +61,15 @@ public interface SysNoticeRepository extends BaseMapper<SysNotice> {
     int batchUpdateReadStatus(@Param("noticeIds") List<Long> noticeIds, @Param("readStatus") Integer readStatus);
 
     /**
+     * 批量更新通知发送状态
+     *
+     * @param noticeIds  通知ID列表
+     * @param sendStatus 发送状态
+     * @return 更新记录数
+     */
+    int batchUpdateSendStatus(@Param("noticeIds") List<Long> noticeIds, @Param("sendStatus") Integer sendStatus);
+
+    /**
      * 逻辑删除通知
      *
      * @param noticeId 通知ID

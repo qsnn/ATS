@@ -57,6 +57,16 @@ public interface SysNoticeService extends IService<SysNotice> {
     Boolean batchUpdateReadStatus(List<Long> noticeIds, Integer readStatus);
 
     /**
+     * 更新通知发送状态
+     */
+    Boolean updateSendStatus(Long noticeId, Integer sendStatus);
+
+    /**
+     * 批量更新通知发送状态
+     */
+    Boolean batchUpdateSendStatus(List<Long> noticeIds, Integer sendStatus);
+
+    /**
      * 删除通知（逻辑删除）
      */
     Boolean deleteNotice(Long noticeId);

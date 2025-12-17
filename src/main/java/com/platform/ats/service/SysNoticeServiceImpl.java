@@ -139,6 +139,35 @@ public class SysNoticeServiceImpl extends ServiceImpl<SysNoticeRepository, SysNo
     }
 
     /**
+     * 更新通知发送状态
+     *
+     * @param noticeId   通知ID
+     * @param sendStatus 发送状态
+     * @return 是否更新成功
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean updateSendStatus(Long noticeId, Integer sendStatus) {
+        SysNotice sysNotice = new SysNotice();
+        sysNotice.setNoticeId(noticeId);
+        sysNotice.setSendStatus(sendStatus);
+        return this.baseMapper.updateById(sysNotice) > 0;
+    }
+
+    /**
+     * 批量更新通知发送状态
+     *
+     * @param noticeIds  通知ID列表
+     * @param sendStatus 发送状态
+     * @return 是否更新成功
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean batchUpdateSendStatus(List<Long> noticeIds, Integer sendStatus) {
+        return this.baseMapper.batchUpdateSendStatus(noticeIds, sendStatus) > 0;
+    }
+
+    /**
      * 删除通知（逻辑删除）
      *
      * @param noticeId 通知ID

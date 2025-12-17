@@ -87,13 +87,8 @@ public class NotificationHelperService {
                 interviewInfo.getInterviewTime().format(formatter) : "待定";
 
         notice.setNoticeContent(String.format("您于%s有面试安排，请提前准备", interviewTimeStr));
-        // sendTime为min（安排的面试时间两小时前，当前时间）
-        LocalDateTime sendTime = LocalDateTime.now();
-        if (interviewInfo.getInterviewTime() != null) {
-            LocalDateTime twoHoursBefore = interviewInfo.getInterviewTime().minusHours(2);
-            sendTime = twoHoursBefore.isBefore(sendTime) ? twoHoursBefore : sendTime;
-        }
-        notice.setSendTime(sendTime);
+        // sendTime设置为当前时间
+        notice.setSendTime(LocalDateTime.now());
         notice.setReadStatus(0); // 未读
         notice.setSendStatus(0); // 未发
         notice.setDeleteFlag(0); // 未删
@@ -192,13 +187,8 @@ public class NotificationHelperService {
                     interview.getInterviewTime().format(formatter) : "待定";
 
             notice.setNoticeContent(String.format("您于%s有面试安排，请提前准备", interviewTimeStr));
-            // sendTime为min（安排的面试时间两小时前，当前时间）
-            LocalDateTime sendTime = LocalDateTime.now();
-            if (interview.getInterviewTime() != null) {
-                LocalDateTime twoHoursBefore = interview.getInterviewTime().minusHours(2);
-                sendTime = twoHoursBefore.isBefore(sendTime) ? twoHoursBefore : sendTime;
-            }
-            notice.setSendTime(sendTime);
+            // sendTime设置为当前时间
+            notice.setSendTime(LocalDateTime.now());
             notice.setReadStatus(0); // 未读
             notice.setSendStatus(0); // 未发
             notice.setDeleteFlag(0); // 未删

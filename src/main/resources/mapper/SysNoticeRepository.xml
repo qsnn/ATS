@@ -53,6 +53,16 @@
         </foreach>
     </update>
 
+    <!-- 批量更新通知发送状态 -->
+    <update id="batchUpdateSendStatus">
+        UPDATE sys_notice
+        SET send_status = #{sendStatus}
+        WHERE notice_id IN
+        <foreach collection="noticeIds" item="noticeId" open="(" separator="," close=")">
+            #{noticeId}
+        </foreach>
+    </update>
+
     <!-- 逻辑删除通知 -->
     <update id="logicDelete">
         UPDATE sys_notice

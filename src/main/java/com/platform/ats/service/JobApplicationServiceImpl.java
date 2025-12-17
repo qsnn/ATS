@@ -14,11 +14,14 @@ import com.platform.ats.entity.application.vo.JobApplicationVO;
 import com.platform.ats.entity.application.vo.JobApplicationEmployerVO;
 import com.platform.ats.entity.company.CompanyInfo;
 import com.platform.ats.entity.job.JobInfo;
+import com.platform.ats.entity.notification.SysNotice;
 import com.platform.ats.entity.resume.ResumeInfo;
+import com.platform.ats.entity.user.SysUser;
 import com.platform.ats.repository.CompanyInfoRepository;
 import com.platform.ats.repository.JobApplicationRepository;
 import com.platform.ats.repository.JobInfoRepository;
 import com.platform.ats.repository.ResumeInfoRepository;
+import com.platform.ats.repository.UserRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,21 +42,27 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
     private final JobInfoRepository jobInfoRepository;
     private final ResumeInfoRepository resumeInfoRepository;
     private final CompanyInfoRepository companyInfoRepository;
+    private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
     private final NotificationHelperService notificationHelperService;
+    private final SysNoticeService sysNoticeService;
 
     public JobApplicationServiceImpl(JobApplicationRepository jobApplicationRepository,
                                      JobInfoRepository jobInfoRepository,
                                      ResumeInfoRepository resumeInfoRepository,
                                      CompanyInfoRepository companyInfoRepository,
+                                     UserRepository userRepository,
                                      ObjectMapper objectMapper,
-                                     NotificationHelperService notificationHelperService) {
+                                     NotificationHelperService notificationHelperService,
+                                     SysNoticeService sysNoticeService) {
         this.jobApplicationRepository = jobApplicationRepository;
         this.jobInfoRepository = jobInfoRepository;
         this.resumeInfoRepository = resumeInfoRepository;
         this.companyInfoRepository = companyInfoRepository;
+        this.userRepository = userRepository;
         this.objectMapper = objectMapper;
         this.notificationHelperService = notificationHelperService;
+        this.sysNoticeService = sysNoticeService;
     }
 
     /**
@@ -113,6 +122,10 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
         }
 
         jobApplicationRepository.insert(entity);
+        
+        // 发送通知给企业雇主
+        sendApplicationNoticeToEmployer(jobInfo, resumeInfo);
+        
         return entity.getApplicationId();
     }
 
@@ -449,5 +462,32 @@ public class JobApplicationServiceImpl extends ServiceImpl<JobApplicationReposit
 
         // 如果没有找到任何记录（包括已删除的），则返回null
         return null;
+    }
+    
+    /**
+     * 发送职位申请通知给企业雇主
+     * 
+     * @param jobInfo 职位信息
+     * @param resumeInfo 简历信息
+     */
+    private void sendApplicationNoticeToEmployer(JobInfo jobInfo, ResumeInfo resumeInfo) {
+        // 获取公司下的所有雇主用户
+        List<SysUser> employers = userRepository.selectByCompanyId(jobInfo.getCompanyId());
+        if (employers != null && !employers.isEmpty()) {
+            for (SysUser employer : employers) {
+                // 只向雇主类型的用户发送通知（假设雇主类型为2或3）
+                if (employer.getUserType() == 2 || employer.getUserType() == 3) {
+                    SysNotice notice = new SysNotice();
+                    notice.setUserId(employer.getUserId());
+                    notice.setNoticeType("NEW_APPLICATION");
+                    notice.setNoticeContent(String.format("收到新的职位申请：求职者 %s 申请了职位 \"%s\"。请及时处理。", 
+                            resumeInfo.getName(), jobInfo.getJobName()));
+                    notice.setSendTime(LocalDateTime.now()); // 设置发送时间
+                    notice.setReadStatus(0); // 未读
+                    notice.setSendStatus(1); // 已发送
+                    sysNoticeService.createNotice(notice);
+                }
+            }
+        }
     }
 }

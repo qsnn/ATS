@@ -4,6 +4,7 @@ package com.platform.ats.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.platform.ats.common.annotation.DataPermission;
 import com.platform.ats.common.annotation.LogOperation;
+import com.platform.ats.entity.notification.SysNotice;
 import com.platform.ats.entity.user.SysUser;
 import com.platform.ats.entity.user.dto.HrCreateDTO;
 import com.platform.ats.entity.user.dto.UserCreateDTO;
@@ -17,9 +18,11 @@ import com.platform.ats.entity.user.vo.Result;
 import com.platform.ats.entity.user.vo.UserProfileVO;
 import com.platform.ats.entity.user.vo.UserVO;
 import java.util.List;
+import java.time.LocalDateTime;
 import com.platform.ats.common.BizException;
 import com.platform.ats.common.ErrorCode;
 import com.platform.ats.service.NotificationHelperService;
+import com.platform.ats.service.SysNoticeService;
 import com.platform.ats.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,6 +31,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 /**
  * 用户管理控制器
@@ -43,6 +48,7 @@ import jakarta.validation.Valid;
 public class UserController {
 
     private final UserService userService;
+    private final SysNoticeService sysNoticeService;
     private final NotificationHelperService notificationHelperService;
 
     @PostMapping("/register")
@@ -50,6 +56,10 @@ public class UserController {
     @LogOperation(module = "用户管理", type = "新增", content = "用户注册")
     public Result<Long> register(@RequestBody @Valid UserRegisterDTO userRegisterDTO) {
         Long userId = userService.register(userRegisterDTO);
+        
+        // 注册成功后发送欢迎通知
+        sendWelcomeNotice(userId);
+        
         return Result.success(userId, "注册成功");
     }
 
@@ -61,6 +71,21 @@ public class UserController {
         SysUser sysUser = userService.login(username, dto.getPassword());
         // 调用新方法获取UserProfileVO
         UserProfileVO userProfile = userService.getUserProfile(sysUser.getUserId());
+        
+        // 将用户的所有通知标记为已发送
+        List<SysNotice> notices = sysNoticeService.getNoticesByUserId(sysUser.getUserId());
+        if (!notices.isEmpty()) {
+            List<Long> noticeIds = new ArrayList<>();
+            for (SysNotice notice : notices) {
+                // 只更新未发送的通知
+                if (notice.getSendStatus() != null && notice.getSendStatus() == 0) {
+                    noticeIds.add(notice.getNoticeId());
+                }
+            }
+            if (!noticeIds.isEmpty()) {
+                sysNoticeService.batchUpdateSendStatus(noticeIds, 1);
+            }
+        }
         
         // 当HR或雇主登录时，检查未处理的申请和即将到来的面试
         if (sysUser.getUserType() == 3 || sysUser.getUserType() == 2) { // HR或企业管理员
@@ -101,6 +126,10 @@ public class UserController {
     @LogOperation(module = "用户管理", type = "新增", content = "管理员创建用户")
     public Result<Long> createUser(@Valid @RequestBody UserCreateDTO userCreateDTO) {
         Long userId = userService.createUser(userCreateDTO);
+        
+        // 创建用户后发送欢迎通知
+        sendWelcomeNotice(userId);
+        
         return Result.success(userId, "创建成功");
     }
 
@@ -210,5 +239,20 @@ public class UserController {
             @RequestParam(defaultValue = "10") Integer pageSize) {
         IPage<HrVO> hrPage = userService.getHrAccountsByCompanyId(companyId, pageNum, pageSize);
         return Result.success(hrPage);
+    }
+    
+    /**
+     * 发送欢迎通知
+     * @param userId 用户ID
+     */
+    private void sendWelcomeNotice(Long userId) {
+        SysNotice welcomeNotice = new SysNotice();
+        welcomeNotice.setUserId(userId);
+        welcomeNotice.setNoticeType("WELCOME");
+        welcomeNotice.setNoticeContent("欢迎使用招聘平台！在这里您可以寻找心仪的工作或招聘优秀的人才。");
+        welcomeNotice.setSendTime(LocalDateTime.now()); // 设置发送时间
+        welcomeNotice.setReadStatus(0); // 未读
+        welcomeNotice.setSendStatus(1); // 已发送
+        sysNoticeService.createNotice(welcomeNotice);
     }
 }
