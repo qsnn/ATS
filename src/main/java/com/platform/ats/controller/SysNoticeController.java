@@ -4,11 +4,15 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.platform.ats.common.annotation.DataPermission;
 import com.platform.ats.common.annotation.LogOperation;
 import com.platform.ats.entity.notification.SysNotice;
+import com.platform.ats.entity.user.SysUser;
 import com.platform.ats.entity.user.vo.Result;
 import com.platform.ats.service.SysNoticeService;
+import com.platform.ats.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,10 +29,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/notices")
 @RequiredArgsConstructor
+@Slf4j
 @Tag(name = "系统通知")
 public class SysNoticeController {
 
     private final SysNoticeService sysNoticeService;
+    private final UserService userService;
 
     @PostMapping
     @Operation(summary = "创建通知")
@@ -45,6 +51,28 @@ public class SysNoticeController {
     @LogOperation(module = "系统通知", type = "查询", content = "根据ID获取通知")
     public Result<SysNotice> getNoticeById(@PathVariable Long noticeId) {
         SysNotice sysNotice = sysNoticeService.getNoticeById(noticeId);
+        if (sysNotice == null) {
+            return Result.error("通知不存在");
+        }
+        
+        // 额外检查通知是否属于当前用户
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long currentUserId = null;
+        if (principal instanceof SysUser) {
+            currentUserId = ((SysUser) principal).getUserId();
+        } else if (principal instanceof String) {
+            // 如果是用户名字符串，需要查询用户信息获取userId
+            SysUser user = userService.getUserByUsername((String) principal);
+            if (user != null) {
+                currentUserId = user.getUserId();
+            }
+        }
+        
+        if (currentUserId == null || !sysNotice.getUserId().equals(currentUserId)) {
+            log.warn("用户ID {} 尝试访问不属于自己的通知 {}", currentUserId, noticeId);
+            return Result.error("没有权限访问该通知");
+        }
+        
         return Result.success(sysNotice);
     }
 

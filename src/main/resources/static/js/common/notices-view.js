@@ -251,14 +251,21 @@ async function loadNotices(currentUser, status) {
  */
 async function showNoticeDetail(noticeId, currentUser) {
     try {
+        // 修改URL以包含用户ID，确保符合后端权限检查要求
         const url = buildNoticesUrl(`/${noticeId}`);
         const resp = await Auth.authenticatedFetch(url);
         if (!resp.ok) {
-            alert('获取通知详情失败');
+            const errorText = await resp.text();
+            alert(`获取通知详情失败: ${resp.status} ${errorText}`);
             return;
         }
 
         const json = await resp.json();
+        if (json.code !== 200) {
+            alert(`获取通知详情失败: ${json.message}`);
+            return;
+        }
+        
         const notice = json.data;
 
         if (!notice) {

@@ -1,7 +1,9 @@
 package com.platform.ats.config;
 
 import com.platform.ats.common.annotation.DataPermission;
+import com.platform.ats.entity.notification.SysNotice;
 import com.platform.ats.entity.user.SysUser;
+import com.platform.ats.service.SysNoticeService;
 import com.platform.ats.service.UserService;
 import com.platform.ats.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -96,6 +98,31 @@ public class DataPermissionAspect {
      * 检查个人数据权限（只能操作自己的数据）
      */
     private void checkSelfPermission(SysUser currentUser, Object[] args) {
+        // 对于通知详情接口，我们需要特殊处理
+        // 检查是否是通过noticeId查询通知的场景
+        boolean isNoticeQuery = Arrays.stream(args).anyMatch(arg -> arg instanceof Long);
+        
+        if (isNoticeQuery) {
+            // 如果是通过noticeId查询通知，需要额外验证该通知是否属于当前用户
+            Long noticeId = (Long) Arrays.stream(args).filter(arg -> arg instanceof Long).findFirst().orElse(null);
+            if (noticeId != null) {
+                try {
+                    SysNoticeService noticeService = SpringContextUtil.getBean(SysNoticeService.class);
+                    SysNotice notice = noticeService.getNoticeById(noticeId);
+                    if (notice != null && notice.getUserId().equals(currentUser.getUserId())) {
+                        return; // 权限验证通过
+                    } else {
+                        log.warn("用户 {} 尝试访问不属于自己的通知 {}", currentUser.getUsername(), noticeId);
+                        throw new RuntimeException("没有权限访问该资源");
+                    }
+                } catch (Exception e) {
+                    log.error("验证通知权限时发生异常", e);
+                    // 不要抛出异常，让控制器层处理
+                    return;
+                }
+            }
+        }
+        
         // 检查参数中是否包含用户ID，并验证是否是当前用户ID
         boolean hasPermission = Arrays.stream(args).anyMatch(arg -> {
             if (arg instanceof Long && arg.equals(currentUser.getUserId())) {
