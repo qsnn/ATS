@@ -256,6 +256,12 @@ async function initUserResumes(user) {
         editBtn.textContent = '编辑';
         editBtn.onclick = () => editResume(resume);
 
+        const smartRecommendBtn = document.createElement('button');
+        smartRecommendBtn.className = 'btn btn-sm';
+        smartRecommendBtn.style.marginLeft = '8px';
+        smartRecommendBtn.textContent = '智能推荐';
+        smartRecommendBtn.onclick = () => smartRecommend(resume);
+
         const delBtn = document.createElement('button');
         delBtn.className = 'btn btn-sm';
         delBtn.style.marginLeft = '8px';
@@ -264,6 +270,7 @@ async function initUserResumes(user) {
 
         actions.appendChild(viewBtn);
         actions.appendChild(editBtn);
+        actions.appendChild(smartRecommendBtn);
         actions.appendChild(delBtn);
 
         li.appendChild(left);
@@ -312,6 +319,44 @@ function editResume(resume) {
     document.getElementById('resume-skills').value = resume.skill || '';
     document.getElementById('resume-job-intention').value = resume.jobIntention || '';
     modal.style.display = 'block';
+}
+
+/**
+ * 智能推荐函数
+ * 根据简历信息跳转到职位搜索页面，并自动设置搜索条件
+ */
+function smartRecommend(resume) {
+    // 获取简历中的教育和工作经验信息
+    const education = resume.education || '';
+    const workExperience = resume.workExperience || '';
+    
+    // 处理简历名称，去除"简历"二字
+    let resumeName = resume.resumeName || '';
+    if (resumeName.endsWith('简历')) {
+        resumeName = resumeName.substring(0, resumeName.length - 2);
+    }
+    
+    // 构造跳转URL，包含搜索参数
+    const searchParams = new URLSearchParams();
+    
+    // 设置搜索关键词
+    if (resumeName) {
+        searchParams.set('jobName', resumeName);
+    }
+    
+    // 设置教育水平筛选
+    if (education) {
+        searchParams.set('education', education);
+    }
+    
+    // 设置工作经验筛选
+    if (workExperience) {
+        searchParams.set('workExperience', workExperience);
+    }
+    
+    // 跳转到职位搜索页面
+    const searchUrl = `job-seeker-dashboard.html?tab=job-search&${searchParams.toString()}`;
+    window.location.href = searchUrl;
 }
 
 function mapWorkExperienceText(expValue) {

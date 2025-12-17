@@ -97,7 +97,41 @@ function renderJobSearchView(container, currentUser) {
     // 初始化城市筛选选项
     initCityFilter();
     
-    // 初始搜索
+    // 检查是否有预设的搜索参数
+    const urlParams = new URLSearchParams(window.location.search);
+    const jobName = urlParams.get('jobName');
+    const city = urlParams.get('city');
+    const education = urlParams.get('education');
+    const workExperience = urlParams.get('workExperience');
+    const salaryMin = urlParams.get('salaryMin');
+    const salaryMax = urlParams.get('salaryMax');
+    
+    // 设置表单控件的值
+    if (jobName) {
+        document.getElementById('job-search-input').value = jobName;
+    }
+    
+    if (city) {
+        document.getElementById('location-filter').value = city;
+    }
+    
+    if (education) {
+        document.getElementById('education-filter').value = education;
+    }
+    
+    if (workExperience) {
+        document.getElementById('experience-filter').value = workExperience;
+    }
+    
+    if (salaryMin) {
+        document.getElementById('salary-min').value = salaryMin;
+    }
+    
+    if (salaryMax) {
+        document.getElementById('salary-max').value = salaryMax;
+    }
+    
+    // 初始化分页并执行搜索
     window.jobSearchPagination = {
         current: 1,
         size: 10,
@@ -105,6 +139,7 @@ function renderJobSearchView(container, currentUser) {
         pages: 0
     };
     
+    // 执行初始搜索
     searchJobs();
 }
 
@@ -169,6 +204,103 @@ function initSearchComponents() {
                 searchJobs();
             }
         });
+    }
+}
+
+async function searchJobs() {
+    const searchInput = document.getElementById('job-search-input');
+    const locationFilter = document.getElementById('location-filter');
+    const educationFilter = document.getElementById('education-filter');
+    const experienceFilter = document.getElementById('experience-filter');
+    const salaryMin = document.getElementById('salary-min');
+    const salaryMax = document.getElementById('salary-max');
+    const jobListContainer = document.getElementById('job-list');
+    const resultsCountEl = document.getElementById('results-count');
+    const paginationContainer = document.getElementById('pagination-container');
+    const paginationInfo = document.getElementById('pagination-info');
+    const prevBtn = document.getElementById('prev-page');
+    const nextBtn = document.getElementById('next-page');
+
+    if (!jobListContainer) return;
+
+    // 显示加载状态
+    jobListContainer.innerHTML = '<div style="text-align:center;padding:40px;">搜索中...</div>';
+
+    try {
+        // 构建查询参数（确保编码）
+        const params = new URLSearchParams({
+            current: window.jobSearchPagination.current,
+            size: window.jobSearchPagination.size,
+            // 默认只显示已发布的职位
+            publishStatus: 1
+        });
+        
+        const jobName = searchInput ? searchInput.value.trim() : '';
+        const city = locationFilter ? locationFilter.value : '';
+        const education = educationFilter ? educationFilter.value : '';
+        const workExperience = experienceFilter ? experienceFilter.value : '';
+        const salaryMinValue = salaryMin ? salaryMin.value : '';
+        const salaryMaxValue = salaryMax ? salaryMax.value : '';
+        
+        if (jobName) params.append('jobName', jobName);
+        if (city) params.append('city', city);
+        if (education) params.append('education', education);
+        if (workExperience) params.append('workExperience', workExperience);
+        if (salaryMinValue) params.append('salaryMin', salaryMinValue);
+        if (salaryMaxValue) params.append('salaryMax', salaryMaxValue);
+
+        const url = `${API_BASE_URL}/job/info/list?${params.toString()}`;
+        const result = await apiRequest(url);
+
+        if (!result.success) {
+            throw new Error(result.message || '获取职位列表失败');
+        }
+
+        const data = result.data;
+        // 后端返回的结构是 IPage，职位列表在 records 字段中
+        renderJobList(data && data.records ? data.records : []);
+
+        // 更新分页信息
+        if (data) {
+            window.jobSearchPagination.total = data.total || 0;
+            window.jobSearchPagination.pages = data.pages || Math.ceil((data.total || 0) / window.jobSearchPagination.size) || 0;
+
+            // 显示总数信息
+            if (resultsCountEl) {
+                resultsCountEl.textContent = `共找到 ${window.jobSearchPagination.total} 个职位`;
+            }
+
+            if (paginationInfo) {
+                paginationInfo.textContent = `第 ${window.jobSearchPagination.current} 页，共 ${window.jobSearchPagination.pages} 页`;
+            }
+
+            if (paginationContainer) {
+                paginationContainer.style.display = 'flex';
+            }
+
+            if (prevBtn) {
+                prevBtn.disabled = window.jobSearchPagination.current <= 1;
+                prevBtn.onclick = () => {
+                    if (window.jobSearchPagination.current > 1) {
+                        window.jobSearchPagination.current--;
+                        searchJobs();
+                    }
+                };
+            }
+
+            if (nextBtn) {
+                nextBtn.disabled = window.jobSearchPagination.current >= window.jobSearchPagination.pages;
+                nextBtn.onclick = () => {
+                    if (window.jobSearchPagination.current < window.jobSearchPagination.pages) {
+                        window.jobSearchPagination.current++;
+                        searchJobs();
+                    }
+                };
+            }
+        }
+    } catch (error) {
+        console.error('搜索职位失败:', error);
+        jobListContainer.innerHTML = `<div style="text-align:center;padding:40px;color:red;">搜索失败: ${error.message || '未知错误'}</div>`;
     }
 }
 

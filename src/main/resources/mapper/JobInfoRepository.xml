@@ -60,7 +60,6 @@
                 AND (
                 ji.job_name LIKE CONCAT('%', #{query.jobName}, '%')
                 OR ci.company_name LIKE CONCAT('%', #{query.jobName}, '%')
-                OR ci.company_id LIKE CONCAT('%', #{query.jobName}, '%')
                 )
             </if>
             <if test="query.city != null and query.city != ''">

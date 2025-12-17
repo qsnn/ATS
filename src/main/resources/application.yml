@@ -4,9 +4,9 @@ server:
 spring:
   datasource:
     # 生产环境请使用环境变量或外部配置覆盖以下配置，避免在代码库中硬编码敏感信息
-    url: jdbc:mysql://localhost:3306/recruitment-platform-data?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8
-    username: ${DB_USERNAME:recruitment-platform-data}
-    password: ${DB_PASSWORD:mysoftwareproject}
+    url: jdbc:mysql://124.71.101.139:3306/recruitment-platform-data?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8
+    username: ${DB_USERNAME:qsnn}
+    password: ${DB_PASSWORD:123}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jackson:

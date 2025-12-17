@@ -41,41 +41,69 @@ function handleLogout() {
  * @param {object} currentUser
  */
 function switchView(viewId, currentUser = Auth.getCurrentUser()) {
+    // 检查URL参数，如果是从智能推荐跳转过来的，需要特殊处理
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
+    
+    // 如果URL中有tab参数且viewId是job-search，则保持在职位搜索页面
+    if (tabParam === 'job-search' && viewId !== 'job-search') {
+        viewId = 'job-search';
+    }
+    
     // 激活导航
-    document.querySelectorAll('.sidebar-nav a').forEach(a => {
-        a.classList.toggle('active', a.dataset.view === viewId);
-    });
-
-    const container = document.getElementById('main-content');
-    if (!container) return;
-
-    // 对于通知视图，需要动态加载模块
-    if (viewId === 'notices') {
-        loadModule('/js/common/notices-view.js', () => {
-            const renderFn = window.renderNoticesView;
-            if (typeof renderFn === 'function') {
-                renderFn(container, currentUser);
-            } else {
-                container.innerHTML = '<p>视图未实现</p>';
-            }
-        });
-        return;
+    document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+    const targetLink = document.querySelector(`.sidebar-nav a[data-view="${viewId}"]`);
+    if (targetLink) {
+        targetLink.classList.add('active');
     }
 
-    const map = {
-        'job-search': renderJobSearchView,
-        'profile': renderProfileView,
-        'resumes': renderResumesView,
-        'applications': renderApplicationsView,
-        'favorites': renderFavoritesView,
-        'interviews': renderInterviewsView
-    };
+    // 隐藏所有视图
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
 
-    const renderFn = map[viewId];
-    if (typeof renderFn === 'function') {
-        renderFn(container, currentUser);
-    } else {
-        container.innerHTML = '<p>视图未实现</p>';
+    // 显示目标视图容器
+    const mainContent = document.getElementById('main-content');
+    if (mainContent) {
+        mainContent.innerHTML = '<div style="text-align:center;padding:40px;">加载中...</div>';
+    }
+
+    // 根据视图ID渲染对应内容
+    switch (viewId) {
+        case 'job-search':
+            renderJobSearchView(mainContent, currentUser);
+            break;
+        case 'profile':
+            renderProfileView(mainContent, currentUser);
+            break;
+        case 'resumes':
+            renderResumesView(mainContent, currentUser);
+            break;
+        case 'applications':
+            renderApplicationsView(mainContent, currentUser);
+            break;
+        case 'favorites':
+            renderFavoritesView(mainContent, currentUser);
+            break;
+        case 'interviews':
+            renderInterviewsView(mainContent, currentUser);
+            break;
+        case 'notices':
+            // 动态加载通知模块
+            loadModule('/js/common/notices-view.js', () => {
+                if (typeof window.renderNoticesView === 'function' && mainContent) {
+                    window.renderNoticesView(mainContent, currentUser);
+                }
+            });
+            break;
+        default:
+            if (mainContent) {
+                mainContent.innerHTML = '<p>功能建设中...</p>';
+            }
+    }
+    
+    // 清理URL中的tab参数，避免影响后续操作
+    if (tabParam === 'job-search') {
+        const newUrl = window.location.pathname + window.location.hash;
+        history.replaceState({}, document.title, newUrl);
     }
 }
 
