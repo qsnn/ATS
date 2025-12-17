@@ -66,6 +66,19 @@ function switchTab(tabName, currentUser = Auth.getCurrentUser()) {
     const container = document.getElementById(`${tabName}-tab`);
     if (!container) return;
 
+    // 对于通知视图，需要动态加载模块
+    if (tabName === 'notices') {
+        loadModule('/js/common/notices-view.js', () => {
+            const renderFn = window.renderNoticesView;
+            if (typeof renderFn === 'function') {
+                container.innerHTML = '';
+                renderFn(container, currentUser);
+            }
+            container.classList.add('active');
+        });
+        return;
+    }
+
     // 根据标签页动态加载相应模块
     const moduleMap = {
         manage: { src: '/js/employer-views/job-manage-view.js', renderFn: 'renderJobManageView' },
@@ -74,8 +87,7 @@ function switchTab(tabName, currentUser = Auth.getCurrentUser()) {
         talent: { src: '/js/employer-views/talent-view.js', renderFn: 'renderTalentView' },
         hr: { src: '/js/employer-views/hr-view.js', renderFn: 'renderHrManageView' },
         company: { src: '/js/employer-views/company-view.js', renderFn: 'renderCompanyView' },
-        profile: { src: '/js/employer-views/profile-view.js', renderFn: 'renderEmployerProfileView' },
-        notices: { src: '/js/common/notices-view.js', renderFn: 'renderNoticesView' }
+        profile: { src: '/js/employer-views/profile-view.js', renderFn: 'renderEmployerProfileView' }
     };
 
     const moduleInfo = moduleMap[tabName];

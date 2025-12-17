@@ -7,7 +7,7 @@
  * @param {HTMLElement} container - 容器元素
  * @param {object} currentUser - 当前用户信息
  */
-async function renderNoticesView(container, currentUser) {
+function renderNoticesView(container, currentUser) {
     container.innerHTML = `
         <div class="view notices-view active">
             <h2>消息与通知</h2>
