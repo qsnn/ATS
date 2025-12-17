@@ -3,8 +3,6 @@ package com.platform.ats.service;
 import com.platform.ats.entity.application.JobApplication;
 import com.platform.ats.entity.interview.InterviewInfo;
 import com.platform.ats.entity.notification.SysNotice;
-import com.platform.ats.entity.user.SysUser;
-import com.platform.ats.entity.user.UserType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -43,18 +41,13 @@ public class NotificationHelperService {
         notice.setUserId(application.getUserId());
         notice.setNoticeType("APPLICATION_STATUS");
 
-        String statusDesc = "";
-        switch (application.getStatus()) {
-            case 2: // ACCEPTED
-                statusDesc = "已接受";
-                break;
-            case 3: // REJECTED
-                statusDesc = "已拒绝";
-                break;
-            default:
-                statusDesc = "状态变更";
-                break;
-        }
+        String statusDesc = switch (application.getStatus()) {
+            case 2 -> // ACCEPTED
+                    "已接受";
+            case 3 -> // REJECTED
+                    "已拒绝";
+            default -> "状态变更";
+        };
 
         notice.setNoticeContent(String.format("您的职位申请状态已更新为：%s", statusDesc));
         notice.setSendTime(LocalDateTime.now());
@@ -113,18 +106,13 @@ public class NotificationHelperService {
         notice.setUserId(interviewInfo.getIntervieweeId());
         notice.setNoticeType("INTERVIEW_RESULT");
 
-        String resultDesc = "";
-        switch (interviewInfo.getStatus()) {
-            case 3: // ACCEPTED 录取
-                resultDesc = "恭喜您，您已被录取";
-                break;
-            case 4: // REJECTED 未录取
-                resultDesc = "很遗憾，您未被录取";
-                break;
-            default:
-                resultDesc = "面试结果已更新";
-                break;
-        }
+        String resultDesc = switch (interviewInfo.getStatus()) {
+            case 3 -> // ACCEPTED 录取
+                    "恭喜您，您已被录取";
+            case 4 -> // REJECTED 未录取
+                    "很遗憾，您未被录取";
+            default -> "面试结果已更新";
+        };
 
         notice.setNoticeContent(resultDesc);
         notice.setSendTime(LocalDateTime.now());
@@ -196,5 +184,35 @@ public class NotificationHelperService {
             sysNoticeService.createNotice(notice);
             log.info("为用户{}创建了即将到来的面试通知，面试ID: {}", userId, interview.getArrangeId());
         }
+    }
+
+    /**
+     * 当面试结束时创建通知给求职者
+     *
+     * @param interviewInfo 面试信息
+     */
+    public void createInterviewEndedNotice(InterviewInfo interviewInfo) {
+        if (interviewInfo == null || interviewInfo.getIntervieweeId() == null) {
+            log.warn("面试信息为空或缺少面试者ID，无法创建通知");
+            return;
+        }
+
+        // 创建通知给求职者
+        SysNotice notice = new SysNotice();
+        notice.setUserId(interviewInfo.getIntervieweeId());
+        notice.setNoticeType("INTERVIEW_ENDED");
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH:mm:ss");
+        String interviewTimeStr = interviewInfo.getInterviewTime() != null ?
+                interviewInfo.getInterviewTime().format(formatter) : "待定";
+
+        notice.setNoticeContent(String.format("您于%s的面试已结束，请等待面试结果。", interviewTimeStr));
+        notice.setSendTime(LocalDateTime.now());
+        notice.setReadStatus(0); // 未读
+        notice.setSendStatus(0); // 未发
+        notice.setDeleteFlag(0); // 未删
+
+        sysNoticeService.createNotice(notice);
+        log.info("为用户{}创建了面试结束通知，面试ID: {}", interviewInfo.getIntervieweeId(), interviewInfo.getArrangeId());
     }
 }
