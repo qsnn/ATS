@@ -65,4 +65,9 @@ public class CompanyInfoVO {
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateTime;
+    
+    /**
+     * 公司状态：0-禁用 1-启用
+     */
+    private Integer status;
 }

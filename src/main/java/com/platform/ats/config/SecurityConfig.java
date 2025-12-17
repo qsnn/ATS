@@ -45,6 +45,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/user/hr/**").authenticated()
                         // 允许职位信息接口访问
                         .requestMatchers("/api/job/info/**").authenticated()
+                        // 允许日志接口访问（仅管理员）
+                        .requestMatchers("/api/logs/**").authenticated()
                         // 其他所有请求都需要身份验证
                         .anyRequest().authenticated()
                 )

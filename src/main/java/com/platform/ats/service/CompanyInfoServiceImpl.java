@@ -1,13 +1,18 @@
 package com.platform.ats.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.platform.ats.common.BizException;
 import com.platform.ats.common.ErrorCode;
 import com.platform.ats.entity.company.CompanyInfo;
+import com.platform.ats.entity.company.dto.CompanyQueryDTO;
 import com.platform.ats.entity.company.vo.CompanyInfoVO;
 import com.platform.ats.repository.CompanyInfoRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,7 +24,7 @@ import java.util.stream.Collectors;
  * @since 2025-12-13
  */
 @Service
-public class CompanyInfoServiceImpl implements CompanyInfoService {
+public class CompanyInfoServiceImpl extends ServiceImpl<CompanyInfoRepository, CompanyInfo> implements CompanyInfoService {
 
     private final CompanyInfoRepository companyInfoRepository;
 
@@ -37,6 +42,7 @@ public class CompanyInfoServiceImpl implements CompanyInfoService {
     public CompanyInfoVO create(CompanyInfo companyInfo) {
         companyInfo.setCompanyId(null);
         companyInfo.setDeleteFlag(null);
+        companyInfo.setStatus(1); // 默认启用状态
         companyInfoRepository.insert(companyInfo);
         return toVO(companyInfo);
     }
@@ -95,6 +101,56 @@ public class CompanyInfoServiceImpl implements CompanyInfoService {
                 new LambdaQueryWrapper<CompanyInfo>().orderByDesc(CompanyInfo::getCreateTime)
         );
         return list.stream().map(this::toVO).collect(Collectors.toList());
+    }
+
+    /**
+     * 分页查询公司列表
+     * 
+     * @param page 分页参数
+     * @param query 查询条件
+     * @return 公司信息分页列表
+     */
+    @Override
+    public IPage<CompanyInfoVO> getCompanyPage(Page<CompanyInfoVO> page, CompanyQueryDTO query) {
+        LambdaQueryWrapper<CompanyInfo> queryWrapper = new LambdaQueryWrapper<>();
+        
+        // 模糊查询公司名称
+        if (StringUtils.hasText(query.getCompanyName())) {
+            queryWrapper.like(CompanyInfo::getCompanyName, query.getCompanyName());
+        }
+        
+        // 状态筛选
+        if (query.getStatus() != null) {
+            queryWrapper.eq(CompanyInfo::getStatus, query.getStatus());
+        }
+        
+        // 按创建时间倒序排列
+        queryWrapper.orderByDesc(CompanyInfo::getCreateTime);
+        
+        // 执行分页查询
+        IPage<CompanyInfo> companyPage = companyInfoRepository.selectPage(page, queryWrapper);
+        
+        // 转换为VO对象
+        Page<CompanyInfoVO> voPage = new Page<>(companyPage.getCurrent(), companyPage.getSize(), companyPage.getTotal());
+        List<CompanyInfoVO> voList = companyPage.getRecords().stream().map(this::toVO).collect(Collectors.toList());
+        voPage.setRecords(voList);
+        
+        return voPage;
+    }
+    
+    /**
+     * 更新公司状态
+     * 
+     * @param companyId 公司ID
+     * @param status 状态 0-禁用 1-启用
+     * @return 是否更新成功
+     */
+    @Override
+    public boolean updateStatus(Long companyId, Integer status) {
+        CompanyInfo companyInfo = new CompanyInfo();
+        companyInfo.setCompanyId(companyId);
+        companyInfo.setStatus(status);
+        return companyInfoRepository.updateById(companyInfo) > 0;
     }
 
     private CompanyInfoVO toVO(CompanyInfo entity) {

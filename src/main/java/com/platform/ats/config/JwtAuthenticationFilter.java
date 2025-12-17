@@ -46,7 +46,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     if (jwtUtil.validateToken(jwt, userId, username)) {
                         SysUser sysUser = userService.getUserById(userId);
                         
-                        if (sysUser != null) {
+                        // 检查用户是否被禁用
+                        if (sysUser != null && !sysUser.isDisabled()) {
                             UsernamePasswordAuthenticationToken authentication = 
                                 new UsernamePasswordAuthenticationToken(
                                     sysUser.getUsername(), 
@@ -55,9 +56,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                 );
                                 
                             SecurityContextHolder.getContext().setAuthentication(authentication);
+                        } else if (sysUser != null && sysUser.isDisabled()) {
+                            logger.warn("用户账户已被禁用: userId={" + userId+ "}, username={ " + username + "}");
                         }
                     } else {
-                        logger.warn("JWT令牌验证失败: userId={}, username={}");
+                        logger.warn("JWT令牌验证失败: userId={" + userId + "}, username={" + username + "}");
                     }
                 } catch (Exception e) {
                     logger.error("JWT验证失败: " + e.getMessage());

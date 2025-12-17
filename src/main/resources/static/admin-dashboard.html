@@ -6,6 +6,123 @@
     <title>平台管理员中心 - 招聘系统</title>
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/dashboard.css">
+    <style>
+        /* 添加样式使其与其他用户界面保持一致 */
+        .content-layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 24px;
+            margin-top: 20px;
+            margin-bottom: 32px;
+        }
+        @media (max-width: 992px) {
+            .content-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+        .main-content-area {
+            min-height: 500px;
+            background-color: #ffffff;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* 优化管理员侧边栏样式 */
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            padding: 10px 14px;
+            color: #4b5563;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            font-size: 14px;
+            transition: background-color .2s ease, color .2s ease, transform .15s ease;
+        }
+        .sidebar-nav a::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            margin-right: 8px;
+            background-color: transparent;
+            transition: background-color .2s ease;
+        }
+        .sidebar-nav a:hover {
+            background-color: #eef2ff;
+            color: #4f46e5;
+            transform: translateX(2px);
+        }
+        .sidebar-nav a.active {
+            background: linear-gradient(90deg, #4f46e5, #6366f1);
+            color: #ffffff;
+            box-shadow: 0 4px 10px rgba(79,70,229,0.25);
+        }
+        .sidebar-nav a.active::before {
+            background-color: #ffffff;
+        }
+
+        /* 主内容区域增加卡片感 */
+        .main-content {
+            background: transparent;
+        }
+        .main-content > .view {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 20px 24px;
+            box-shadow: 0 6px 20px rgba(15,23,42,0.06);
+        }
+        .main-content h2 {
+            font-size: 20px;
+            margin-bottom: 16px;
+            color: #111827;
+        }
+
+        /* 表格整体更柔和 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #ffffff;
+        }
+        thead {
+            background: #f3f4f6;
+        }
+        th, td {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 10px 12px;
+            text-align: left;
+            font-size: 14px;
+        }
+        th {
+            font-weight: 600;
+            color: #4b5563;
+        }
+        tbody tr:hover {
+            background-color: #f9fafb;
+        }
+
+        /* 顶部导航微调 */
+        .nav-logo h1 {
+            font-size: 18px;
+        }
+        #user-greeting {
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content > .view {
+                padding: 16px;
+            }
+        }
+    </style>
 </head>
 <body>
 <nav class="navbar">
@@ -22,21 +139,23 @@
 </nav>
 
 <div class="container">
-    <!-- 标签页 -->
-    <div class="dashboard-tabs">
-        <button class="tab-btn active" data-tab="users">用户管理</button>
-        <button class="tab-btn" data-tab="roles">角色与权限</button>
-        <button class="tab-btn" data-tab="monitor">系统监控</button>
-        <button class="tab-btn" data-tab="content">内容审核</button>
-        <button class="tab-btn" data-tab="reports">运营报表</button>
+    <div class="content-layout">
+        <aside class="sidebar">
+            <h3>管理中心</h3>
+            <nav class="sidebar-nav">
+                <a href="#" class="active" data-tab="users">用户管理</a>
+                <a href="#" data-tab="companies">公司管理</a>
+                <a href="#" data-tab="logs">日志管理</a>
+                <a href="#" data-tab="profile">账户与安全</a>
+            </nav>
+        </aside>
+        <main class="main-content main-content-area">
+            <div id="users-tab" class="tab-content active"></div>
+            <div id="companies-tab" class="tab-content"></div>
+            <div id="logs-tab" class="tab-content"></div>
+            <div id="profile-tab" class="tab-content"></div>
+        </main>
     </div>
-
-    <!-- 各个标签页容器 -->
-    <div id="users-tab" class="tab-content active"></div>
-    <div id="roles-tab" class="tab-content"></div>
-    <div id="monitor-tab" class="tab-content"></div>
-    <div id="content-tab" class="tab-content"></div>
-    <div id="reports-tab" class="tab-content"></div>
 </div>
 
 <script src="js/auth.js"></script>
@@ -44,10 +163,9 @@
 <!-- 管理员视图模块 -->
 <script src="js/admin-views/dashboard.js"></script>
 <script src="js/admin-views/users-view.js"></script>
-<script src="js/admin-views/roles-view.js"></script>
-<script src="js/admin-views/monitor-view.js"></script>
-<script src="js/admin-views/content-view.js"></script>
-<script src="js/admin-views/reports-view.js"></script>
+<script src="js/admin-views/companies-view.js"></script>
+<script src="js/admin-views/logs-view.js"></script>
+<script src="js/admin-views/profile-view.js"></script>
 
 </body>
 

@@ -110,4 +110,17 @@ public class SysOperationLog implements Serializable {
     @TableLogic
     @TableField("delete_flag")
     private Integer deleteFlag;
+    
+    // 提供一些辅助方法来判断日志类型
+    public boolean isSuccess() {
+        return operationResult != null && operationResult == 1;
+    }
+    
+    public boolean isError() {
+        return operationResult != null && operationResult == 0;
+    }
+    
+    public boolean hasErrorMsg() {
+        return errorMsg != null && !errorMsg.isEmpty();
+    }
 }

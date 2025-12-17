@@ -1,7 +1,10 @@
 package com.platform.ats.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.platform.ats.common.annotation.LogOperation;
 import com.platform.ats.entity.company.CompanyInfo;
+import com.platform.ats.entity.company.dto.CompanyQueryDTO;
 import com.platform.ats.entity.company.vo.CompanyInfoVO;
 import com.platform.ats.entity.user.vo.Result;
 import com.platform.ats.service.CompanyInfoService;
@@ -59,5 +62,31 @@ public class CompanyInfoController {
     @LogOperation(module = "公司信息管理", type = "查询", content = "查询全部公司列表")
     public Result<List<CompanyInfoVO>> listAll() {
         return Result.success(companyInfoService.listAll());
+    }
+    
+    @GetMapping("/page")
+    @Operation(summary = "分页查询公司列表")
+    @LogOperation(module = "公司信息管理", type = "查询", content = "分页查询公司列表")
+    public Result<IPage<CompanyInfoVO>> getCompanyPage(
+            @RequestParam(defaultValue = "1") Long current,
+            @RequestParam(defaultValue = "10") Long size,
+            @RequestParam(required = false) String companyName,
+            @RequestParam(required = false) Integer status) {
+        
+        Page<CompanyInfoVO> page = new Page<>(current, size);
+        CompanyQueryDTO query = new CompanyQueryDTO();
+        query.setCompanyName(companyName);
+        query.setStatus(status);
+        
+        IPage<CompanyInfoVO> result = companyInfoService.getCompanyPage(page, query);
+        return Result.success(result);
+    }
+    
+    @PutMapping("/{companyId}/status")
+    @Operation(summary = "更新公司状态")
+    @LogOperation(module = "公司信息管理", type = "修改", content = "更新公司状态")
+    public Result<Boolean> updateStatus(@PathVariable Long companyId, @RequestParam Integer status) {
+        Boolean success = companyInfoService.updateStatus(companyId, status);
+        return Result.success(success, "状态更新成功");
     }
 }
