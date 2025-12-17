@@ -76,6 +76,10 @@ function renderCompanyView(container, currentUser) {
             <div class="card">
                 <form id="company-form">
                     <div class="form-group">
+                        <label>公司ID</label>
+                        <div class="form-control readonly-field" id="company-id-display" readonly style="background-color: #f8f9fa;"></div>
+                    </div>
+                    <div class="form-group">
                         <label>公司名称</label>
                         <input type="text" id="company-name" class="form-control" placeholder="请输入公司名称">
                     </div>
@@ -124,6 +128,7 @@ async function loadCompanyInfo(user) {
         const json = await resp.json();
         if (!json || json.code !== 200 || !json.data) return;
         const c = json.data;
+        document.getElementById('company-id-display').textContent = companyId;
         document.getElementById('company-name').value = c.companyName || '';
         document.getElementById('company-description').value = c.companyDesc || '';
         // 对齐后端 CompanyInfoVO 字段：companyAddress, contactPerson, contactEmail

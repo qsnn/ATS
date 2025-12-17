@@ -560,6 +560,10 @@ function renderRecruiterCompanyView(container, currentUser) {
         <h2>公司信息</h2>
         <div class="card">
             <div class="form-group">
+                <label>公司ID</label>
+                <div id="company-id" class="readonly-field form-control" style="cursor: copy;"></div>
+            </div>
+            <div class="form-group">
                 <label>公司名称</label>
                 <div id="company-name" class="readonly-field form-control" style="cursor: copy;"></div>
             </div>
@@ -616,6 +620,7 @@ async function loadCompanyInfo(user) {
         const json = await resp.json();
         if (!json || json.code !== 200 || !json.data) return;
         const c = json.data;
+        const idEl = document.getElementById('company-id');
         const nameEl = document.getElementById('company-name');
         const descEl = document.getElementById('company-description');
         const addrEl = document.getElementById('company-address');
@@ -623,6 +628,7 @@ async function loadCompanyInfo(user) {
         const phoneEl = document.getElementById('company-phone');
         const emailEl = document.getElementById('company-email');
         
+        if (idEl) idEl.textContent = companyId;
         if (nameEl) nameEl.textContent = c.companyName || '';
         if (descEl) descEl.textContent = c.companyDesc || '';
         if (addrEl) addrEl.textContent = c.companyAddress || '';
