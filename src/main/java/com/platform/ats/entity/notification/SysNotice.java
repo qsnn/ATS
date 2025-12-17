@@ -61,16 +61,10 @@ public class SysNotice implements Serializable {
     private Integer readStatus;
 
     /**
-     * 邮件发送状态：0-未发 1-已发
+     * 发送状态：0-未发 1-已发
      */
-    @TableField("email_send_status")
-    private Integer emailSendStatus;
-
-    /**
-     * 短信发送状态：0-未发 1-已发
-     */
-    @TableField("sms_send_status")
-    private Integer smsSendStatus;
+    @TableField("send_status")
+    private Integer sendStatus;
 
     /**
      * 删除标记：0-未删 1-已删

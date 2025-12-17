@@ -59,8 +59,7 @@ public class NotificationHelperService {
         notice.setNoticeContent(String.format("您的职位申请状态已更新为：%s", statusDesc));
         notice.setSendTime(LocalDateTime.now());
         notice.setReadStatus(0); // 未读
-        notice.setEmailSendStatus(0); // 未发
-        notice.setSmsSendStatus(0); // 未发
+        notice.setSendStatus(0); // 未发
         notice.setDeleteFlag(0); // 未删
 
         sysNoticeService.createNotice(notice);
@@ -96,8 +95,7 @@ public class NotificationHelperService {
         }
         notice.setSendTime(sendTime);
         notice.setReadStatus(0); // 未读
-        notice.setEmailSendStatus(0); // 未发
-        notice.setSmsSendStatus(0); // 未发
+        notice.setSendStatus(0); // 未发
         notice.setDeleteFlag(0); // 未删
 
         sysNoticeService.createNotice(notice);
@@ -136,8 +134,7 @@ public class NotificationHelperService {
         notice.setNoticeContent(resultDesc);
         notice.setSendTime(LocalDateTime.now());
         notice.setReadStatus(0); // 未读
-        notice.setEmailSendStatus(0); // 未发
-        notice.setSmsSendStatus(0); // 未发
+        notice.setSendStatus(0); // 未发
         notice.setDeleteFlag(0); // 未删
 
         sysNoticeService.createNotice(notice);
@@ -164,8 +161,7 @@ public class NotificationHelperService {
             notice.setNoticeContent(String.format("您有未处理的申请%d条，请尽快处理", pendingCount));
             notice.setSendTime(LocalDateTime.now());
             notice.setReadStatus(0); // 未读
-            notice.setEmailSendStatus(0); // 未发
-            notice.setSmsSendStatus(0); // 未发
+            notice.setSendStatus(0); // 未发
             notice.setDeleteFlag(0); // 未删
 
             sysNoticeService.createNotice(notice);
@@ -204,8 +200,7 @@ public class NotificationHelperService {
             }
             notice.setSendTime(sendTime);
             notice.setReadStatus(0); // 未读
-            notice.setEmailSendStatus(0); // 未发
-            notice.setSmsSendStatus(0); // 未发
+            notice.setSendStatus(0); // 未发
             notice.setDeleteFlag(0); // 未删
 
             sysNoticeService.createNotice(notice);
