@@ -34,26 +34,29 @@ public class DataPermissionAspect {
     
     @Around("@annotation(dataPermission)")
     public Object checkDataPermission(ProceedingJoinPoint joinPoint, DataPermission dataPermission) throws Throwable {
-        // 获取当前用户信息
-        SysUser currentUser = getCurrentUser();
-        if (currentUser == null) {
-            log.warn("无法获取当前用户信息");
-            throw new RuntimeException("无法获取当前用户信息");
-        }
-        
-        // 获取方法参数
-        Object[] args = joinPoint.getArgs();
-        
-        switch (dataPermission.value()) {
-            case SELF:
-                checkSelfPermission(currentUser, args);
-                break;
-            case COMPANY:
-                checkCompanyPermission(currentUser, args);
-                break;
-            case ALL:
-                // 管理员可以访问所有数据，无需额外检查
-                break;
+        // 对于ALL类型的权限，不需要获取当前用户信息
+        if (dataPermission.value() != DataPermission.Type.ALL) {
+            // 获取当前用户信息
+            SysUser currentUser = getCurrentUser();
+            if (currentUser == null) {
+                log.warn("无法获取当前用户信息");
+                throw new RuntimeException("无法获取当前用户信息");
+            }
+            
+            // 获取方法参数
+            Object[] args = joinPoint.getArgs();
+            
+            switch (dataPermission.value()) {
+                case SELF:
+                    checkSelfPermission(currentUser, args);
+                    break;
+                case COMPANY:
+                    checkCompanyPermission(currentUser, args);
+                    break;
+                case ALL:
+                    // 管理员可以访问所有数据，无需额外检查
+                    break;
+            }
         }
         
         // 继续执行原方法

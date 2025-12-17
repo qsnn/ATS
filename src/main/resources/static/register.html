@@ -73,7 +73,7 @@
         </form>
 
         <div class="login-footer">
-            <p>已有账号？ <a href="login.html">立即登录</a></p>
+            <p>已有账号？ <a href="login.html" id="login-link">立即登录</a></p>
         </div>
     </div>
 </div>
@@ -148,6 +148,15 @@ body {
         const pwdInput = document.getElementById('password');
         const confirmInput = document.getElementById('confirm-password');
         const errorEl = document.getElementById('password-error');
+        const loginLink = document.getElementById('login-link');
+
+        // 处理登录链接点击事件
+        if (loginLink) {
+            loginLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'login.html';
+            });
+        }
 
         form.addEventListener('submit', async function (e) {
             e.preventDefault();

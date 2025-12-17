@@ -31,12 +31,14 @@ public class SecurityConfig {
                 // 配置请求授权规则
                 .authorizeHttpRequests(auth -> auth
                         // 允许对静态资源的访问
-                        .requestMatchers("/", "/index.html", "/login.html", "/register.html", "/favicon.ico").permitAll()
+                        .requestMatchers("/", "/index.html", "/login.html", "/register.html", "reset-password.html", "/favicon.ico").permitAll()
                         .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
                         // 允许访问所有仪表板页面（权限控制将在前端处理）
                         .requestMatchers("/*-dashboard.html").permitAll()
                         // 允许对注册接口、登录接口、Swagger UI 和 API 文档的匿名访问
                         .requestMatchers("/api/user/register", "/api/user/login", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        // 允许对重置密码验证接口的匿名访问
+                        .requestMatchers("/api/user/reset-password-validate").permitAll()
                         // 允许对所有/api/user开头的接口进行访问（但特定接口仍需认证）
                         .requestMatchers("/api/user/check/**").permitAll()
                         // 允许HR相关接口访问（但特定接口仍需认证）

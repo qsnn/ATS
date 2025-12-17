@@ -12,6 +12,7 @@ import com.platform.ats.entity.user.dto.UserLoginDTO;
 import com.platform.ats.entity.user.dto.UserRegisterDTO;
 import com.platform.ats.entity.user.dto.UserUpdateDTO;
 import com.platform.ats.entity.user.dto.UserPasswordDTO;
+import com.platform.ats.entity.user.dto.PasswordResetValidateDTO;
 import com.platform.ats.entity.user.query.UserQuery;
 import com.platform.ats.entity.user.vo.HrVO;
 import com.platform.ats.entity.user.vo.Result;
@@ -181,6 +182,38 @@ public class UserController {
     public Result<Boolean> resetPassword(@PathVariable Long userId, @RequestParam String newPassword) {
         Boolean success = userService.resetPassword(userId, newPassword);
         return Result.success(success, "密码重置成功");
+    }
+
+    /**
+     * 通过验证用户名、手机号和邮箱来重置密码
+     */
+    @PostMapping("/reset-password-validate")
+    @Operation(summary = "通过验证信息重置密码")
+    @DataPermission(DataPermission.Type.ALL) // 任何人都可以访问重置密码接口
+    @LogOperation(module = "用户管理", type = "修改", content = "通过验证信息重置密码")
+    public Result<Boolean> resetPasswordByValidation(@RequestBody PasswordResetValidateDTO dto) {
+        try {
+            // 验证用户信息
+            SysUser user = userService.getUserByUsername(dto.getUsername());
+            if (user == null) {
+                return Result.error(ErrorCode.USER_NOT_FOUND.getCode(), "用户不存在");
+            }
+
+            // 验证手机号和邮箱
+            if (!dto.getPhone().equals(user.getPhone()) || !dto.getEmail().equals(user.getEmail())) {
+                return Result.error(ErrorCode.PARAM_INVALID.getCode(), "用户信息验证失败");
+            }
+
+            // 重置密码
+            Boolean success = userService.resetPassword(user.getUserId(), dto.getNewPassword());
+            if (success) {
+                return Result.success(true, "密码重置成功");
+            } else {
+                return Result.error(ErrorCode.INTERNAL_ERROR.getCode(), "密码重置失败");
+            }
+        } catch (Exception e) {
+            return Result.error(ErrorCode.INTERNAL_ERROR.getCode(), "密码重置过程中发生错误：" + e.getMessage());
+        }
     }
 
     @GetMapping("/check/username")

@@ -33,7 +33,8 @@
         </form>
 
         <div class="login-footer">
-            <p>还没有账号？ <a href="register.html">注册求职者账号</a></p>
+            <p>还没有账号？ <a href="register.html" id="register-link">注册求职者账号</a></p>
+            <p><a href="reset-password.html" id="reset-password-link">找回密码</a></p>
             <p class="note">企业管理员账号由平台管理员生成，HR账户由企业管理员生成</p>
         </div>
     </div>
@@ -107,6 +108,24 @@ body {
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const form = document.getElementById('login-form');
+        const resetPasswordLink = document.getElementById('reset-password-link');
+        const registerLink = document.getElementById('register-link');
+
+        // 处理找回密码链接点击事件
+        if (resetPasswordLink) {
+            resetPasswordLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'reset-password.html';
+            });
+        }
+        
+        // 处理注册链接点击事件
+        if (registerLink) {
+            registerLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'register.html';
+            });
+        }
 
         // ① 进入登录页时，如果已登录则直接跳转到对应工作台（仍然根据 user.role）
         const currentUser = Auth.getCurrentUser && Auth.getCurrentUser();

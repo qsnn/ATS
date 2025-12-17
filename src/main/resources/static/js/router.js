@@ -49,6 +49,12 @@ const Router = {
             // 检查是否是内部链接
             const link = e.target.closest('a');
             if (link && link.href && link.href.startsWith(window.location.origin)) {
+                // 检查是否是重置密码页面或注册页面的链接，如果是则不拦截
+                if (link.pathname === '/reset-password.html' || link.pathname === '/reset-password' ||
+                    link.pathname === '/register.html' || link.pathname === '/register') {
+                    return;
+                }
+                
                 e.preventDefault();
 
                 // 获取相对路径
@@ -86,7 +92,7 @@ const Router = {
     // 检查权限
     checkPermission: function(path) {
         // 1. 定义公共路径，任何人都可以访问
-        const publicPaths = ['/', '/index.html', '/login.html', '/register.html'];
+        const publicPaths = ['/', '/index.html', '/login.html', '/register.html', '/reset-password.html'];
         // 移除路径末尾的'/'以便匹配
         const cleanPath = path.endsWith('/') && path.length > 1 ? path.slice(0, -1) : path;
 
