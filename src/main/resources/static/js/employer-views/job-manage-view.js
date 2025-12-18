@@ -524,10 +524,10 @@ async function editJob(jobId) {
         document.getElementById('job-province').value = job.province || '';
         document.getElementById('job-city').value = job.city || '';
         document.getElementById('job-district').value = job.district || '';
-        document.getElementById('job-salary-min').value = job.salaryMin || '';
-        document.getElementById('job-salary-max').value = job.salaryMax || '';
-        document.getElementById('job-experience').value = job.workExperience || '0';
-        document.getElementById('job-education').value = job.education || '3';
+        document.getElementById('job-salary-min').value = job.salaryMin !== undefined ? parseFloat(job.salaryMin) : '';
+        document.getElementById('job-salary-max').value = job.salaryMax !== undefined ? parseFloat(job.salaryMax) : '';
+        document.getElementById('job-experience').value = job.workExperience !== undefined ? job.workExperience : '0';
+        document.getElementById('job-education').value = job.education !== undefined ? job.education : '3';
         document.getElementById('job-description').value = job.jobDesc || '';
         modal.style.display = 'block';
     } catch (e) {
@@ -563,6 +563,36 @@ async function publishJob(jobId) {
     } catch (e) {
         console.error('发布职位失败:', e);
         alert('发布失败，请稍后重试');
+    }
+}
+
+// 新增函数：下架职位
+async function unpublishJob(jobId) {
+    try {
+        const resp = await Auth.authenticatedFetch(`${JOB_API_BASE}/unpublish/${jobId}`, { method: 'PUT' });
+        if (!resp.ok) {
+            const text = await resp.text();
+            alert(`网络错误: ${resp.status} ${text}`);
+            return;
+        }
+        const ok = await resp.json();
+        if (!ok) {
+            alert('下架失败');
+            return;
+        }
+        alert('职位已下架');
+        // 获取当前激活的标签页状态
+        const activeTab = document.querySelector('.tab-btn.active');
+        let currentStatus = activeTab ? activeTab.getAttribute('data-status') : '0';
+        // 强制转换为字符串并确保是有效的状态值之一
+        currentStatus = String(currentStatus);
+        if (!['0', '1', '2'].includes(currentStatus)) {
+            currentStatus = '0';
+        }
+        loadJobList(Auth.getCurrentUser(), currentStatus);
+    } catch (e) {
+        console.error('下架职位失败:', e);
+        alert('下架失败，请稍后重试');
     }
 }
 
@@ -640,6 +670,7 @@ async function saveJob(currentUser, action) {
 
     const payload = {
         companyId: currentUser.companyId,
+        publisherId: currentUser.userId,  // 添加发布者ID
         jobName: title,
         department: department,
         province: province,
