@@ -1164,6 +1164,40 @@ GET /api/company/list
 }
 ```
 
+### 分页查询公司列表
+```
+GET /api/company/page?current=1&size=10&companyName=科技
+```
+
+**可选查询参数**
+- companyName: 公司名称（模糊查询）
+
+**响应示例**
+```json
+{
+  "code": 200,
+  "data": {
+    "records": [
+      {
+        "companyId": 2001,
+        "companyName": "科技有限公司",
+        "companyDesc": "一家知名的科技公司",
+        "companyAddress": "中关村大街1号",
+        "contactPerson": "张总",
+        "contactPhone": "010-12345678",
+        "contactEmail": "contact@tech.com",
+        "creatorId": 10003,
+        "createTime": "2023-01-15T09:30:00",
+        "updateTime": "2023-01-15T09:30:00"
+      }
+    ],
+    "total": 1,
+    "size": 10,
+    "current": 1
+  }
+}
+```
+
 ## 面试信息管理
 
 ### 创建面试信息
@@ -1739,5 +1773,69 @@ DELETE /api/notices/{noticeId}
   "code": 200,
   "data": true,
   "message": "通知删除成功"
+}
+```
+
+## 系统操作日志管理
+
+### 分页查询操作日志列表
+```
+GET /api/logs/page?current=1&size=10
+```
+
+**可选查询参数**
+- userId: 用户ID（精确查询）
+- operationModule: 操作模块（模糊查询）
+- operationContent: 操作内容（模糊查询）
+- ipAddress: IP地址（模糊查询）
+- operationResult: 操作结果（0-失败，1-成功）
+
+**响应示例**
+```json
+{
+  "code": 200,
+  "data": {
+    "records": [
+      {
+        "id": 1,
+        "userId": 1001,
+        "username": "admin",
+        "operationModule": "用户管理",
+        "operationType": "登录",
+        "operationContent": "用户登录",
+        "operationTime": "2023-01-16T10:30:00",
+        "ipAddress": "127.0.0.1",
+        "operationResult": 1,
+        "errorMsg": null
+      }
+    ],
+    "total": 1,
+    "size": 10,
+    "current": 1
+  }
+}
+```
+
+### 根据ID获取操作日志详情
+```
+GET /api/logs/{logId}
+```
+
+**响应示例**
+```json
+{
+  "code": 200,
+  "data": {
+    "id": 1,
+    "userId": 1001,
+    "username": "admin",
+    "operationModule": "用户管理",
+    "operationType": "登录",
+    "operationContent": "用户登录",
+    "operationTime": "2023-01-16T10:30:00",
+    "ipAddress": "127.0.0.1",
+    "operationResult": 1,
+    "errorMsg": null
+  }
 }
 ```
