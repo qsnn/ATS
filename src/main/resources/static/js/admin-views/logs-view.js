@@ -52,12 +52,15 @@ function renderLogsView(container, currentUser) {
             </div>
         </div>
         
-        <!-- 日志详情模态框 -->
-        <div id="log-detail-modal" class="modal" style="display:none;">
-            <div class="modal-content" style="width: 700px;">
-                <span class="close" onclick="closeLogDetailModal()">&times;</span>
-                <h2>日志详情</h2>
+        <!-- 日志详情弹窗 -->
+        <div id="log-detail-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:9999;">
+            <div style="background:#fff; width:700px; max-height:90vh; overflow:auto; margin:40px auto; padding:20px; border-radius:6px; position:relative;">
+                <h3>日志详情</h3>
+                <button id="log-detail-modal-close" style="position:absolute; right:16px; top:10px; border:none; background:none; font-size:18px; cursor:pointer;">×</button>
                 <div id="log-detail-content"></div>
+                <div style="margin-top:16px; text-align:right;">
+                    <button type="button" class="btn" onclick="closeLogDetailModal()">关闭</button>
+                </div>
             </div>
         </div>
     `;
@@ -85,6 +88,15 @@ function renderLogsView(container, currentUser) {
             const currentUser = Auth.getCurrentUser();
             loadLogs(currentUser);
         }
+    });
+
+    // 绑定日志详情弹窗关闭事件
+    const detailModal = document.getElementById('log-detail-modal');
+    const detailCloseBtn = document.getElementById('log-detail-modal-close');
+    const closeDetailModal = () => { detailModal.style.display = 'none'; };
+    detailCloseBtn.addEventListener('click', closeDetailModal);
+    detailModal.addEventListener('click', e => {
+        if (e.target === detailModal) closeDetailModal();
     });
 
     // 加载日志数据
@@ -263,7 +275,7 @@ async function viewLogDetail(logId) {
 }
 
 /**
- * 显示日志详情模态框
+ * 显示日志详情弹窗
  * @param {Object} log - 日志信息
  */
 function showLogDetailModal(log) {
@@ -340,7 +352,7 @@ function showLogDetailModal(log) {
 }
 
 /**
- * 关闭日志详情模态框
+ * 关闭日志详情弹窗
  */
 function closeLogDetailModal() {
     document.getElementById('log-detail-modal').style.display = 'none';

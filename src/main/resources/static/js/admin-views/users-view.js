@@ -60,11 +60,12 @@ function renderUsersView(container, currentUser) {
             </div>
         </div>
 
-        <!-- 创建用户模态框 -->
-        <div id="create-user-modal" class="modal" style="display:none;">
-            <div class="modal-content" style="width: 500px;">
-                <span class="close" onclick="closeCreateUserModal()">&times;</span>
-                <h2>创建账户</h2>
+        <!-- 创建用户弹窗 -->
+        <div id="create-user-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:9999;">
+            <div style="background:#fff; width:600px; max-height:90vh; overflow:auto; margin:40px auto; padding:20px; border-radius:6px; position:relative;">
+                <h3 id="create-user-modal-title">创建用户</h3>
+                <button id="create-user-modal-close" style="position:absolute; right:16px; top:10px; border:none; background:none; font-size:18px; cursor:pointer;">×</button>
+                
                 <form id="create-user-form">
                     <div class="form-group">
                         <label>用户类型 *</label>
@@ -95,17 +96,24 @@ function renderUsersView(container, currentUser) {
                         <label>公司ID</label>
                         <input type="number" id="create-company-id" class="form-control" placeholder="请输入公司ID">
                     </div>
-                    <button type="submit" class="btn btn-primary">创建</button>
+                    
+                    <div style="margin-top:16px; text-align:right;">
+                        <button type="button" class="btn" id="create-user-cancel-btn">取消</button>
+                        <button type="button" class="btn btn-primary" id="create-user-save-btn" style="margin-left:8px;">保存</button>
+                    </div>
                 </form>
             </div>
         </div>
         
-        <!-- 用户详情模态框 -->
-        <div id="user-detail-modal" class="modal" style="display:none;">
-            <div class="modal-content" style="width: 600px;">
-                <span class="close" onclick="closeUserDetailModal()">&times;</span>
-                <h2>用户详情</h2>
+        <!-- 用户详情弹窗 -->
+        <div id="user-detail-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:9999;">
+            <div style="background:#fff; width:600px; max-height:90vh; overflow:auto; margin:40px auto; padding:20px; border-radius:6px; position:relative;">
+                <h3>用户详情</h3>
+                <button id="user-detail-modal-close" style="position:absolute; right:16px; top:10px; border:none; background:none; font-size:18px; cursor:pointer;">×</button>
                 <div id="user-detail-content"></div>
+                <div style="margin-top:16px; text-align:right;">
+                    <button type="button" class="btn" onclick="closeUserDetailModal()">关闭</button>
+                </div>
             </div>
         </div>
     `;
@@ -119,9 +127,21 @@ function renderUsersView(container, currentUser) {
     };
 
     // 绑定创建用户表单事件
-    document.getElementById('create-user-form').addEventListener('submit', function(e) {
+    const modal = document.getElementById('create-user-modal');
+    const closeBtn = document.getElementById('create-user-modal-close');
+    const cancelBtn = document.getElementById('create-user-cancel-btn');
+    const saveBtn = document.getElementById('create-user-save-btn');
+
+    const hideModal = () => { modal.style.display = 'none'; };
+    closeBtn.addEventListener('click', hideModal);
+    cancelBtn.addEventListener('click', hideModal);
+    modal.addEventListener('click', e => {
+        if (e.target === modal) hideModal();
+    });
+
+    saveBtn.addEventListener('click', async e => {
         e.preventDefault();
-        createUser(currentUser);
+        await createUser(currentUser);
     });
 
     // 绑定用户类型选择事件
@@ -149,6 +169,15 @@ function renderUsersView(container, currentUser) {
             const currentUser = Auth.getCurrentUser();
             loadUsers(currentUser);
         }
+    });
+
+    // 绑定用户详情弹窗关闭事件
+    const detailModal = document.getElementById('user-detail-modal');
+    const detailCloseBtn = document.getElementById('user-detail-modal-close');
+    const closeDetailModal = () => { detailModal.style.display = 'none'; };
+    detailCloseBtn.addEventListener('click', closeDetailModal);
+    detailModal.addEventListener('click', e => {
+        if (e.target === detailModal) closeDetailModal();
     });
 
     // 加载用户数据
@@ -313,13 +342,8 @@ function showUserDetailModal(user) {
         4: '求职者'
     };
     
-    const statusMap = {
-        0: '<span class="tag tag-danger">停用</span>',
-        1: '<span class="tag tag-success">启用</span>',
-        2: '<span class="tag tag-warning">待完善</span>'
-    };
-    
-    const detailHtml = `
+    // 基础信息（所有用户类型都显示）
+    let detailHtml = `
         <div class="form-group">
             <label>用户ID:</label>
             <div class="readonly-field">${user.userId}</div>
@@ -341,38 +365,24 @@ function showUserDetailModal(user) {
             <div class="readonly-field">${userTypeMap[user.userType] || '未知'}</div>
         </div>
         <div class="form-group">
-            <label>公司ID:</label>
-            <div class="readonly-field">${user.companyId || ''}</div>
-        </div>
-        <div class="form-group">
-            <label>公司名称:</label>
-            <div class="readonly-field">${user.companyName || ''}</div>
-        </div>
-        <div class="form-group">
-            <label>状态:</label>
-            <div class="readonly-field">${statusMap[user.status] || '未知'}</div>
-        </div>
-        <div class="form-group">
             <label>注册时间:</label>
             <div class="readonly-field">${user.createTime ? user.createTime.substring(0, 19).replace('T', ' ') : ''}</div>
         </div>
-        <div class="form-group">
-            <label>更新时间:</label>
-            <div class="readonly-field">${user.updateTime ? user.updateTime.substring(0, 19).replace('T', ' ') : ''}</div>
-        </div>
-        ${user.userType === 4 ? `<div class="form-group">
-            <label>投递数量:</label>
-            <div class="readonly-field">${user.jobApplyCount || 0}</div>
-        </div>` : ''}
-        ${(user.userType === 2 || user.userType === 3) ? `<div class="form-group">
-            <label>招聘职位数量:</label>
-            <div class="readonly-field">${user.recruitmentCount || 0}</div>
-        </div>` : ''}
-        ${user.userType === 2 ? `<div class="form-group">
-            <label>企业管理数量:</label>
-            <div class="readonly-field">${user.companyManageCount || 0}</div>
-        </div>` : ''}
     `;
+    
+    // 根据用户类型显示特定信息
+    if (user.userType === 4) {
+        // 求职者
+
+    } else if (user.userType === 2 || user.userType === 3) {
+        // 企业用户（企业管理员或HR）
+        detailHtml += `
+            <div class="form-group">
+                <label>公司ID:</label>
+                <div class="readonly-field">${user.companyId || ''}</div>
+            </div>
+        `;
+    }
 
     document.getElementById('user-detail-content').innerHTML = detailHtml;
     document.getElementById('user-detail-modal').style.display = 'block';
@@ -502,14 +512,19 @@ function switchUserType(userType) {
 }
 
 /**
- * 显示创建用户模态框
+ * 显示创建用户弹窗
  */
 function showCreateUserModal() {
-    document.getElementById('create-user-modal').style.display = 'block';
+    const modal = document.getElementById('create-user-modal');
+    modal.style.display = 'block';
+    
+    // 重置表单
+    document.getElementById('create-user-form').reset();
+    document.getElementById('create-company-group').style.display = 'none';
 }
 
 /**
- * 关闭创建用户模态框
+ * 关闭创建用户弹窗
  */
 function closeCreateUserModal() {
     document.getElementById('create-user-modal').style.display = 'none';

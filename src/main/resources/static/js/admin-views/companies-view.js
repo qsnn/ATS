@@ -13,7 +13,6 @@ function renderCompaniesView(container, currentUser) {
                 <div class="search-box" style="max-width: 300px;">
                     <input type="text" id="company-search" placeholder="搜索公司名称..." oninput="searchCompanies()">
                 </div>
-                <button class="btn btn-primary" onclick="showCreateCompanyModal()">创建公司</button>
             </div>
 
             <div id="companies-status" style="margin-bottom: 8px; color: #666;">正在加载公司数据...</div>
@@ -45,38 +44,15 @@ function renderCompaniesView(container, currentUser) {
             </div>
         </div>
         
-        <!-- 创建公司模态框 -->
-        <div id="create-company-modal" class="modal" style="display:none;">
-            <div class="modal-content" style="width: 500px;">
-                <span class="close" onclick="closeCreateCompanyModal()">&times;</span>
-                <h2>创建公司</h2>
-                <form id="create-company-form">
-                    <div class="form-group">
-                        <label>公司名称 *</label>
-                        <input type="text" id="create-company-name" class="form-control" placeholder="请输入公司名称" required>
-                    </div>
-                    <div class="form-group">
-                        <label>公司描述</label>
-                        <textarea id="create-company-desc" class="form-control" placeholder="请输入公司描述"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>公司地址</label>
-                        <input type="text" id="create-company-address" class="form-control" placeholder="请输入公司地址">
-                    </div>
-                    <div class="form-group">
-                        <label>联系人</label>
-                        <input type="text" id="create-contact-person" class="form-control" placeholder="请输入联系人">
-                    </div>
-                    <div class="form-group">
-                        <label>联系电话</label>
-                        <input type="text" id="create-contact-phone" class="form-control" placeholder="请输入联系电话">
-                    </div>
-                    <div class="form-group">
-                        <label>联系邮箱</label>
-                        <input type="email" id="create-contact-email" class="form-control" placeholder="请输入联系邮箱">
-                    </div>
-                    <button type="submit" class="btn btn-primary">创建</button>
-                </form>
+        <!-- 公司详情弹窗 -->
+        <div id="company-detail-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:9999;">
+            <div style="background:#fff; width:600px; max-height:90vh; overflow:auto; margin:40px auto; padding:20px; border-radius:6px; position:relative;">
+                <h3>公司详情</h3>
+                <button id="company-detail-modal-close" style="position:absolute; right:16px; top:10px; border:none; background:none; font-size:18px; cursor:pointer;">×</button>
+                <div id="company-detail-content"></div>
+                <div style="margin-top:16px; text-align:right;">
+                    <button type="button" class="btn" onclick="closeCompanyDetailModal()">关闭</button>
+                </div>
             </div>
         </div>
     `;
@@ -88,12 +64,6 @@ function renderCompaniesView(container, currentUser) {
         total: 0,
         pages: 0
     };
-
-    // 绑定创建公司表单事件
-    document.getElementById('create-company-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        createCompany(currentUser);
-    });
 
     // 绑定分页按钮事件
     document.getElementById('companies-prev-page').addEventListener('click', () => {
@@ -110,6 +80,15 @@ function renderCompaniesView(container, currentUser) {
             const currentUser = Auth.getCurrentUser();
             loadCompanies(currentUser);
         }
+    });
+
+    // 绑定公司详情弹窗关闭事件
+    const detailModal = document.getElementById('company-detail-modal');
+    const detailCloseBtn = document.getElementById('company-detail-modal-close');
+    const closeDetailModal = () => { detailModal.style.display = 'none'; };
+    detailCloseBtn.addEventListener('click', closeDetailModal);
+    detailModal.addEventListener('click', e => {
+        if (e.target === detailModal) closeDetailModal();
     });
 
     // 加载公司数据
@@ -217,77 +196,6 @@ function searchCompanies() {
 }
 
 /**
- * 显示创建公司模态框
- */
-function showCreateCompanyModal() {
-    document.getElementById('create-company-modal').style.display = 'block';
-}
-
-/**
- * 关闭创建公司模态框
- */
-function closeCreateCompanyModal() {
-    document.getElementById('create-company-modal').style.display = 'none';
-}
-
-/**
- * 创建公司
- * @param {Object} adminUser - 管理员用户信息
- */
-async function createCompany(adminUser) {
-    const companyName = document.getElementById('create-company-name').value.trim();
-    const companyDesc = document.getElementById('create-company-desc').value.trim();
-    const companyAddress = document.getElementById('create-company-address').value.trim();
-    const contactPerson = document.getElementById('create-contact-person').value.trim();
-    const contactPhone = document.getElementById('create-contact-phone').value.trim();
-    const contactEmail = document.getElementById('create-contact-email').value.trim();
-
-    if (!companyName) {
-        alert('请填写公司名称');
-        return;
-    }
-
-    const companyData = {
-        companyName: companyName
-    };
-
-    if (companyDesc) companyData.companyDesc = companyDesc;
-    if (companyAddress) companyData.companyAddress = companyAddress;
-    if (contactPerson) companyData.contactPerson = contactPerson;
-    if (contactPhone) companyData.contactPhone = contactPhone;
-    if (contactEmail) companyData.contactEmail = contactEmail;
-
-    try {
-        const response = await Auth.authenticatedFetch('/api/company', {
-            method: 'POST',
-            body: JSON.stringify(companyData),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const result = await response.json();
-        if (result.code !== 200) {
-            throw new Error(result.message || '创建失败');
-        }
-
-        alert('公司创建成功');
-        closeCreateCompanyModal();
-        // 重置表单
-        document.getElementById('create-company-form').reset();
-        // 重新加载公司列表
-        loadCompanies(adminUser);
-    } catch (e) {
-        console.error('创建公司失败:', e);
-        alert(`创建失败：${e.message}`);
-    }
-}
-
-/**
  * 查看公司详情
  * @param {number} companyId - 公司ID
  */
@@ -320,68 +228,58 @@ async function viewCompany(companyId) {
 }
 
 /**
- * 显示公司详情模态框
+ * 显示公司详情弹窗
  * @param {Object} company - 公司信息
  */
 function showCompanyDetailModal(company) {
-    // 创建模态框HTML
-    const modalHtml = `
-        <div id="company-detail-modal" class="modal" style="display:block;">
-            <div class="modal-content" style="width: 600px;">
-                <span class="close" onclick="closeCompanyDetailModal()">&times;</span>
-                <h2>公司详情</h2>
-                <div class="form-group">
-                    <label>公司ID:</label>
-                    <div class="readonly-field">${company.companyId}</div>
-                </div>
-                <div class="form-group">
-                    <label>公司名称:</label>
-                    <div class="readonly-field">${company.companyName || ''}</div>
-                </div>
-                <div class="form-group">
-                    <label>公司描述:</label>
-                    <div class="readonly-field">${company.companyDesc || ''}</div>
-                </div>
-                <div class="form-group">
-                    <label>公司地址:</label>
-                    <div class="readonly-field">${company.companyAddress || ''}</div>
-                </div>
-                <div class="form-group">
-                    <label>联系人:</label>
-                    <div class="readonly-field">${company.contactPerson || ''}</div>
-                </div>
-                <div class="form-group">
-                    <label>联系电话:</label>
-                    <div class="readonly-field">${company.contactPhone || ''}</div>
-                </div>
-                <div class="form-group">
-                    <label>联系邮箱:</label>
-                    <div class="readonly-field">${company.contactEmail || ''}</div>
-                </div>
-                <div class="form-group">
-                    <label>创建时间:</label>
-                    <div class="readonly-field">${company.createTime ? company.createTime.substring(0, 19).replace('T', ' ') : ''}</div>
-                </div>
-                <div class="form-group">
-                    <label>更新时间:</label>
-                    <div class="readonly-field">${company.updateTime ? company.updateTime.substring(0, 19).replace('T', ' ') : ''}</div>
-                </div>
-            </div>
+    const detailHtml = `
+        <div class="form-group">
+            <label>公司ID:</label>
+            <div class="readonly-field">${company.companyId}</div>
+        </div>
+        <div class="form-group">
+            <label>公司名称:</label>
+            <div class="readonly-field">${company.companyName || ''}</div>
+        </div>
+        <div class="form-group">
+            <label>公司描述:</label>
+            <div class="readonly-field">${company.companyDesc || ''}</div>
+        </div>
+        <div class="form-group">
+            <label>公司地址:</label>
+            <div class="readonly-field">${company.companyAddress || ''}</div>
+        </div>
+        <div class="form-group">
+            <label>联系人:</label>
+            <div class="readonly-field">${company.contactPerson || ''}</div>
+        </div>
+        <div class="form-group">
+            <label>联系电话:</label>
+            <div class="readonly-field">${company.contactPhone || ''}</div>
+        </div>
+        <div class="form-group">
+            <label>联系邮箱:</label>
+            <div class="readonly-field">${company.contactEmail || ''}</div>
+        </div>
+        <div class="form-group">
+            <label>创建时间:</label>
+            <div class="readonly-field">${company.createTime ? company.createTime.substring(0, 19).replace('T', ' ') : ''}</div>
+        </div>
+        <div class="form-group">
+            <label>更新时间:</label>
+            <div class="readonly-field">${company.updateTime ? company.updateTime.substring(0, 19).replace('T', ' ') : ''}</div>
         </div>
     `;
 
-    // 添加到页面
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    document.getElementById('company-detail-content').innerHTML = detailHtml;
+    document.getElementById('company-detail-modal').style.display = 'block';
 }
 
 /**
- * 关闭公司详情模态框
+ * 关闭公司详情弹窗
  */
 function closeCompanyDetailModal() {
-    const modal = document.getElementById('company-detail-modal');
-    if (modal) {
-        modal.remove();
-    }
+    document.getElementById('company-detail-modal').style.display = 'none';
 }
 
 /**
