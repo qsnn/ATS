@@ -476,7 +476,10 @@ async function viewJob(jobId) {
             alert(`网络错误: ${resp.status} ${text}`);
             return;
         }
-        const job = await resp.json();
+        const result = await resp.json();
+        
+        // 处理统一的API响应格式 {code: 200, message: "", data: {...}}
+        const job = (result && typeof result === 'object' && 'data' in result) ? result.data : result;
         
         // 构造职位详情信息
         let location = '';
@@ -513,7 +516,10 @@ async function editJob(jobId) {
             alert(`网络错误: ${resp.status} ${text}`);
             return;
         }
-        const job = await resp.json();
+        const result = await resp.json();
+        
+        // 处理统一的API响应格式 {code: 200, message: "", data: {...}}
+        const job = (result && typeof result === 'object' && 'data' in result) ? result.data : result;
         
         const modal = document.getElementById('job-modal');
         modal.dataset.mode = 'update';
