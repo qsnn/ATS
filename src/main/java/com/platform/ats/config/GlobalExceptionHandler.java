@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 /**
  * 全局异常处理
  *
- * @author Administrator
+ * @author 杨文轩、王俊杰、蔡卓君、吴建明
  * @since 2025-12-13
  */
 @RestControllerAdvice

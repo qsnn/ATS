@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * 职位信息服务实现类
  *
- * @author Administrator
+ * @author 杨文轩、王俊杰、蔡卓君、吴建明
  * @since 2025-12-13
  */
 public class JobInfoServiceImpl extends ServiceImpl<JobInfoRepository, JobInfo> implements JobInfoService {

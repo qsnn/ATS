@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 /**
  * 人才库详情视图对象：包含候选人基本信息和联系方式
  *
- * @author Administrator
+ * @author 杨文轩、王俊杰、蔡卓君、吴建明
  * @since 2025-12-13
  */
 @Data

@@ -5,7 +5,7 @@ import lombok.Getter;
 /**
  * 统一错误码定义
  *
- * @author Administrator
+ * @author 杨文轩、王俊杰、蔡卓君、吴建明
  * @since 2025-12-13
  */
 @Getter

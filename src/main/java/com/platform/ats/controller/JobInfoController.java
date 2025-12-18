@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 /**
  * 职位信息前端控制器
  *
- * @author Administrator
+ * @author 杨文轩、王俊杰、蔡卓君、吴建明
  * @since 2025-12-13
  */
 @RestController

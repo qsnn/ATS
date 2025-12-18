@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 /**
  * 公司信息视图对象
  *
- * @author Administrator
+ * @author 杨文轩、王俊杰、蔡卓君、吴建明
  * @since 2025-12-13
  */
 @Data

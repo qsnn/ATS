@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 /**
  * 系统操作日志管理控制器
  *
- * @author Administrator
+ * @author 杨文轩、王俊杰、蔡卓君、吴建明
  * @since 2025-12-18
  */
 @RestController

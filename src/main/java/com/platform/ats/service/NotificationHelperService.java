@@ -15,7 +15,7 @@ import java.util.List;
  * 通知辅助服务类
  * 处理各种业务场景下的通知创建
  *
- * @author Administrator
+ * @author 杨文轩、王俊杰、蔡卓君、吴建明
  * @since 2025-12-16
  */
 @Slf4j

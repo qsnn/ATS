@@ -8,7 +8,7 @@ import java.io.Serial;
 /**
  * 职位详情（包含关联信息）数据传输对象
  *
- * @author Administrator
+ * @author 杨文轩、王俊杰、蔡卓君、吴建明
  * @since 2025-12-13
  */
 @Data

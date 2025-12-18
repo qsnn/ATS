@@ -5,7 +5,7 @@ import lombok.Data;
 /**
  * 统一返回结果封装类
  *
- * @author Administrator
+ * @author 杨文轩、王俊杰、蔡卓君、吴建明
  * @since 2025-12-13
  * @param <T> 数据类型参数
  */

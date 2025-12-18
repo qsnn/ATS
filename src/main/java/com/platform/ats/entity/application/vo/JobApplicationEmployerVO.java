@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 /**
  * Employer视角的申请记录视图对象，包含职位和申请人基础信息
  *
- * @author Administrator
+ * @author 杨文轩、王俊杰、蔡卓君、吴建明
  * @since 2025-12-13
  */
 @Data

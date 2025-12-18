@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * 系统通知 Mapper 接口
  *
- * @author Administrator
+ * @author 杨文轩、王俊杰、蔡卓君、吴建明
  * @since 2025-12-16
  */
 public interface SysNoticeRepository extends BaseMapper<SysNotice> {
