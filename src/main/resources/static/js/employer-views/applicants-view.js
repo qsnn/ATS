@@ -591,10 +591,17 @@ async function addToTalentPool(applicationId) {
 
     try {
         // 直接通过申请ID获取申请详情
-        const app = await ApiService.request(`/applications/company/application/${encodeURIComponent(applicationId)}`);
+        const appResult = await ApiService.request(`/applications/company/application/${encodeURIComponent(applicationId)}`);
+        
+        if (!appResult.success) {
+            alert(appResult.message || '未找到对应的申请记录，无法加入人才库');
+            return;
+        }
+        
+        const app = appResult.data;
 
-        if (!app) {
-            alert('未找到对应的申请记录，无法加入人才库');
+        if (!app || !app.resumeId) {
+            alert('申请记录缺少简历信息，无法加入人才库');
             return;
         }
 
