@@ -123,4 +123,9 @@ public interface UserService {
      * 批量创建HR账户
      */
     List<Long> createHrAccounts(HrCreateDTO hrCreateDTO, int count);
+    
+    /**
+     * 更改用户类型
+     */
+    Boolean changeUserType(Long userId, Integer newUserType);
 }

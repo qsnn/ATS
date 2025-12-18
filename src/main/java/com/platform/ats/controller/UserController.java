@@ -262,6 +262,18 @@ public class UserController {
         return Result.success(userIds, "HR账户批量创建成功");
     }
 
+    /**
+     * 更改用户类型
+     */
+    @PutMapping("/change-type/{userId}")
+    @Operation(summary = "更改用户类型")
+    @DataPermission(DataPermission.Type.ALL) // 只有管理员才能更改用户类型
+    @LogOperation(module = "用户管理", type = "修改", content = "更改用户类型")
+    public Result<Boolean> changeUserType(@PathVariable Long userId, @RequestParam Integer userType) {
+        Boolean success = userService.changeUserType(userId, userType);
+        return Result.success(success, "用户类型更改成功");
+    }
+
     @GetMapping("/hr/{companyId}")
     @Operation(summary = "获取企业下的所有HR账户")
     @DataPermission(DataPermission.Type.COMPANY) // HR只能查看本公司HR账户

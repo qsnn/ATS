@@ -9,7 +9,7 @@ function renderUsersView(container, currentUser) {
         <div class="card">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
                 <div class="search-box" style="max-width:300px;">
-                    <input type="text" id="user-search" placeholder="按ID、用户名、电话、邮箱搜索..." oninput="searchUser()">
+                    <input type="text" id="user-search" placeholder="搜索..." oninput="searchUser()">
                 </div>
                 <div>
                     <button class="btn btn-primary" onclick="showCreateUserModal()" style="margin-right: 10px;">创建账户</button>
@@ -276,7 +276,7 @@ async function loadUsers(adminUser) {
                     <td>${user.createTime ? user.createTime.substring(0, 19).replace('T', ' ') : ''}</td>
                     <td>
                         <button class="btn btn-sm" onclick="viewUserDetail(${user.userId})">查看</button>
-                        <button class="btn btn-sm" onclick="editUser(${user.userId})">编辑</button>
+                        ${(user.userType !== 1) ? `<button class="btn btn-sm" onclick="editUser(${user.userId},'${user.username}',${user.userType})">更改类型</button>` : ''}
                         ${user.status == 1 ? 
                           `<button class="btn btn-warning btn-sm" onclick="toggleUserStatus(${user.userId}, 0)">停用</button>` :
                           `<button class="btn btn-success btn-sm" onclick="toggleUserStatus(${user.userId}, 1)">启用</button>`}
@@ -396,11 +396,105 @@ function closeUserDetailModal() {
 }
 
 /**
- * 编辑用户
+ * 编辑用户（改为更改用户类型功能）
  * @param {number} userId - 用户ID
+ * @param {string} currentUsername - 当前用户名
+ * @param {number} currentUserType - 当前用户类型
  */
-function editUser(userId) {
-    alert('编辑用户 ' + userId + '（后续实现）');
+function editUser(userId, currentUsername, currentUserType) {
+    // 创建更改用户类型弹窗
+    const modalHtml = `
+        <div id="change-user-type-modal" style="display:block; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:9999;">
+            <div style="background:#fff; width:500px; max-height:90vh; overflow:auto; margin:40px auto; padding:20px; border-radius:6px; position:relative;">
+                <h3>更改用户类型</h3>
+                <button id="change-user-type-close" style="position:absolute; right:16px; top:10px; border:none; background:none; font-size:18px; cursor:pointer;">×</button>
+                
+                <div class="form-group">
+                    <label>用户ID:</label>
+                    <div class="readonly-field">${userId}</div>
+                </div>
+                
+                <div class="form-group">
+                    <label>用户名:</label>
+                    <div class="readonly-field">${currentUsername}</div>
+                </div>
+                
+                <div class="form-group">
+                    <label>用户类型 *</label>
+                    <select id="change-user-type-select" class="form-control" required>
+                        <option value="">请选择用户类型</option>
+                        <option value="4" ${currentUserType === 4 ? 'selected' : ''}>求职者</option>
+                        <option value="2" ${currentUserType === 2 ? 'selected' : ''}>企业管理员</option>
+                        <option value="3" ${currentUserType === 3 ? 'selected' : ''}>HR</option>
+                    </select>
+                </div>
+                
+                <div style="margin-top:16px; text-align:right;">
+                    <button type="button" class="btn" id="change-user-type-cancel">取消</button>
+                    <button type="button" class="btn btn-primary" id="change-user-type-save" style="margin-left:8px;">保存</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // 添加到页面
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // 绑定事件
+    const modal = document.getElementById('change-user-type-modal');
+    const closeBtn = document.getElementById('change-user-type-close');
+    const cancelBtn = document.getElementById('change-user-type-cancel');
+    const saveBtn = document.getElementById('change-user-type-save');
+    
+    const closeModal = () => {
+        modal.remove();
+    };
+    
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', e => {
+        if (e.target === modal) closeModal();
+    });
+    
+    // 保存更改
+    saveBtn.addEventListener('click', async () => {
+        const newUserType = document.getElementById('change-user-type-select').value;
+        
+        if (!newUserType) {
+            alert('请选择用户类型');
+            return;
+        }
+        
+        if (parseInt(newUserType) === currentUserType) {
+            alert('用户类型未发生变化');
+            return;
+        }
+        
+        try {
+            const response = await Auth.authenticatedFetch(`/api/user/change-type/${userId}?userType=${newUserType}`, {
+                method: 'PUT'
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            if (result.code !== 200) {
+                throw new Error(result.message || '更改用户类型失败');
+            }
+            
+            alert('用户类型更改成功');
+            closeModal();
+            
+            // 重新加载用户列表
+            const currentUser = Auth.getCurrentUser();
+            loadUsers(currentUser);
+        } catch (e) {
+            console.error('更改用户类型失败:', e);
+            alert(`更改用户类型失败：${e.message}`);
+        }
+    });
 }
 
 /**

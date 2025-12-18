@@ -425,4 +425,38 @@ public class UserServiceImpl extends ServiceImpl<UserRepository, SysUser> implem
             throw new BizException(ErrorCode.PASSWORD_FORMAT_INVALID, "密码必须同时包含字母和数字");
         }
     }
+    
+    /**
+     * 更改用户类型
+     *
+     * @param userId 用户ID
+     * @param newUserType 新的用户类型
+     * @return 是否更改成功
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean changeUserType(Long userId, Integer newUserType) {
+        // 获取当前用户
+        SysUser user = getUserById(userId);
+        if (user == null) {
+            throw new BizException(ErrorCode.USER_NOT_FOUND, "用户不存在");
+        }
+        
+        // 平台管理员类型不能被更改
+        if (user.getUserType() == UserType.PLATFORM_ADMIN.getCode()) {
+            throw new BizException(ErrorCode.METHOD_NOT_ALLOWED, "平台管理员类型不能被更改");
+        }
+        
+        // 验证新的用户类型是否有效
+        UserType userType = UserType.getByCode(newUserType);
+        if (userType == null) {
+            throw new BizException(ErrorCode.PARAM_INVALID, "无效的用户类型");
+        }
+        
+        // 更新用户类型
+        SysUser sysUser = new SysUser();
+        sysUser.setUserId(userId);
+        sysUser.setUserType(newUserType);
+        return this.baseMapper.updateById(sysUser) > 0;
+    }
 }
