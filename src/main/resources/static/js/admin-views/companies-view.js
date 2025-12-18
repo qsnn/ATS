@@ -5,26 +5,15 @@
  */
 function renderCompaniesView(container, currentUser) {
     container.innerHTML = `
-        <h2>公司管理</h2>
-        <div class="card">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
-                <div class="search-box" style="max-width:300px;">
+        <div class="view companies-view active">
+            <h2>公司管理</h2>
+            
+            <!-- 搜索框 -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <div class="search-box" style="max-width: 300px;">
                     <input type="text" id="company-search" placeholder="搜索公司名称..." oninput="searchCompanies()">
                 </div>
-                <div>
-                    <select id="company-status-filter" onchange="filterCompaniesByStatus()">
-                        <option value="">全部状态</option>
-                        <option value="1">启用</option>
-                        <option value="0">停用</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- 公司状态标签页 -->
-            <div class="company-status-tabs" style="margin-bottom: 15px;">
-                <button class="tab-btn active" data-status="" onclick="switchCompanyStatus('')">全部</button>
-                <button class="tab-btn" data-status="1" onclick="switchCompanyStatus('1')">启用</button>
-                <button class="tab-btn" data-status="0" onclick="switchCompanyStatus('0')">停用</button>
+                <button class="btn btn-primary" onclick="showCreateCompanyModal()">创建公司</button>
             </div>
 
             <div id="companies-status" style="margin-bottom: 8px; color: #666;">正在加载公司数据...</div>
@@ -38,7 +27,6 @@ function renderCompaniesView(container, currentUser) {
                     <th>联系电话</th>
                     <th>联系邮箱</th>
                     <th>创建时间</th>
-                    <th>状态</th>
                     <th>操作</th>
                 </tr>
                 </thead>
@@ -56,6 +44,41 @@ function renderCompaniesView(container, currentUser) {
                 </div>
             </div>
         </div>
+        
+        <!-- 创建公司模态框 -->
+        <div id="create-company-modal" class="modal" style="display:none;">
+            <div class="modal-content" style="width: 500px;">
+                <span class="close" onclick="closeCreateCompanyModal()">&times;</span>
+                <h2>创建公司</h2>
+                <form id="create-company-form">
+                    <div class="form-group">
+                        <label>公司名称 *</label>
+                        <input type="text" id="create-company-name" class="form-control" placeholder="请输入公司名称" required>
+                    </div>
+                    <div class="form-group">
+                        <label>公司描述</label>
+                        <textarea id="create-company-desc" class="form-control" placeholder="请输入公司描述"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>公司地址</label>
+                        <input type="text" id="create-company-address" class="form-control" placeholder="请输入公司地址">
+                    </div>
+                    <div class="form-group">
+                        <label>联系人</label>
+                        <input type="text" id="create-contact-person" class="form-control" placeholder="请输入联系人">
+                    </div>
+                    <div class="form-group">
+                        <label>联系电话</label>
+                        <input type="text" id="create-contact-phone" class="form-control" placeholder="请输入联系电话">
+                    </div>
+                    <div class="form-group">
+                        <label>联系邮箱</label>
+                        <input type="email" id="create-contact-email" class="form-control" placeholder="请输入联系邮箱">
+                    </div>
+                    <button type="submit" class="btn btn-primary">创建</button>
+                </form>
+            </div>
+        </div>
     `;
 
     // 初始化分页状态
@@ -65,6 +88,12 @@ function renderCompaniesView(container, currentUser) {
         total: 0,
         pages: 0
     };
+
+    // 绑定创建公司表单事件
+    document.getElementById('create-company-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        createCompany(currentUser);
+    });
 
     // 绑定分页按钮事件
     document.getElementById('companies-prev-page').addEventListener('click', () => {
@@ -106,7 +135,6 @@ async function loadCompanies(adminUser) {
 
     try {
         // 获取当前筛选条件
-        const status = document.getElementById('company-status-filter')?.value || '';
         const keyword = document.getElementById('company-search')?.value || '';
         
         // 构建查询参数
@@ -118,10 +146,6 @@ async function loadCompanies(adminUser) {
             params.append('companyName', keyword);
         }
         
-        if (status !== '') {
-            params.append('status', status);
-        }
-        
         const response = await Auth.authenticatedFetch(`/api/company/page?${params.toString()}`, {
             method: 'GET'
         });
@@ -131,7 +155,8 @@ async function loadCompanies(adminUser) {
         }
 
         const result = await response.json();
-        if (!result.success) {
+        // 修复：正确处理后端返回的结果
+        if (result.code !== 200) {
             throw new Error(result.message || '获取公司列表失败');
         }
 
@@ -152,9 +177,6 @@ async function loadCompanies(adminUser) {
         }
 
         tbody.innerHTML = companies.map(company => {
-            const statusHtml = company.status === 1 ? 
-                '<span class="tag tag-success">启用</span>' : 
-                '<span class="tag tag-danger">停用</span>';
                 
             return `
                 <tr>
@@ -164,12 +186,8 @@ async function loadCompanies(adminUser) {
                     <td>${company.contactPhone || ''}</td>
                     <td>${company.contactEmail || ''}</td>
                     <td>${company.createTime ? company.createTime.substring(0, 19).replace('T', ' ') : ''}</td>
-                    <td>${statusHtml}</td>
                     <td>
                         <button class="btn btn-sm" onclick="viewCompany(${company.companyId})">查看</button>
-                        ${company.status === 1 ? 
-                          `<button class="btn btn-warning btn-sm" onclick="toggleCompanyStatus(${company.companyId}, 0)">停用</button>` :
-                          `<button class="btn btn-success btn-sm" onclick="toggleCompanyStatus(${company.companyId}, 1)">启用</button>`}
                         <button class="btn btn-danger btn-sm" onclick="deleteCompany(${company.companyId})">删除</button>
                     </td>
                 </tr>
@@ -199,57 +217,53 @@ function searchCompanies() {
 }
 
 /**
- * 按状态筛选公司
+ * 显示创建公司模态框
  */
-function filterCompaniesByStatus() {
-    // 重置到第一页
-    window.companiesPagination.current = 1;
-    const currentUser = Auth.getCurrentUser();
-    loadCompanies(currentUser);
+function showCreateCompanyModal() {
+    document.getElementById('create-company-modal').style.display = 'block';
 }
 
 /**
- * 切换公司状态标签页
- * @param {string} status - 状态
+ * 关闭创建公司模态框
  */
-function switchCompanyStatus(status) {
-    // 更新激活状态
-    document.querySelectorAll('.company-status-tabs .tab-btn').forEach(btn => {
-        if (btn.getAttribute('data-status') === status) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
-    });
-    
-    // 重置到第一页
-    window.companiesPagination.current = 1;
-    // 重新加载数据
-    const currentUser = Auth.getCurrentUser();
-    loadCompanies(currentUser);
+function closeCreateCompanyModal() {
+    document.getElementById('create-company-modal').style.display = 'none';
 }
 
 /**
- * 查看公司详情
- * @param {number} companyId - 公司ID
+ * 创建公司
+ * @param {Object} adminUser - 管理员用户信息
  */
-function viewCompany(companyId) {
-    alert('查看公司 ' + companyId + ' 详情（后续实现）');
-}
+async function createCompany(adminUser) {
+    const companyName = document.getElementById('create-company-name').value.trim();
+    const companyDesc = document.getElementById('create-company-desc').value.trim();
+    const companyAddress = document.getElementById('create-company-address').value.trim();
+    const contactPerson = document.getElementById('create-contact-person').value.trim();
+    const contactPhone = document.getElementById('create-contact-phone').value.trim();
+    const contactEmail = document.getElementById('create-contact-email').value.trim();
 
-/**
- * 切换公司状态
- * @param {number} companyId - 公司ID
- * @param {number} status - 状态 (0=停用, 1=启用)
- */
-async function toggleCompanyStatus(companyId, status) {
-    if (!confirm(`确定要${status === 1 ? '启用' : '停用'}该公司吗？`)) {
+    if (!companyName) {
+        alert('请填写公司名称');
         return;
     }
 
+    const companyData = {
+        companyName: companyName
+    };
+
+    if (companyDesc) companyData.companyDesc = companyDesc;
+    if (companyAddress) companyData.companyAddress = companyAddress;
+    if (contactPerson) companyData.contactPerson = contactPerson;
+    if (contactPhone) companyData.contactPhone = contactPhone;
+    if (contactEmail) companyData.contactEmail = contactEmail;
+
     try {
-        const response = await Auth.authenticatedFetch(`/api/company/${companyId}/status?status=${status}`, {
-            method: 'PUT'
+        const response = await Auth.authenticatedFetch('/api/company', {
+            method: 'POST',
+            body: JSON.stringify(companyData),
+            headers: {
+                'Content-Type': 'application/json'
+            }
         });
 
         if (!response.ok) {
@@ -257,17 +271,116 @@ async function toggleCompanyStatus(companyId, status) {
         }
 
         const result = await response.json();
-        if (!result.success) {
-            throw new Error(result.message || '操作失败');
+        if (result.code !== 200) {
+            throw new Error(result.message || '创建失败');
         }
 
-        alert(`公司${status === 1 ? '启用' : '停用'}成功`);
+        alert('公司创建成功');
+        closeCreateCompanyModal();
+        // 重置表单
+        document.getElementById('create-company-form').reset();
         // 重新加载公司列表
-        const currentUser = Auth.getCurrentUser();
-        loadCompanies(currentUser);
+        loadCompanies(adminUser);
     } catch (e) {
-        console.error('操作失败:', e);
-        alert(`操作失败：${e.message}`);
+        console.error('创建公司失败:', e);
+        alert(`创建失败：${e.message}`);
+    }
+}
+
+/**
+ * 查看公司详情
+ * @param {number} companyId - 公司ID
+ */
+async function viewCompany(companyId) {
+    try {
+        const response = await Auth.authenticatedFetch(`/api/company/${companyId}`, {
+            method: 'GET'
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        if (result.code !== 200) {
+            throw new Error(result.message || '获取公司详情失败');
+        }
+
+        const company = result.data;
+        if (!company) {
+            throw new Error('未找到公司信息');
+        }
+
+        // 显示公司详情弹窗
+        showCompanyDetailModal(company);
+    } catch (e) {
+        console.error('获取公司详情失败:', e);
+        alert(`获取公司详情失败：${e.message}`);
+    }
+}
+
+/**
+ * 显示公司详情模态框
+ * @param {Object} company - 公司信息
+ */
+function showCompanyDetailModal(company) {
+    // 创建模态框HTML
+    const modalHtml = `
+        <div id="company-detail-modal" class="modal" style="display:block;">
+            <div class="modal-content" style="width: 600px;">
+                <span class="close" onclick="closeCompanyDetailModal()">&times;</span>
+                <h2>公司详情</h2>
+                <div class="form-group">
+                    <label>公司ID:</label>
+                    <div class="readonly-field">${company.companyId}</div>
+                </div>
+                <div class="form-group">
+                    <label>公司名称:</label>
+                    <div class="readonly-field">${company.companyName || ''}</div>
+                </div>
+                <div class="form-group">
+                    <label>公司描述:</label>
+                    <div class="readonly-field">${company.companyDesc || ''}</div>
+                </div>
+                <div class="form-group">
+                    <label>公司地址:</label>
+                    <div class="readonly-field">${company.companyAddress || ''}</div>
+                </div>
+                <div class="form-group">
+                    <label>联系人:</label>
+                    <div class="readonly-field">${company.contactPerson || ''}</div>
+                </div>
+                <div class="form-group">
+                    <label>联系电话:</label>
+                    <div class="readonly-field">${company.contactPhone || ''}</div>
+                </div>
+                <div class="form-group">
+                    <label>联系邮箱:</label>
+                    <div class="readonly-field">${company.contactEmail || ''}</div>
+                </div>
+                <div class="form-group">
+                    <label>创建时间:</label>
+                    <div class="readonly-field">${company.createTime ? company.createTime.substring(0, 19).replace('T', ' ') : ''}</div>
+                </div>
+                <div class="form-group">
+                    <label>更新时间:</label>
+                    <div class="readonly-field">${company.updateTime ? company.updateTime.substring(0, 19).replace('T', ' ') : ''}</div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // 添加到页面
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+/**
+ * 关闭公司详情模态框
+ */
+function closeCompanyDetailModal() {
+    const modal = document.getElementById('company-detail-modal');
+    if (modal) {
+        modal.remove();
     }
 }
 

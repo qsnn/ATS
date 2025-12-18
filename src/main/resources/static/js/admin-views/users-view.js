@@ -99,6 +99,15 @@ function renderUsersView(container, currentUser) {
                 </form>
             </div>
         </div>
+        
+        <!-- 用户详情模态框 -->
+        <div id="user-detail-modal" class="modal" style="display:none;">
+            <div class="modal-content" style="width: 600px;">
+                <span class="close" onclick="closeUserDetailModal()">&times;</span>
+                <h2>用户详情</h2>
+                <div id="user-detail-content"></div>
+            </div>
+        </div>
     `;
 
     // 初始化分页状态
@@ -171,8 +180,8 @@ async function loadUsers(adminUser) {
         
         // 构建查询参数
         const params = new URLSearchParams();
-        params.append('current', window.usersPagination.current);
-        params.append('size', window.usersPagination.size);
+        params.append('pageNum', window.usersPagination.current);
+        params.append('pageSize', window.usersPagination.size);
         if (userType) params.append('userType', userType);
         if (status !== '') params.append('status', status);
         if (keyword) {
@@ -191,7 +200,8 @@ async function loadUsers(adminUser) {
         }
 
         const result = await response.json();
-        if (!result.success) {
+        // 修复：正确处理后端返回的结果
+        if (result.code !== 200) {
             throw new Error(result.message || '获取用户列表失败');
         }
 
@@ -263,8 +273,116 @@ async function loadUsers(adminUser) {
  * 查看用户详情
  * @param {number} userId - 用户ID
  */
-function viewUserDetail(userId) {
-    alert('查看用户 ' + userId + ' 详情（后续实现）');
+async function viewUserDetail(userId) {
+    try {
+        const response = await Auth.authenticatedFetch(`/api/user/${userId}`, {
+            method: 'GET'
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        if (result.code !== 200) {
+            throw new Error(result.message || '获取用户详情失败');
+        }
+
+        const user = result.data;
+        if (!user) {
+            throw new Error('未找到用户信息');
+        }
+
+        // 显示用户详情
+        showUserDetailModal(user);
+    } catch (e) {
+        console.error('获取用户详情失败:', e);
+        alert(`获取用户详情失败：${e.message}`);
+    }
+}
+
+/**
+ * 显示用户详情模态框
+ * @param {Object} user - 用户信息
+ */
+function showUserDetailModal(user) {
+    const userTypeMap = {
+        1: '平台管理员',
+        2: '企业管理员',
+        3: 'HR',
+        4: '求职者'
+    };
+    
+    const statusMap = {
+        0: '<span class="tag tag-danger">停用</span>',
+        1: '<span class="tag tag-success">启用</span>',
+        2: '<span class="tag tag-warning">待完善</span>'
+    };
+    
+    const detailHtml = `
+        <div class="form-group">
+            <label>用户ID:</label>
+            <div class="readonly-field">${user.userId}</div>
+        </div>
+        <div class="form-group">
+            <label>用户名:</label>
+            <div class="readonly-field">${user.username}</div>
+        </div>
+        <div class="form-group">
+            <label>电话:</label>
+            <div class="readonly-field">${user.phone || ''}</div>
+        </div>
+        <div class="form-group">
+            <label>邮箱:</label>
+            <div class="readonly-field">${user.email || ''}</div>
+        </div>
+        <div class="form-group">
+            <label>用户类型:</label>
+            <div class="readonly-field">${userTypeMap[user.userType] || '未知'}</div>
+        </div>
+        <div class="form-group">
+            <label>公司ID:</label>
+            <div class="readonly-field">${user.companyId || ''}</div>
+        </div>
+        <div class="form-group">
+            <label>公司名称:</label>
+            <div class="readonly-field">${user.companyName || ''}</div>
+        </div>
+        <div class="form-group">
+            <label>状态:</label>
+            <div class="readonly-field">${statusMap[user.status] || '未知'}</div>
+        </div>
+        <div class="form-group">
+            <label>注册时间:</label>
+            <div class="readonly-field">${user.createTime ? user.createTime.substring(0, 19).replace('T', ' ') : ''}</div>
+        </div>
+        <div class="form-group">
+            <label>更新时间:</label>
+            <div class="readonly-field">${user.updateTime ? user.updateTime.substring(0, 19).replace('T', ' ') : ''}</div>
+        </div>
+        ${user.userType === 4 ? `<div class="form-group">
+            <label>投递数量:</label>
+            <div class="readonly-field">${user.jobApplyCount || 0}</div>
+        </div>` : ''}
+        ${(user.userType === 2 || user.userType === 3) ? `<div class="form-group">
+            <label>招聘职位数量:</label>
+            <div class="readonly-field">${user.recruitmentCount || 0}</div>
+        </div>` : ''}
+        ${user.userType === 2 ? `<div class="form-group">
+            <label>企业管理数量:</label>
+            <div class="readonly-field">${user.companyManageCount || 0}</div>
+        </div>` : ''}
+    `;
+
+    document.getElementById('user-detail-content').innerHTML = detailHtml;
+    document.getElementById('user-detail-modal').style.display = 'block';
+}
+
+/**
+ * 关闭用户详情模态框
+ */
+function closeUserDetailModal() {
+    document.getElementById('user-detail-modal').style.display = 'none';
 }
 
 /**
@@ -295,7 +413,7 @@ async function toggleUserStatus(userId, status) {
         }
 
         const result = await response.json();
-        if (!result.success) {
+        if (result.code !== 200) {
             throw new Error(result.message || '操作失败');
         }
 
@@ -328,7 +446,7 @@ async function deleteUser(userId) {
         }
 
         const result = await response.json();
-        if (!result.success) {
+        if (result.code !== 200) {
             throw new Error(result.message || '删除失败');
         }
 
@@ -440,7 +558,7 @@ async function createUser(adminUser) {
         }
 
         const result = await response.json();
-        if (!result.success) {
+        if (result.code !== 200) {
             throw new Error(result.message || '创建失败');
         }
 

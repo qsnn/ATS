@@ -210,7 +210,7 @@ async function loadCompanies(adminUser) {
         }
 
         const result = await response.json();
-        if (!result.success) {
+        if (result.code !== 200) {
             throw new Error(result.message || '获取公司列表失败');
         }
 

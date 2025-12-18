@@ -115,7 +115,7 @@ async function changeAdminPassword(adminUser) {
         }
 
         const result = await response.json();
-        if (!result.success) {
+        if (result.code !== 200) {
             throw new Error(result.message || '修改密码失败');
         }
 

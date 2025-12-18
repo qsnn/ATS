@@ -28,11 +28,5 @@ public interface CompanyInfoService {
      */
     IPage<CompanyInfoVO> getCompanyPage(Page<CompanyInfoVO> page, CompanyQueryDTO query);
     
-    /**
-     * 更新公司状态
-     * @param companyId 公司ID
-     * @param status 状态 0-禁用 1-启用
-     * @return 是否更新成功
-     */
-    boolean updateStatus(Long companyId, Integer status);
+    // 删除了updateStatus方法相关代码
 }

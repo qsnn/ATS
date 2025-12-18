@@ -42,7 +42,7 @@ public class CompanyInfoServiceImpl extends ServiceImpl<CompanyInfoRepository, C
     public CompanyInfoVO create(CompanyInfo companyInfo) {
         companyInfo.setCompanyId(null);
         companyInfo.setDeleteFlag(null);
-        companyInfo.setStatus(1); // 默认启用状态
+        // 删除了setStatus相关代码
         companyInfoRepository.insert(companyInfo);
         return toVO(companyInfo);
     }
@@ -119,16 +119,14 @@ public class CompanyInfoServiceImpl extends ServiceImpl<CompanyInfoRepository, C
             queryWrapper.like(CompanyInfo::getCompanyName, query.getCompanyName());
         }
         
-        // 状态筛选
-        if (query.getStatus() != null) {
-            queryWrapper.eq(CompanyInfo::getStatus, query.getStatus());
-        }
+        // 删除了status筛选相关代码
         
         // 按创建时间倒序排列
         queryWrapper.orderByDesc(CompanyInfo::getCreateTime);
         
-        // 执行分页查询
-        IPage<CompanyInfo> companyPage = companyInfoRepository.selectPage(page, queryWrapper);
+        // 执行分页查询，使用与queryWrapper相同的泛型类型
+        Page<CompanyInfo> entityPage = new Page<>(page.getCurrent(), page.getSize(), page.getTotal());
+        IPage<CompanyInfo> companyPage = companyInfoRepository.selectPage(entityPage, queryWrapper);
         
         // 转换为VO对象
         Page<CompanyInfoVO> voPage = new Page<>(companyPage.getCurrent(), companyPage.getSize(), companyPage.getTotal());
@@ -138,20 +136,7 @@ public class CompanyInfoServiceImpl extends ServiceImpl<CompanyInfoRepository, C
         return voPage;
     }
     
-    /**
-     * 更新公司状态
-     * 
-     * @param companyId 公司ID
-     * @param status 状态 0-禁用 1-启用
-     * @return 是否更新成功
-     */
-    @Override
-    public boolean updateStatus(Long companyId, Integer status) {
-        CompanyInfo companyInfo = new CompanyInfo();
-        companyInfo.setCompanyId(companyId);
-        companyInfo.setStatus(status);
-        return companyInfoRepository.updateById(companyInfo) > 0;
-    }
+    // 删除了updateStatus方法相关代码
 
     private CompanyInfoVO toVO(CompanyInfo entity) {
         CompanyInfoVO vo = new CompanyInfoVO();

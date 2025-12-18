@@ -92,9 +92,5 @@ public class CompanyInfo implements Serializable {
     @TableLogic
     private Integer deleteFlag;
     
-    /**
-     * 公司状态：0-禁用 1-启用
-     */
-    @TableField("status")
-    private Integer status = 1; // 默认为启用状态
+    // 删除了status字段相关代码
 }

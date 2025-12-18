@@ -70,23 +70,17 @@ public class CompanyInfoController {
     public Result<IPage<CompanyInfoVO>> getCompanyPage(
             @RequestParam(defaultValue = "1") Long current,
             @RequestParam(defaultValue = "10") Long size,
-            @RequestParam(required = false) String companyName,
-            @RequestParam(required = false) Integer status) {
+            @RequestParam(required = false) String companyName
+            ) {
         
         Page<CompanyInfoVO> page = new Page<>(current, size);
         CompanyQueryDTO query = new CompanyQueryDTO();
         query.setCompanyName(companyName);
-        query.setStatus(status);
+        // 删除了setStatus相关代码
         
         IPage<CompanyInfoVO> result = companyInfoService.getCompanyPage(page, query);
         return Result.success(result);
     }
     
-    @PutMapping("/{companyId}/status")
-    @Operation(summary = "更新公司状态")
-    @LogOperation(module = "公司信息管理", type = "修改", content = "更新公司状态")
-    public Result<Boolean> updateStatus(@PathVariable Long companyId, @RequestParam Integer status) {
-        Boolean success = companyInfoService.updateStatus(companyId, status);
-        return Result.success(success, "状态更新成功");
-    }
+    // 删除了updateStatus接口相关代码
 }

@@ -34,6 +34,7 @@ function renderLogsView(container, currentUser) {
                     <th>IP地址</th>
                     <th>操作时间</th>
                     <th>结果</th>
+                    <th>操作</th>
                 </tr>
                 </thead>
                 <tbody id="log-table-body">
@@ -48,6 +49,15 @@ function renderLogsView(container, currentUser) {
                     <button id="logs-prev-page" class="btn btn-sm" disabled>上一页</button>
                     <button id="logs-next-page" class="btn btn-sm">下一页</button>
                 </div>
+            </div>
+        </div>
+        
+        <!-- 日志详情模态框 -->
+        <div id="log-detail-modal" class="modal" style="display:none;">
+            <div class="modal-content" style="width: 700px;">
+                <span class="close" onclick="closeLogDetailModal()">&times;</span>
+                <h2>日志详情</h2>
+                <div id="log-detail-content"></div>
             </div>
         </div>
     `;
@@ -136,7 +146,7 @@ async function loadLogs(adminUser) {
         }
 
         const result = await response.json();
-        if (!result.success) {
+        if (result.code !== 200) {
             throw new Error(result.message || '获取日志列表失败');
         }
 
@@ -172,6 +182,7 @@ async function loadLogs(adminUser) {
                     <td>${log.ipAddress || ''}</td>
                     <td>${log.operationTime ? log.operationTime.substring(0, 19).replace('T', ' ') : ''}</td>
                     <td>${resultHtml}</td>
+                    <td><button class="btn btn-sm" onclick="viewLogDetail(${log.logId})">查看</button></td>
                 </tr>
             `;
         }).join('');
@@ -217,4 +228,120 @@ function switchLogType(type) {
     // 重新加载数据
     const currentUser = Auth.getCurrentUser();
     loadLogs(currentUser);
+}
+
+/**
+ * 查看日志详情
+ * @param {number} logId - 日志ID
+ */
+async function viewLogDetail(logId) {
+    try {
+        const response = await Auth.authenticatedFetch(`/api/logs/${logId}`, {
+            method: 'GET'
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        if (result.code !== 200) {
+            throw new Error(result.message || '获取日志详情失败');
+        }
+
+        const log = result.data;
+        if (!log) {
+            throw new Error('未找到日志信息');
+        }
+
+        // 显示日志详情
+        showLogDetailModal(log);
+    } catch (e) {
+        console.error('获取日志详情失败:', e);
+        alert(`获取日志详情失败：${e.message}`);
+    }
+}
+
+/**
+ * 显示日志详情模态框
+ * @param {Object} log - 日志信息
+ */
+function showLogDetailModal(log) {
+    const resultHtml = log.operationResult === 1 ? 
+        '<span class="tag tag-success">成功</span>' : 
+        '<span class="tag tag-danger">失败</span>';
+        
+    const detailHtml = `
+        <div class="form-group">
+            <label>日志ID:</label>
+            <div class="readonly-field">${log.logId}</div>
+        </div>
+        <div class="form-group">
+            <label>用户ID:</label>
+            <div class="readonly-field">${log.userId || ''}</div>
+        </div>
+        <div class="form-group">
+            <label>操作人:</label>
+            <div class="readonly-field">${log.username || ''}</div>
+        </div>
+        <div class="form-group">
+            <label>操作模块:</label>
+            <div class="readonly-field">${log.operationModule || ''}</div>
+        </div>
+        <div class="form-group">
+            <label>操作类型:</label>
+            <div class="readonly-field">${log.operationType || ''}</div>
+        </div>
+        <div class="form-group">
+            <label>操作内容:</label>
+            <div class="readonly-field">${log.operationContent || ''}</div>
+        </div>
+        <div class="form-group">
+            <label>请求URI:</label>
+            <div class="readonly-field">${log.requestUri || ''}</div>
+        </div>
+        <div class="form-group">
+            <label>请求方法:</label>
+            <div class="readonly-field">${log.requestMethod || ''}</div>
+        </div>
+        <div class="form-group">
+            <label>请求参数:</label>
+            <div class="readonly-field" style="word-break: break-all; white-space: pre-wrap;">${log.requestParams || ''}</div>
+        </div>
+        <div class="form-group">
+            <label>IP地址:</label>
+            <div class="readonly-field">${log.ipAddress || ''}</div>
+        </div>
+        <div class="form-group">
+            <label>用户代理:</label>
+            <div class="readonly-field" style="word-break: break-all;">${log.userAgent || ''}</div>
+        </div>
+        <div class="form-group">
+            <label>操作时间:</label>
+            <div class="readonly-field">${log.operationTime ? log.operationTime.substring(0, 19).replace('T', ' ') : ''}</div>
+        </div>
+        <div class="form-group">
+            <label>操作结果:</label>
+            <div class="readonly-field">${resultHtml}</div>
+        </div>
+        <div class="form-group">
+            <label>耗时(毫秒):</label>
+            <div class="readonly-field">${log.costTime || ''}</div>
+        </div>
+        ${log.errorMsg ? `
+        <div class="form-group">
+            <label>错误信息:</label>
+            <div class="readonly-field" style="color: #e53e3e;">${log.errorMsg || ''}</div>
+        </div>` : ''}
+    `;
+
+    document.getElementById('log-detail-content').innerHTML = detailHtml;
+    document.getElementById('log-detail-modal').style.display = 'block';
+}
+
+/**
+ * 关闭日志详情模态框
+ */
+function closeLogDetailModal() {
+    document.getElementById('log-detail-modal').style.display = 'none';
 }

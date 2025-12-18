@@ -12,8 +12,5 @@ public class CompanyQueryDTO {
      */
     private String companyName;
     
-    /**
-     * 公司状态
-     */
-    private Integer status;
+    // 删除了status字段相关代码
 }
