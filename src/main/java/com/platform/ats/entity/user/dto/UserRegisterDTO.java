@@ -22,4 +22,9 @@ public class UserRegisterDTO {
 
     @Pattern(regexp = "^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$", message = "邮箱格式不正确")
     private String email;
+    
+    /**
+     * 用户类型
+     */
+    private Integer userType;
 }

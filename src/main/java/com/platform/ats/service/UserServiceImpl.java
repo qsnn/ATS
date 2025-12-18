@@ -73,8 +73,20 @@ public class UserServiceImpl extends ServiceImpl<UserRepository, SysUser> implem
         BeanUtils.copyProperties(userRegisterDTO, sysUser);
         sysUser.setPassword(passwordEncoder.encode(userRegisterDTO.getPassword()));
 
-        // 后端设置固定值：用户类型为求职者(4)，状态为正常(1)
-        sysUser.setUserType(UserType.JOB_SEEKER.getCode()); // 假设 UserType.JOB_SEEKER.getCode() 返回 4
+        // 设置用户类型，默认为求职者(4)
+        if (userRegisterDTO.getUserType() != null) {
+            // 验证用户类型是否合法（只允许求职者和企业管理员）
+            if (userRegisterDTO.getUserType() != UserType.JOB_SEEKER.getCode() && 
+                userRegisterDTO.getUserType() != UserType.COMPANY_ADMIN.getCode()) {
+                throw new BizException(ErrorCode.PARAM_INVALID, "无效的用户类型");
+            }
+            sysUser.setUserType(userRegisterDTO.getUserType());
+        } else {
+            // 默认为求职者
+            sysUser.setUserType(UserType.JOB_SEEKER.getCode());
+        }
+
+        // 设置用户状态为正常(1)
         sysUser.setStatus(UserStatus.NORMAL.getCode());
 
         this.baseMapper.insert(sysUser);
