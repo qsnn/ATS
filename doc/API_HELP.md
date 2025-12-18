@@ -12,6 +12,7 @@
 - [面试信息管理](#面试信息管理)
 - [职位收藏管理](#职位收藏管理)
 - [人才库管理](#人才库管理)
+- [系统通知](#系统通知)
 
 ## 用户管理
 
@@ -213,6 +214,167 @@ PUT /api/user/{userId}/password
 }
 ```
 
+### 重置密码
+```
+PUT /api/user/{userId}/reset-password?newPassword=newpassword
+```
+
+**响应示例**
+```json
+{
+  "code": 200,
+  "message": "密码重置成功",
+  "data": true
+}
+```
+
+### 更新用户状态
+```
+PUT /api/user/{userId}/status?status=1
+```
+
+**响应示例**
+```json
+{
+  "code": 200,
+  "message": "状态更新成功",
+  "data": true
+}
+```
+
+### 删除用户
+```
+DELETE /api/user/{userId}
+```
+
+**响应示例**
+```json
+{
+  "code": 200,
+  "message": "删除成功",
+  "data": true
+}
+```
+
+### 检查用户名是否存在
+```
+GET /api/user/check/username?username=testuser
+```
+
+**响应示例**
+```json
+{
+  "code": 200,
+  "data": true
+}
+```
+
+### 检查手机号是否存在
+```
+GET /api/user/check/phone?phone=13800138000
+```
+
+**响应示例**
+```json
+{
+  "code": 200,
+  "data": true
+}
+```
+
+### 检查邮箱是否存在
+```
+GET /api/user/check/email?email=test@example.com
+```
+
+**响应示例**
+```json
+{
+  "code": 200,
+  "data": true
+}
+```
+
+### 创建HR账户
+```
+POST /api/user/hr
+```
+
+**请求参数**
+```json
+{
+  "username": "hruser",
+  "password": "password123",
+  "email": "hr@example.com",
+  "phone": "13600136000",
+  "companyId": 2001
+}
+```
+
+**响应示例**
+```json
+{
+  "code": 200,
+  "message": "HR账户创建成功",
+  "data": 10003
+}
+```
+
+### 批量创建HR账户
+```
+POST /api/user/hr/batch
+```
+
+**请求参数**
+```json
+{
+  "usernamePrefix": "hr",
+  "password": "password123",
+  "companyId": 2001,
+  "count": 5
+}
+```
+
+**响应示例**
+```json
+{
+  "code": 200,
+  "message": "HR账户批量创建成功",
+  "data": [10003, 10004, 10005, 10006, 10007]
+}
+```
+
+### 获取企业下的所有HR账户
+```
+GET /api/user/hr/{companyId}?pageNum=1&pageSize=10
+```
+
+**响应示例**
+```json
+{
+  "code": 200,
+  "data": {
+    "records": [
+      {
+        "userId": 10003,
+        "username": "hruser",
+        "email": "hr@example.com",
+        "phone": "13600136000",
+        "userType": 3,
+        "userTypeDesc": "HR",
+        "status": 1,
+        "statusDesc": "正常",
+        "createTime": "2023-01-16T10:30:00",
+        "updateTime": "2023-01-16T10:30:00"
+      }
+    ],
+    "total": 1,
+    "size": 10,
+    "current": 1
+  }
+}
+```
+
 ## 职位管理
 
 ### 获取职位列表
@@ -221,7 +383,10 @@ GET /api/job/info/list?current=1&size=10
 ```
 
 **可选查询参数**
+- jobId: 职位ID
 - jobName: 职位名称（模糊查询）
+- companyId: 公司ID
+- companyName: 公司名称（模糊查询）
 - city: 工作城市
 - salaryMin: 最低薪资
 - salaryMax: 最高薪资
@@ -263,6 +428,19 @@ GET /api/job/info/list?current=1&size=10
 }
 ```
 
+### 获取所有工作地点
+```
+GET /api/job/info/cities
+```
+
+**响应示例**
+```json
+{
+  "code": 200,
+  "data": ["北京", "上海", "深圳", "广州"]
+}
+```
+
 ### 获取职位详情
 ```
 GET /api/job/info/{id}
@@ -295,6 +473,33 @@ GET /api/job/info/{id}
 }
 ```
 
+### 获取职位信息（用于编辑）
+```
+GET /api/job/info/detail/{id}
+```
+
+**响应示例**
+```json
+{
+  "jobId": 1001,
+  "companyId": 2001,
+  "jobName": "Java开发工程师",
+  "department": "技术部",
+  "province": "北京市",
+  "city": "北京",
+  "district": "海淀区",
+  "salaryMin": 15000,
+  "salaryMax": 25000,
+  "education": 2,
+  "workExperience": 3,
+  "jobDesc": "负责Java后端开发工作",
+  "publisherId": 10005,
+  "publishStatus": 1,
+  "createTime": "2023-01-15T09:30:00",
+  "updateTime": "2023-01-15T09:30:00"
+}
+```
+
 ### 创建职位
 ```
 POST /api/job/info
@@ -319,7 +524,8 @@ POST /api/job/info
 ```json
 {
   "code": 200,
-  "data": true
+  "data": true,
+  "message": "职位创建成功"
 }
 ```
 
@@ -346,7 +552,8 @@ PUT /api/job/info
 ```json
 {
   "code": 200,
-  "data": true
+  "data": true,
+  "message": "职位更新成功"
 }
 ```
 
@@ -359,7 +566,8 @@ DELETE /api/job/info/{id}
 ```json
 {
   "code": 200,
-  "data": true
+  "data": true,
+  "message": "职位删除成功"
 }
 ```
 
@@ -372,7 +580,8 @@ PUT /api/job/info/publish/{id}
 ```json
 {
   "code": 200,
-  "data": true
+  "data": true,
+  "message": "职位发布成功"
 }
 ```
 
@@ -385,7 +594,8 @@ PUT /api/job/info/unpublish/{id}
 ```json
 {
   "code": 200,
-  "data": true
+  "data": true,
+  "message": "职位下架成功"
 }
 ```
 
@@ -528,7 +738,39 @@ GET /api/resume/{resumeId}
 }
 ```
 
-### 获取用户的所有简历
+### 获取简历列表
+```
+GET /api/resume/list
+```
+
+**响应示例**
+```json
+{
+  "code": 200,
+  "data": [
+    {
+      "resumeId": 3001,
+      "userId": 10001,
+      "resumeName": "张三的简历",
+      "name": "张三",
+      "gender": 1,
+      "genderDesc": "男",
+      "age": 29,
+      "education": 3,
+      "workExperience": 5,
+      "skill": "Java, Spring, MySQL, Redis",
+      "jobIntention": "高级Java开发工程师",
+      "phone": "13800138000",
+      "email": "zhangsan@example.com",
+      "createTime": "2023-01-15T09:30:00",
+      "updateTime": "2023-01-16T10:30:00",
+      "deleteFlag": 0
+    }
+  ]
+}
+```
+
+### 根据用户ID获取简历列表
 ```
 GET /api/resume/user/{userId}
 ```
@@ -658,6 +900,59 @@ GET /api/applications/company/{companyId}?current=1&size=10
 }
 ```
 
+### 查询某职位下的申请记录（企业端）
+```
+GET /api/applications/job/{jobId}
+```
+
+**响应示例**
+```json
+{
+  "code": 200,
+  "data": [
+    {
+      "applicationId": 4001,
+      "jobId": 1001,
+      "jobTitle": "Java开发工程师",
+      "userId": 10001,
+      "userName": "张三",
+      "phone": "13800138000",
+      "email": "zhangsan@example.com",
+      "resumeId": 3001,
+      "resumeTitle": "张三的简历",
+      "status": 1,
+      "statusDesc": "已申请",
+      "applyTime": "2023-01-16T10:30:00",
+      "resumeSnapshot": "{\"resumeId\":3001,\"userId\":10001,\"name\":\"张三\",\"education\":\"硕士\",...}"
+    }
+  ]
+}
+```
+
+### 通过申请ID获取申请详情（企业端）
+```
+GET /api/applications/company/application/{applicationId}
+```
+
+**响应示例**
+```json
+{
+  "applicationId": 4001,
+  "jobId": 1001,
+  "jobTitle": "Java开发工程师",
+  "userId": 10001,
+  "userName": "张三",
+  "phone": "13800138000",
+  "email": "zhangsan@example.com",
+  "resumeId": 3001,
+  "resumeTitle": "张三的简历",
+  "status": 1,
+  "statusDesc": "已申请",
+  "applyTime": "2023-01-16T10:30:00",
+  "resumeSnapshot": "{\"resumeId\":3001,\"userId\":10001,\"name\":\"张三\",\"education\":\"硕士\",...}"
+}
+```
+
 ### 更新申请状态
 ```
 PUT /api/applications/{applicationId}/status
@@ -689,6 +984,32 @@ PUT /api/applications/{applicationId}/withdraw?userId={userId}
 {
   "code": 200,
   "data": true
+}
+```
+
+### 删除申请记录
+```
+DELETE /api/applications?userId={userId}&jobId={jobId}&resumeId={resumeId}
+```
+
+**响应示例**
+```json
+{
+  "code": 200,
+  "data": true
+}
+```
+
+### 恢复已删除的申请记录
+```
+POST /api/applications/restore?userId={userId}&jobId={jobId}&resumeId={resumeId}
+```
+
+**响应示例**
+```json
+{
+  "code": 200,
+  "data": 4002
 }
 ```
 
@@ -990,6 +1311,48 @@ GET /api/interview/user/{userId}
 }
 ```
 
+### 根据公司ID分页获取面试信息
+```
+GET /api/interview/company/{companyId}?current=1&size=20
+```
+
+**可选参数**
+- status: 状态筛选
+- interviewDate: 面试日期筛选
+
+**响应示例**
+```json
+{
+  "code": 200,
+  "data": {
+    "records": [
+      {
+        "arrangeId": 5001,
+        "applicationId": 4001,
+        "jobId": 1001,
+        "companyId": 2001,
+        "jobName": "Java开发工程师",
+        "companyName": "科技有限公司",
+        "interviewerId": 10005,
+        "intervieweeId": 10001,
+        "interviewPlace": "会议室B",
+        "interviewTime": "2023-01-20T14:00:00",
+        "intervieweeName": "张三",
+        "status": 1,
+        "statusDesc": "准备面试",
+        "publishStatus": 1,
+        "publishStatusDesc": "已发布",
+        "resumeId": 3001,
+        "resumeSnapshot": "{\"resumeId\":3001,\"userId\":10001,\"name\":\"张三\",\"education\":\"硕士\",...}"
+      }
+    ],
+    "total": 1,
+    "size": 20,
+    "current": 1
+  }
+}
+```
+
 ## 职位收藏管理
 
 ### 收藏职位
@@ -1194,3 +1557,187 @@ GET /api/talent/company/{companyId}
     }
   ]
 }
+```
+
+## 系统通知
+
+### 创建通知
+```
+POST /api/notices
+```
+
+**请求参数**
+```json
+{
+  "userId": 10001,
+  "noticeType": "WELCOME",
+  "noticeContent": "欢迎使用招聘平台！",
+  "sendTime": "2023-01-16T10:30:00"
+}
+```
+
+**响应示例**
+```json
+{
+  "code": 200,
+  "data": 8001,
+  "message": "通知创建成功"
+}
+```
+
+### 根据ID获取通知
+```
+GET /api/notices/{noticeId}
+```
+
+**响应示例**
+```json
+{
+  "code": 200,
+  "data": {
+    "noticeId": 8001,
+    "userId": 10001,
+    "noticeType": "WELCOME",
+    "noticeContent": "欢迎使用招聘平台！",
+    "sendTime": "2023-01-16T10:30:00",
+    "readStatus": 0,
+    "sendStatus": 1
+  }
+}
+```
+
+### 根据用户ID获取通知列表
+```
+GET /api/notices/user/{userId}
+```
+
+**响应示例**
+```json
+{
+  "code": 200,
+  "data": [
+    {
+      "noticeId": 8001,
+      "userId": 10001,
+      "noticeType": "WELCOME",
+      "noticeContent": "欢迎使用招聘平台！",
+      "sendTime": "2023-01-16T10:30:00",
+      "readStatus": 0,
+      "sendStatus": 1
+    }
+  ]
+}
+```
+
+### 根据用户ID分页获取通知列表
+```
+GET /api/notices/user/{userId}/page?pageNum=1&pageSize=10
+```
+
+**响应示例**
+```json
+{
+  "code": 200,
+  "data": {
+    "records": [
+      {
+        "noticeId": 8001,
+        "userId": 10001,
+        "noticeType": "WELCOME",
+        "noticeContent": "欢迎使用招聘平台！",
+        "sendTime": "2023-01-16T10:30:00",
+        "readStatus": 0,
+        "sendStatus": 1
+      }
+    ],
+    "total": 1,
+    "size": 10,
+    "current": 1
+  }
+}
+```
+
+### 获取用户未读通知数量
+```
+GET /api/notices/user/{userId}/unread-count
+```
+
+**响应示例**
+```json
+{
+  "code": 200,
+  "data": 1
+}
+```
+
+### 更新通知
+```
+PUT /api/notices/{noticeId}
+```
+
+**请求参数**
+```json
+{
+  "noticeId": 8001,
+  "userId": 10001,
+  "noticeType": "WELCOME",
+  "noticeContent": "欢迎使用招聘平台！欢迎加入我们！",
+  "sendTime": "2023-01-16T10:30:00"
+}
+```
+
+**响应示例**
+```json
+{
+  "code": 200,
+  "data": true,
+  "message": "通知更新成功"
+}
+```
+
+### 更新通知阅读状态
+```
+PUT /api/notices/{noticeId}/read-status?readStatus=1
+```
+
+**响应示例**
+```json
+{
+  "code": 200,
+  "data": true,
+  "message": "阅读状态更新成功"
+}
+```
+
+### 批量更新通知阅读状态
+```
+PUT /api/notices/batch-read-status?readStatus=1
+```
+
+**请求参数**
+```json
+[8001, 8002, 8003]
+```
+
+**响应示例**
+```json
+{
+  "code": 200,
+  "data": true,
+  "message": "批量更新阅读状态成功"
+}
+```
+
+### 删除通知
+```
+DELETE /api/notices/{noticeId}
+```
+
+**响应示例**
+```json
+{
+  "code": 200,
+  "data": true,
+  "message": "通知删除成功"
+}
+```
