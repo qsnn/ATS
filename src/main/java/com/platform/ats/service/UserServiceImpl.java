@@ -58,16 +58,6 @@ public class UserServiceImpl extends ServiceImpl<UserRepository, SysUser> implem
             throw new BizException(ErrorCode.USERNAME_EXISTS);
         }
 
-        // 检查手机号是否已存在
-        if (StringUtils.hasText(userRegisterDTO.getPhone()) && checkPhoneExists(userRegisterDTO.getPhone())) {
-            throw new BizException(ErrorCode.PHONE_EXISTS);
-        }
-
-        // 检查邮箱是否已存在
-        if (StringUtils.hasText(userRegisterDTO.getEmail()) && checkEmailExists(userRegisterDTO.getEmail())) {
-            throw new BizException(ErrorCode.EMAIL_EXISTS);
-        }
-
         // 创建用户实体
         SysUser sysUser = new SysUser();
         BeanUtils.copyProperties(userRegisterDTO, sysUser);
@@ -175,16 +165,6 @@ public class UserServiceImpl extends ServiceImpl<UserRepository, SysUser> implem
             throw new BizException(ErrorCode.USERNAME_EXISTS);
         }
 
-        // 检查手机号是否已存在
-        if (StringUtils.hasText(userCreateDTO.getPhone()) && checkPhoneExists(userCreateDTO.getPhone())) {
-            throw new BizException(ErrorCode.PHONE_EXISTS);
-        }
-
-        // 检查邮箱是否已存在
-        if (StringUtils.hasText(userCreateDTO.getEmail()) && checkEmailExists(userCreateDTO.getEmail())) {
-            throw new BizException(ErrorCode.EMAIL_EXISTS);
-        }
-
         // 创建用户实体
         SysUser sysUser = new SysUser();
         BeanUtils.copyProperties(userCreateDTO, sysUser);
@@ -216,20 +196,6 @@ public class UserServiceImpl extends ServiceImpl<UserRepository, SysUser> implem
                 !Objects.equals(existingSysUser.getUsername(), userUpdateDTO.getUsername()) &&
                 checkUsernameExists(userUpdateDTO.getUsername())) {
             throw new BizException(ErrorCode.USERNAME_EXISTS);
-        }
-
-        // 检查手机号是否被其他用户使用
-        if (StringUtils.hasText(userUpdateDTO.getPhone()) &&
-                !Objects.equals(existingSysUser.getPhone(), userUpdateDTO.getPhone()) &&
-                checkPhoneExists(userUpdateDTO.getPhone())) {
-            throw new BizException(ErrorCode.PHONE_EXISTS);
-        }
-
-        // 检查邮箱是否被其他用户使用
-        if (StringUtils.hasText(userUpdateDTO.getEmail()) &&
-                !Objects.equals(existingSysUser.getEmail(), userUpdateDTO.getEmail()) &&
-                checkEmailExists(userUpdateDTO.getEmail())) {
-            throw new BizException(ErrorCode.EMAIL_EXISTS);
         }
 
         SysUser sysUser = new SysUser();
